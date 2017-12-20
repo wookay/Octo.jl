@@ -5,6 +5,8 @@ export INNER, OUTER, LEFT, JOIN, ON
 export ORDER, BY, ASC, DESC
 export GROUP, HAVING
 export AND, OR, NOT
+# sqlfuncs
+export COUNT, AVG, SUM
 
 # sql.jl
 export SQL

@@ -65,3 +65,9 @@ end
 
 function NOT()
 end
+
+
+# sqlfuncs
+COUNT(v) = SqlFunc(COUNT, (v,))
+AVG(v) = SqlFunc(AVG, (v,))
+SUM(v) = SqlFunc(SUM, (v,))
