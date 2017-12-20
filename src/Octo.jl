@@ -4,6 +4,7 @@ module Octo
 include("model.jl")
 
 export SELECT, FROM
+export INNER, JOIN, ON
 include("clauses.jl")
 
 export SQL
