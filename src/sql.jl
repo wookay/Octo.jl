@@ -11,65 +11,55 @@ end
 struct DistinctAllFrom
 end
 
-function sqlstring(args...)
+function sqlstring(args...)::String
     join(args, " ")
 end
 
-function fieldjoin(f, fields...)
+function fieldjoin(f::Function, fields::Tuple)::String
     join(f.(fields), ", ")
 end
 
-### getindex repr
-
-function getindex(::typeof(repr), ::M) where M <: Model
-    typ = Base.typename(M)
-    modelstore[typ][:table_name]
-end
-
-function getindex(::typeof(repr), f::Function)
-    Base.function_name(f)
-end
-
-function getindex(::typeof(repr), pred::Predicate)
-    fieldrepr(fieldname, pred)
-end
-
-function getindex(::typeof(repr), val::Number)
-    val
-end
-
-function fieldname(field::Field)
+function fieldname(field::Field)::String
     string(field.fieldname) 
 end
 
-function fullname(field::Field)
+function fullname(field::Field)::String
     typ = Base.typename(field.table)
     table_name = modelstore[typ][:table_name]
     string(table_name, '.', field.fieldname) 
 end
 
-### fieldrepr
+### sqlrepr
 
-function fieldrepr(f, field::Field)
-    f(field)
+function sqlrepr(::Function, k::Function)
+    Base.function_name(k)
 end
 
-function fieldrepr(f, val::Number)
-    val
+function sqlrepr(f, n::Number)
+    n
 end
 
-function fieldrepr(f, val::String)
+function sqlrepr(::Function, val::String)
     string("'", val, "'")
 end
 
-function fieldrepr(f, fields::Tuple)
-    fieldjoin(f, fields...)
+function sqlrepr(::Function, m::M) where M <: Model
+    typ = Base.typename(M)
+    modelstore[typ][:table_name]
 end
 
-function fieldrepr(f, pred::Predicate)
+function sqlrepr(f::Function, field::Field)
+    f(field)
+end
+
+function sqlrepr(f::Function, fields::Tuple)
+    fieldjoin(f, fields)
+end
+
+function sqlrepr(f::Function, pred::Predicate)
     if ==(pred.f, !)
         op = "NOT"
-        sqlstring(op, fieldrepr(f, pred.field2))
+        sqlstring(op, sqlrepr(f, pred.field2))
     else
         if ==(pred.f, ==)
             op = "="
@@ -78,39 +68,17 @@ function fieldrepr(f, pred::Predicate)
         elseif ==(pred.f, |)
             op = "OR"
         else
-            op = Base.function_name(pred.f)
+            op = sqlrepr(f, pred.f)
         end
-        sqlstring(fieldrepr(f, pred.field1), op, fieldrepr(f, pred.field2))
+        sqlstring(sqlrepr(f, pred.field1), op, sqlrepr(f, pred.field2))
     end
 end
 
-### sqlrepr
-
-function sqlrepr(f, k::Function)
-    repr[k]
-end
-
-function sqlrepr(f, m::M) where M <: Model
-    repr[m]
-end
-
-function sqlrepr(f, n::Number)
-    repr[n]
-end
-
-function sqlrepr(f, field::Field)
-    fieldrepr(f, field)
-end
-
-function sqlrepr(f, fields::Tuple)
-    fieldrepr(f, fields)
-end
-
-function sqlrepr(f, pred::Predicate)
-    fieldrepr(f, pred)
-end
-
 ### typed_hcat - fieldname
+
+function getindex(::typeof(repr), m::M) where M <: Model
+    sqlrepr(fieldname, m)
+end
 
 function typed_hcat(::typeof(repr), s1::Function, m::M) where M <: Model
     sqlstring(sqlrepr.(fieldname, (s1, m))...)
