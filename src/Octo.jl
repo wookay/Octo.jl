@@ -1,14 +1,16 @@
 module Octo
 
-# package code goes here
+export from
+
+include("types.jl")
+include("changeset.jl")
+include("schema.jl")
 include("model.jl")
+include("queryable.jl")
+include("repo.jl")
+include("predicates.jl")
+include("adapters.jl")
 
-include("exports.jl")
+import .Queryable: from
 
-include("keywords.jl")
-include("sqlfunc.jl")
-include("predicate.jl")
-
-include("sql.jl")
-
-end # module
+end # module Octo
