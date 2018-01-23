@@ -14,6 +14,9 @@ julia> using Octo.Adapters.SQL
 julia> u = from(User)
 Octo.FromClause(User, nothing)
 
+julia> [SELECT * FROM u]
+SELECT * FROM users
+
 julia> to_sql([SELECT * FROM u])
 "SELECT * FROM users"
 
