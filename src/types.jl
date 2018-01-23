@@ -18,6 +18,6 @@ end
 
 struct Predicate
     func::Function
-    field1::Union{Bool, Number, String, Field, Predicate, Nothing}
-    field2::Union{Bool, Number, String, Field, Predicate}
+    left::Union{Bool, Number, String, Field, Predicate}
+    right::Union{Bool, Number, String, Field, Predicate}
 end

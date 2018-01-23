@@ -2,18 +2,9 @@
 
 import Base: ==, <, >, <=, >=
 
-==(f1::Field, f2::Field)          = Predicate(==, f1, f2)
-==(f1::Field, val::Number)        = Predicate(==, f1, val)
-==(f1::Field, val::String)        = Predicate(==, f1, val)
-
-<(lhs::Union{Field}, rhs::Union{Number,Field}) = Predicate(<, lhs, rhs)
-<(lhs::Union{Number, Field}, rhs::Union{Field}) = Predicate(<, lhs, rhs)
-
->(lhs::Union{Field}, rhs::Union{Number,Field}) = Predicate(>, lhs, rhs)
->(lhs::Union{Number, Field}, rhs::Union{Field}) = Predicate(>, lhs, rhs)
-
-<=(lhs::Union{Field}, rhs::Union{Number,Field}) = Predicate(<=, lhs, rhs)
-<=(lhs::Union{Number, Field}, rhs::Union{Field}) = Predicate(<=, lhs, rhs)
-
->=(lhs::Union{Field}, rhs::Union{Number,Field}) = Predicate(>=, lhs, rhs)
->=(lhs::Union{Number, Field}, rhs::Union{Field}) = Predicate(>=, lhs, rhs)
+for op in (:(==), :(<), :(>), :(<=), :(>=))
+    @eval begin
+        ($op)(left::Field, right::Union{Field, Number, String}) = Predicate(($op), left, right)
+        ($op)(left::Union{Field, Number, String}, right::Field) = Predicate(($op), left, right)
+    end
+end

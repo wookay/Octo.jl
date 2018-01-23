@@ -16,6 +16,6 @@ function Base.getproperty(clause::FromClause, field::Symbol)
      end
 end
 
-const Statement = Array
+const Structured = Array
 
 end # module Octo.Queryable

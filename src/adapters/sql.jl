@@ -1,78 +1,140 @@
 module SQL
 
-using ...Queryable: Statement, FromClause
+using ...Queryable: Structured, FromClause
 using ...Schema
 import ...Octo: Model, Field, Predicate, SchemaError
 import ..Database
 
 export to_sql
-export SELECT, FROM, AS, WHERE
+export SELECT, FROM, AS, WHERE, AND, OR, NOT
 
-struct SelectAllFrom
+struct SqlElement
+    color::Union{Symbol, Int}
+    body
+end
+
+struct SqlPart
+    elements::Vector{Union{SqlPart, SqlElement}}
+    sep::String
 end
 
 struct Keyword
     name::Symbol
 end
 
-function sqlstring(args)
-    join(args, " ")
+struct KeywordAllKeyword
+    left::Keyword
+    right::Keyword
 end
 
-function sqlrepr(def::Database.Default, el::SelectAllFrom)
-    sqlrepr.(def, [SELECT, *, FROM])
+# sqlpart
+function sqlpart(element::SqlElement)::SqlPart
+    SqlPart([element], "")
 end
 
-function sqlrepr(::Database.Default, el::Keyword)
-    el.name
+function sqlpart(elements::Vector, sep::String)::SqlPart
+    SqlPart(elements, sep)
 end
 
-function sqlrepr(::Database.Default, sym::Symbol)
-    String(sym)
+# sqlrepr - SqlElement
+
+sqlrepr(::Database.Default, el::Keyword)::SqlElement = SqlElement(:cyan, el.name)
+sqlrepr(::Database.Default, sym::Symbol)::SqlElement = SqlElement(:normal, sym)
+sqlrepr(::Database.Default, num::Number)::SqlElement = SqlElement(:normal, num)
+sqlrepr(::Database.Default, f::Function)::SqlElement = SqlElement(:normal, f)
+
+function sqlrepr(::Database.Default, ::Type{M})::SqlElement where M <: Model
+    name = Base.typename(M)
+    if haskey(Schema.tables, name)
+        SqlElement(:normal, Schema.tables[name])
+    else
+        model = Base.typename(M).name
+        throw(SchemaError("""Provide schema table_name by `$model.schema(table_name="tbl")`"""))
+    end
 end
 
-function sqlrepr(::Database.Default, num::Number)
-    string(num)
+function sqlrepr(::Database.Default, str::String)::SqlPart
+    quot = SqlElement(:light_magenta, "'")
+    sqlpart([quot, SqlElement(:light_magenta, str), quot], "")
 end
 
-function sqlrepr(::Database.Default, field::Field)
-    field.clause.__octo_as isa Nothing ? String(field.name) :
-                                         string(field.clause.__octo_as, '.', field.name)
+function sqlrepr(::Database.Default, field::Field)::SqlPart
+    if field.clause.__octo_as isa Nothing
+        sqlpart(SqlElement(:normal, field.name))
+    else
+        sqlpart([
+            SqlElement(:normal, field.clause.__octo_as),
+            SqlElement(:normal, '.'),
+            SqlElement(:normal, field.name)], "")
+    end
 end
 
-function sqlrepr(def::Database.Default, pred::Predicate)
+# sqlrepr - SqlPart
+
+function sqlrepr(def::Database.Default, el::KeywordAllKeyword)::SqlPart
+    sqlpart(sqlrepr.(def, [el.left, *, el.right]), " ")
+end
+
+function sqlrepr(def::Database.Default, pred::Predicate)::SqlPart
     if ==(pred.func, ==)
         op = :(=)
     else
         op = pred.func
     end
-    sqlrepr.(def, [pred.field1, op, pred.field2])
+    sqlpart(sqlrepr.(def, [pred.left, op, pred.right]), " ")
 end
 
-function sqlrepr(def::Database.Default, clause::FromClause)
-    clause.__octo_as isa Nothing ? sqlrepr(def, clause.__octo_model) :
-                                   sqlrepr.(def, [clause.__octo_model, AS, clause.__octo_as])
-end
-
-function sqlrepr(def::Database.Default, tup::Tuple)
-    join(sqlrepr.(def, tup), ", ")
-end
-
-function sqlrepr(::Database.Default, ::typeof(*))
-    string(*)
-end
-
-function sqlrepr(::Database.Default, ::Type{M}) where M <: Model
-    name = Base.typename(M)
-    if haskey(Schema.tables, name)
-        Schema.tables[name]
+function sqlrepr(def::Database.Default, clause::FromClause)::SqlPart
+    if clause.__octo_as isa Nothing
+         sqlpart(sqlrepr(def, clause.__octo_model))
     else
-        throw(SchemaError(""))
+         sqlpart(sqlrepr.(def, [clause.__octo_model, AS, clause.__octo_as]), " ")
     end
 end
 
-function to_sql(stmt::Statement)
-    sqlstring(vcat(sqlrepr.(SQL, stmt)...))
+function sqlrepr(def::Database.Default, tup::Tuple)::SqlPart
+    sqlpart(sqlrepr.(def, [tup...]), ", ")
+end
+
+function joinpart(part::SqlPart)::String
+    join(map(part.elements) do el
+        if el isa SqlPart
+            joinpart(el)
+        elseif el isa SqlElement
+            el.body
+        end
+    end, part.sep)
+end
+
+function printpart(io::IO, part::SqlPart)
+    for (idx, el) in enumerate(part.elements)
+        if el isa SqlPart
+            printpart(io, el)
+        elseif el isa SqlElement
+            print_with_color(el.color, io, el.body)
+        end
+        length(part.elements) == idx || print(io, part.sep)
+    end
+end
+
+function _to_sql(db, query::Structured)::String
+    joinpart(sqlpart(vcat(sqlrepr.(db, query)...), " "))
+end
+
+function to_sql(query::Structured)::String
+    _to_sql(SQL, query)
+end
+
+function _show(io::IO, ::MIME"text/plain", db, query::Structured)
+    if any(x -> x isa Keyword || x isa Model || x isa FromClause, query)
+        printpart(io, sqlpart(vcat(sqlrepr.(db, query)...), " "))
+    else
+        Base._display(io, query)
+    end
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", query::Structured)
+    _show(io, mime, SQL, query)
 end
 
 macro keywords(args...)
@@ -80,10 +142,10 @@ macro keywords(args...)
 end
 keywords(s) = :(($(s...),) = $(map(Keyword, s)))
 
-function Base.:*(l::Keyword, r::Keyword)
-    l.name == :SELECT && r.name == :FROM && SelectAllFrom()
+function Base.:*(left::Keyword, right::Keyword)
+    KeywordAllKeyword(left, right)
 end
 
-@keywords SELECT FROM AS WHERE
+@keywords SELECT FROM AS WHERE AND OR NOT
 
 end # module Octo.Adapters.SQL
