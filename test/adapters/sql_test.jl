@@ -1,17 +1,18 @@
 module adapters_sql_test
 
 using Test # @test
-using Octo # Octo.Model from SchemaError
-
-struct User <: Octo.Model
-end
-
+using Octo # Schema from
 using Octo.Adapters.SQL # SELECT FROM WHERE
 
-u = from(User)
-@test_throws Octo.SchemaError to_sql([FROM u])
+struct User
+end
 
-User.schema(table_name="users")
+u = from(User)
+@test_throws Schema.TableNameError to_sql([FROM u])
+
+Schema.model(User,
+    table_name="users"
+)
 
 @test to_sql([FROM u]) == "FROM users"
 @test to_sql([SELECT * FROM u]) == "SELECT * FROM users"

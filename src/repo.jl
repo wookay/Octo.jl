@@ -12,4 +12,10 @@ end
 function insert!
 end
 
+function update!
+end
+
+function delete!
+end
+
 end # module Octo.Repo

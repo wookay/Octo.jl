@@ -2,9 +2,9 @@
 
 module Queryable
 
-import ..Octo: Model, FromClause, Field
+import ..Octo: FromClause, Field
 
-function from(::Type{M}, as=nothing)::FromClause where M <: Model
+function from(M::Type, as=nothing)::FromClause
     FromClause(M, as)
 end
 

@@ -1,14 +1,8 @@
 # module Octo
 
-abstract type Model end
-
 struct FromClause
-    __octo_model
-    __octo_as
-end
-
-struct SchemaError <: Exception
-    msg::String
+    __octo_model::Type
+    __octo_as::Union{Symbol, Nothing}
 end
 
 struct Field

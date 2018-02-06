@@ -2,7 +2,7 @@ module SQL
 
 using ...Queryable: Structured, FromClause
 using ...Schema
-import ...Octo: Model, Field, Predicate, SchemaError
+import ...Octo: Field, Predicate
 import ..Database
 
 export to_sql
@@ -43,13 +43,13 @@ sqlrepr(::Database.Default, sym::Symbol)::SqlElement = SqlElement(:normal, sym)
 sqlrepr(::Database.Default, num::Number)::SqlElement = SqlElement(:normal, num)
 sqlrepr(::Database.Default, f::Function)::SqlElement = SqlElement(:normal, f)
 
-function sqlrepr(::Database.Default, ::Type{M})::SqlElement where M <: Model
-    name = Base.typename(M)
-    if haskey(Schema.tables, name)
-        SqlElement(:normal, Schema.tables[name])
+function sqlrepr(::Database.Default, M::Type)::SqlElement
+    Tname = Base.typename(M)
+    if haskey(Schema.tables, Tname)
+        SqlElement(:normal, Schema.tables[Tname])
     else
-        model = Base.typename(M).name
-        throw(SchemaError("""Provide schema table_name by `$model.schema(table_name="tbl")`"""))
+        name = nameof(M)
+        throw(Schema.TableNameError("""Provide schema table_name by `Schema.model($name, table_name="tbl")`"""))
     end
 end
 
@@ -111,7 +111,7 @@ function printpart(io::IO, part::SqlPart)
         if el isa SqlPart
             printpart(io, el)
         elseif el isa SqlElement
-            print_with_color(el.color, io, el.body)
+            printstyled(io, el.body; color=el.color)
         end
         length(part.elements) == idx || print(io, part.sep)
     end
@@ -126,7 +126,7 @@ function to_sql(query::Structured)::String
 end
 
 function _show(io::IO, ::MIME"text/plain", db, query::Structured)
-    if any(x -> x isa Keyword || x isa Model || x isa FromClause, query)
+    if any(x -> x isa Keyword || x isa FromClause, query)
         printpart(io, sqlpart(vcat(sqlrepr.(db, query)...), " "))
     else
         Base._display(io, query)
