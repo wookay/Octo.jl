@@ -26,4 +26,8 @@ u = from(User, :u)
 @test to_sql([WHERE u.id == 2]) == "WHERE u.id = 2"
 @test to_sql([SELECT (u.id, u.name) FROM u WHERE u.id == 2]) == "SELECT u.id, u.name FROM users AS u WHERE u.id = 2"
 
+@test to_sql([COUNT(*)]) == "COUNT(*)"
+@test to_sql([SUM(u.age)]) == "SUM(u.age)"
+@test to_sql([AVG(u.age)]) == "AVG(u.age)"
+
 end # module adapters_sql_test

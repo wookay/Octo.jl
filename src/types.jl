@@ -10,8 +10,13 @@ struct Field
     name::Symbol
 end
 
+struct AggregateFunction
+    name::Symbol
+    field
+end
+
 struct Predicate
     func::Function
-    left::Union{Bool, Number, String, Field, Predicate}
-    right::Union{Bool, Number, String, Field, Predicate}
+    left::Union{Bool, Number, String, Field, AggregateFunction, Predicate}
+    right::Union{Bool, Number, String, Field, AggregateFunction, Predicate}
 end

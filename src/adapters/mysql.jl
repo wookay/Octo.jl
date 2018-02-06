@@ -1,7 +1,6 @@
-module SQLite
+module MySQL
 
 import ..Adapters: Database
-import ..Adapters.SQL: FromClause, SqlPart, sqlrepr, sqlpart
 import ..Adapters.SQL: Structured, _to_sql, _show
 import ..Adapters.SQL: SELECT, DISTINCT, FROM, AS, WHERE, EXISTS, AND, OR, NOT
 import ..Adapters.SQL: INNER, OUTER, LEFT, RIGHT, FULL, JOIN, ON, USING
@@ -11,25 +10,17 @@ import ..Adapters.SQL: COUNT, SUM, AVG
 export to_sql
 include("sql_exports.jl")
 
-function sqlrepr(db::Database.SQLite, clause::FromClause)::SqlPart
-    if clause.__octo_as isa Nothing
-         sqlpart(sqlrepr(db, clause.__octo_model))
-    else
-         sqlpart(sqlrepr.(db, [clause.__octo_model, clause.__octo_as]), " ")
-    end
-end
-
-const db = Database.SQLite()
+const db = Database.MySQL()
 
 to_sql(query::Structured)::String = _to_sql(db, query)
 Base.show(io::IO, mime::MIME"text/plain", query::Structured) = _show(io, mime, db, query)
 
 function load(dbfile::String)
     try
-        @eval using SQLite
+        @eval using MySQL
     catch ex
         ex isa ArgumentError && @error ex.msg
     end
 end
 
-end # Octo.Adapters.SQLite
+end # Octo.Adapters.MySQL

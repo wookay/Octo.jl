@@ -2,11 +2,11 @@ module SQL
 
 using ...Queryable: Structured, FromClause
 using ...Schema
-import ...Octo: Field, Predicate
+import ...Octo: Field, AggregateFunction, Predicate
 import ..Database
 
 export to_sql
-export SELECT, FROM, AS, WHERE, AND, OR, NOT
+include("sql_exports.jl")
 
 struct SqlElement
     color::Union{Symbol, Int}
@@ -21,6 +21,11 @@ end
 struct Keyword
     name::Symbol
 end
+
+struct Aggregate
+    name::Symbol
+end
+(a::Aggregate)(field) = AggregateFunction(a.name, field)
 
 struct KeywordAllKeyword
     left::Keyword
@@ -96,6 +101,14 @@ function sqlrepr(def::Database.Default, tup::Tuple)::SqlPart
     sqlpart(sqlrepr.(def, [tup...]), ", ")
 end
 
+function sqlrepr(def::Database.Default, f::AggregateFunction)::SqlPart
+    sqlpart([
+        SqlElement(:yellow, f.name),
+        SqlElement(:normal, '('),
+        sqlrepr(def, f.field),
+        SqlElement(:normal, ')')], "")
+end
+
 function joinpart(part::SqlPart)::String
     join(map(part.elements) do el
         if el isa SqlPart
@@ -142,10 +155,18 @@ macro keywords(args...)
 end
 keywords(s) = :(($(s...),) = $(map(Keyword, s)))
 
+macro aggregates(args...)
+    esc(aggregates(args))
+end
+aggregates(s) = :(($(s...),) = $(map(Aggregate, s)))
+
 function Base.:*(left::Keyword, right::Keyword)
     KeywordAllKeyword(left, right)
 end
 
-@keywords SELECT FROM AS WHERE AND OR NOT
+@keywords SELECT DISTINCT FROM AS WHERE EXISTS AND OR NOT
+@keywords INNER OUTER LEFT RIGHT FULL JOIN ON USING
+@keywords GROUP BY HAVING ORDER ASC DESC
+@aggregates COUNT SUM AVG
 
 end # module Octo.Adapters.SQL
