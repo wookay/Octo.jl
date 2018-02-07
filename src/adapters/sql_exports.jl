@@ -6,6 +6,8 @@ export GROUP, BY, HAVING, ORDER, ASC, DESC
 # export: aggregate functions
 export COUNT, SUM, AVG
 
-# export: Octo
-export Schema
-export from, to_sql
+# export: Schema, from
+export Schema, from
+
+# export: to_sql
+export to_sql

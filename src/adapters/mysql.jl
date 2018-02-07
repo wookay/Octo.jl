@@ -1,13 +1,10 @@
 module MySQL
 
 include("sql_exports.jl")
+include("sql_imports.jl")
 
 import ..Adapters: Database
-import ..Adapters.SQL: Schema, Structured, from, _to_sql, _show
-import ..Adapters.SQL: SELECT, DISTINCT, FROM, AS, WHERE, LIKE, EXISTS, AND, OR, NOT, LIMIT, OFFSET, INTO
-import ..Adapters.SQL: INNER, OUTER, LEFT, RIGHT, FULL, JOIN, ON, USING
-import ..Adapters.SQL: GROUP, BY, HAVING, ORDER, ASC, DESC
-import ..Adapters.SQL: COUNT, SUM, AVG
+import ..Adapters.SQL: Structured, _to_sql, _show
 
 const DB = Database.MySQL
 
