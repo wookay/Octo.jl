@@ -1,8 +1,7 @@
 module adapters_sqlite_test
 
 using Test # @test
-using Octo # Schema from
-using Octo.Adapters.SQLite # SELECT FROM WHERE
+using Octo.Adapters.SQLite # Schema from SELECT FROM WHERE
 
 struct User
 end

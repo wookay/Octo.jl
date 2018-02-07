@@ -1,8 +1,7 @@
 module adapters_sql_test
 
 using Test # @test
-using Octo # Schema from
-using Octo.Adapters.SQL # SELECT FROM WHERE
+using Octo.Adapters.SQL # Schema from SELECT FROM WHERE COUNT SUM AVG
 
 struct User
 end

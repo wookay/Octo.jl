@@ -1,8 +1,6 @@
 # Octo
 
 ```julia
-julia> using Octo
-
 julia> using Octo.Adapters.SQL
 
 julia> struct User
@@ -20,6 +18,6 @@ SELECT * FROM users
 julia> [SELECT * FROM u WHERE u.id == 2]
 SELECT * FROM users WHERE id = 2
 
-julia> to_sql([SELECT * FROM u])
-"SELECT * FROM users"
+julia> to_sql([SELECT * FROM u WHERE u.id == 2])
+"SELECT * FROM users WHERE id = 2"
 ````

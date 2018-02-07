@@ -1,8 +1,7 @@
 module adapters_mysql_test
 
 using Test # @test
-using Octo # Schema from
-using Octo.Adapters.MySQL # SELECT FROM WHERE
+using Octo.Adapters.MySQL # Schema from SELECT DISTINCT FROM WHERE GROUP BY HAVING ORDER DESC COUNT
 
 struct User
 end

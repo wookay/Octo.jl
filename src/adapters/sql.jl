@@ -1,12 +1,11 @@
 module SQL
 
-using ...Queryable: Structured, FromClause
-using ...Schema
-import ...Octo: Field, AggregateFunction, Predicate
-import ..Database
-
-export to_sql
 include("sql_exports.jl")
+
+import ..Database
+import ...Schema
+import ...Queryable: Structured, FromClause, from
+import ...Octo: Field, AggregateFunction, Predicate
 
 struct SqlElement
     color::Union{Symbol, Int}
@@ -130,6 +129,8 @@ function printpart(io::IO, part::SqlPart)
     end
 end
 
+# _to_sql
+
 function _to_sql(db, query::Structured)::String
     joinpart(sqlpart(vcat(sqlrepr.(db, query)...), " "))
 end
@@ -138,11 +139,13 @@ function to_sql(query::Structured)::String
     _to_sql(SQL, query)
 end
 
+# _show
+
 function _show(io::IO, ::MIME"text/plain", db, query::Structured)
-    if any(x -> x isa Keyword || x isa FromClause, query)
+    if any(x -> x isa Keyword || x isa KeywordAllKeyword || x isa AggregateFunction || x isa FromClause, query)
         printpart(io, sqlpart(vcat(sqlrepr.(db, query)...), " "))
     else
-        Base._display(io, query)
+        Base.show(io, query)
     end
 end
 
@@ -150,10 +153,14 @@ function Base.show(io::IO, mime::MIME"text/plain", query::Structured)
     _show(io, mime, SQL, query)
 end
 
+# @keywords
+
 macro keywords(args...)
     esc(keywords(args))
 end
 keywords(s) = :(($(s...),) = $(map(Keyword, s)))
+
+# @aggregates
 
 macro aggregates(args...)
     esc(aggregates(args))
@@ -167,6 +174,7 @@ end
 @keywords SELECT DISTINCT FROM AS WHERE EXISTS AND OR NOT
 @keywords INNER OUTER LEFT RIGHT FULL JOIN ON USING
 @keywords GROUP BY HAVING ORDER ASC DESC
+
 @aggregates COUNT SUM AVG
 
 end # module Octo.Adapters.SQL

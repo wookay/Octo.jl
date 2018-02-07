@@ -1,6 +1,6 @@
 module Schema
 
-tables = Dict{TypeName,String}()
+tables = Dict{Core.TypeName,String}()
 
 function model(M::Type; table_name::String)
     tables[Base.typename(M)] = table_name
