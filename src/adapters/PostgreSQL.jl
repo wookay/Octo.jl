@@ -1,4 +1,4 @@
-module SQLite
+module PostgreSQL
 
 include("sql_exports.jl")
 
@@ -10,7 +10,7 @@ import ..Adapters.SQL: GROUP, BY, HAVING, ORDER, ASC, DESC
 import ..Adapters.SQL: COUNT, SUM, AVG
 
 import ..Adapters.SQL: FromClause, SqlPart, sqlrepr, sqlpart
-const DB = Database.SQLite
+const DB = Database.PostgreSQL
 
 function sqlrepr(db::DB, clause::FromClause)::SqlPart
     if clause.__octo_as isa Nothing
@@ -25,10 +25,10 @@ Base.show(io::IO, mime::MIME"text/plain", query::Structured) = _show(io, mime, D
 
 function load(dbfile::String)
     try
-        @eval using SQLite
+        @eval using PostgreSQL
     catch ex
         ex isa ArgumentError && @error ex.msg
     end
 end
 
-end # Octo.Adapters.SQLite
+end # Octo.Adapters.PostgreSQL

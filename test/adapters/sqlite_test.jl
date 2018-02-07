@@ -9,9 +9,7 @@ end
 u = from(User)
 @test_throws Schema.TableNameError to_sql([FROM u])
 
-Schema.model(User,
-    table_name="users"
-)
+Schema.model(User, table_name="users")
 
 @test to_sql([FROM u]) == "FROM users"
 @test to_sql([SELECT * FROM u]) == "SELECT * FROM users"

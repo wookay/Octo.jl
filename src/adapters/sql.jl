@@ -24,7 +24,7 @@ end
 struct Aggregate
     name::Symbol
 end
-(a::Aggregate)(field) = AggregateFunction(a.name, field)
+(a::Aggregate)(field, as=nothing) = AggregateFunction(a.name, field, as)
 
 struct KeywordAllKeyword
     left::Keyword
@@ -101,11 +101,16 @@ function sqlrepr(def::Database.Default, tup::Tuple)::SqlPart
 end
 
 function sqlrepr(def::Database.Default, f::AggregateFunction)::SqlPart
-    sqlpart([
+    part = sqlpart([
         SqlElement(:yellow, f.name),
         SqlElement(:normal, '('),
         sqlrepr(def, f.field),
         SqlElement(:normal, ')')], "")
+    if f.as isa Nothing
+        part
+    else
+        sqlpart(vcat(part, sqlrepr.(def, [AS, f.as])), " ")
+    end
 end
 
 function joinpart(part::SqlPart)::String
@@ -171,7 +176,7 @@ function Base.:*(left::Keyword, right::Keyword)
     KeywordAllKeyword(left, right)
 end
 
-@keywords SELECT DISTINCT FROM AS WHERE EXISTS AND OR NOT
+@keywords SELECT DISTINCT FROM AS WHERE LIKE EXISTS AND OR NOT LIMIT OFFSET INTO
 @keywords INNER OUTER LEFT RIGHT FULL JOIN ON USING
 @keywords GROUP BY HAVING ORDER ASC DESC
 

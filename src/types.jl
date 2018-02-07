@@ -13,6 +13,7 @@ end
 struct AggregateFunction
     name::Symbol
     field
+    as::Union{Symbol, Nothing}
 end
 
 struct Predicate
