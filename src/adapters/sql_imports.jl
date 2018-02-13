@@ -1,10 +1,14 @@
+# import: Octo
+import ...Octo
+
 # import: keywords
-import ..Adapters.SQL: SELECT, DISTINCT, FROM, AS, WHERE, LIKE, EXISTS, AND, OR, NOT, LIMIT, OFFSET, INTO
-import ..Adapters.SQL: INNER, OUTER, LEFT, RIGHT, FULL, JOIN, ON, USING
-import ..Adapters.SQL: GROUP, BY, HAVING, ORDER, ASC, DESC
+import .Octo.AdapterBase: SELECT, DISTINCT, FROM, AS, WHERE, LIKE, EXISTS, AND, OR, NOT, LIMIT, OFFSET, INTO
+import .Octo.AdapterBase: INNER, OUTER, LEFT, RIGHT, FULL, JOIN, ON, USING
+import .Octo.AdapterBase: GROUP, BY, HAVING, ORDER, ASC, DESC
 
 # import: aggregate functions
-import ..Adapters.SQL: COUNT, SUM, AVG
+import .Octo.AdapterBase: COUNT, SUM, AVG
 
-# import: Schema, from
-import ..Adapters.SQL: Schema, from
+# import: Repo, Schema, from
+import .Octo: Repo, Schema
+import .Octo.Queryable: from

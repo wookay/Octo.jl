@@ -1,4 +1,4 @@
-module adapters_mysql_test
+module adapters_mysql_structured_test
 
 using Test # @test
 using Octo.Adapters.MySQL # Schema from SELECT DISTINCT FROM WHERE GROUP BY HAVING ORDER DESC COUNT
@@ -27,4 +27,4 @@ u = from(User, :u)
 @test to_sql([SELECT COUNT(u.name) FROM u          GROUP BY u.name HAVING COUNT(u.name) > 5 ORDER BY COUNT(u.name) DESC]) == 
              "SELECT COUNT(u.name) FROM users AS u GROUP BY u.name HAVING COUNT(u.name) > 5 ORDER BY COUNT(u.name) DESC"
 
-end # module adapters_mysql_test
+end # module adapters_mysql_structured_test

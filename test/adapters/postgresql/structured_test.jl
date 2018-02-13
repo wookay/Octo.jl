@@ -1,4 +1,4 @@
-module adapters_postgresql_test
+module adapters_postgresql_structured_test
 
 using Test # @test
 using Octo.Adapters.PostgreSQL # Schema from SELECT FROM WHERE INNER JOIN ON GROUP BY
@@ -45,4 +45,4 @@ f = from(Film)
 @test to_sql([SELECT * INTO :films_recent FROM f WHERE f.date_prod >= "2002-01-01"]) ==
              "SELECT * INTO films_recent FROM films WHERE date_prod >= '2002-01-01'"
 
-end # module adapters_postgresql_test
+end # module adapters_postgresql_structured_test
