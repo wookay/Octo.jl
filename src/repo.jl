@@ -3,6 +3,7 @@ module Repo
 import ..Backends
 import ..AdapterBase
 import ..Queryable: Structured
+import ..Schema
 
 const current = Dict{Symbol, Union{Nothing, Module}}(
     :loader => nothing,
@@ -30,10 +31,23 @@ function query(stmt::Structured)
     Base.invokelatest(loader.all, sql)
 end
 
-function all(T)
+function all(M)
     a = current_adapter()
-    table = a.from(T)
+    table = a.from(M)
     query([a.SELECT * a.FROM table])
+end
+
+function get(M, pk::Union{Int, String})
+    Tname = Base.typename(M)
+    info = Schema.tables[Tname]
+    if haskey(info, :primary_key)
+        a = current_adapter()
+        table = a.from(M)
+        primary_key = Base.getproperty(table, Symbol(info[:primary_key]))
+        query([a.SELECT * a.FROM table a.WHERE primary_key == pk])
+    else
+        throws(Schema.PrimaryKeyError(""))
+    end
 end
 
 function insert!

@@ -60,7 +60,8 @@ sqlrepr(::Database.Default, f::Function)::SqlElement = SqlElement(:normal, f)
 function sqlrepr(::Database.Default, M::Type)::SqlElement
     Tname = Base.typename(M)
     if haskey(Schema.tables, Tname)
-        SqlElement(:normal, Schema.tables[Tname])
+        info = Schema.tables[Tname]
+        SqlElement(:normal, info[:table_name])
     else
         name = nameof(M)
         throw(Schema.TableNameError("""Provide schema table_name by `Schema.model($name, table_name="tbl")`"""))

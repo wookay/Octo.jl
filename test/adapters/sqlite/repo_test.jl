@@ -10,13 +10,19 @@ repo = Repo.config(
 
 struct Employee
 end
-Schema.model(Employee, table_name = "Employee")
+Schema.model(Employee,
+    table_name = "Employee",
+    primary_key = "EmployeeId"
+)
 
 import DataFrames
 
 df = Repo.all(Employee)
 @test df isa DataFrames.DataFrame
 @test size(df) == (8, 15)
+
+df = Repo.get(Employee, 2)
+@test size(df) == (1, 15)
 
 e = from(Employee)
 df = Repo.query([SELECT * FROM e WHERE e.EmployeeId == 2])
