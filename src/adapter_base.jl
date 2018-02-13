@@ -17,6 +17,13 @@ const current = Dict{Symbol, Database.AbstractDatabase}(
     :database => Database.SQLDatabase()
 )
 
+struct Enclosed
+    values
+end
+
+struct QuestionMark
+end
+
 struct SqlElement
     color::Union{Symbol, Int}
     body
@@ -56,6 +63,7 @@ sqlrepr(::Database.Default, el::Keyword)::SqlElement = SqlElement(:cyan, el.name
 sqlrepr(::Database.Default, sym::Symbol)::SqlElement = SqlElement(:normal, sym)
 sqlrepr(::Database.Default, num::Number)::SqlElement = SqlElement(:normal, num)
 sqlrepr(::Database.Default, f::Function)::SqlElement = SqlElement(:normal, f)
+sqlrepr(::Database.Default, ::Type{QuestionMark})::SqlElement = SqlElement(:normal, '?')
 
 function sqlrepr(::Database.Default, M::Type)::SqlElement
     Tname = Base.typename(M)
@@ -109,6 +117,18 @@ end
 
 function sqlrepr(def::Database.Default, tup::Tuple)::SqlPart
     sqlpart(sqlrepr.(def, [tup...]), ", ")
+end
+
+function sqlrepr(def::Database.Default, tup::NamedTuple)::SqlPart
+    sqlpart(sqlrepr.(def, map(kv -> Predicate(==, kv.first, kv.second), collect(pairs(tup)))), ", ")
+end
+
+function sqlrepr(def::Database.Default, enclosed::Enclosed)::SqlPart
+    vals = sqlpart(sqlrepr.(def, [enclosed.values...]), ", ")
+    sqlpart([
+        SqlElement(:normal, '('),
+        vals,
+        SqlElement(:normal, ')')], "")
 end
 
 function sqlrepr(def::Database.Default, f::AggregateFunction)::SqlPart

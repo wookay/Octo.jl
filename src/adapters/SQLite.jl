@@ -17,4 +17,10 @@ function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
     end
 end
 
+import .Octo.AdapterBase: @keywords
+
+export    CREATE, DROP, TABLE, IF, INSERT, VALUES, UPDATE, SET, DELETE
+
+@keywords CREATE  DROP  TABLE  IF  INSERT  VALUES  UPDATE  SET  DELETE
+
 end # Octo.Adapters.SQLite

@@ -9,6 +9,9 @@ import .Octo.AdapterBase: GROUP, BY, HAVING, ORDER, ASC, DESC
 # import: aggregate functions
 import .Octo.AdapterBase: COUNT, SUM, AVG
 
+# import:                 ()        ?
+import .Octo.AdapterBase: Enclosed, QuestionMark
+
 # import: Repo, Schema, from
 import .Octo: Repo, Schema
 import .Octo.Queryable: from

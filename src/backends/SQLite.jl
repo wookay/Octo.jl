@@ -13,9 +13,14 @@ end
 
 current_db() = current[:db]
 
-function all(sql::String)
+function query(sql::String)
     db = current_db()
     SQLite.query(db, sql)
+end
+
+function query(sql::String, values::Vector)
+    db = current_db()
+    SQLite.query(db, sql; values=values)
 end
 
 end # module Octo.Backends.SQLiteLoader
