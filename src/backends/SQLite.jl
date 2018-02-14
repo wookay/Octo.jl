@@ -6,13 +6,19 @@ const current = Dict{Symbol, Union{Nothing, SQLite.DB}}(
     :db => nothing
 )
 
+current_db() = current[:db]
+
+# load
 function load(; kwargs...)
     database = getindex(kwargs, :database)
     db = SQLite.DB(database)
     current[:db] = db
 end
 
-current_db() = current[:db]
+# disconnect
+function disconnect()
+    current[:db] = nothing
+end
 
 # query
 function query(sql::String)

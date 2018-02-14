@@ -1,7 +1,7 @@
 module adapters_mysql_repo_test
 
 using Test # @test
-using Octo.Adapters.MySQL # Repo Schema Raw DATABASE USE
+using Octo.Adapters.MySQL # Repo Schema Raw USE
 
 repo = Repo.config(
     adapter = Octo.Adapters.MySQL,
@@ -64,5 +64,7 @@ df = Repo.get(Employee, 2)
 Repo.delete!(Employee, changes)
 df = Repo.get(Employee, 2)
 @test size(df) == (0, 10)
+
+Repo.disconnect()
 
 end # module adapters_mysql_repo_test

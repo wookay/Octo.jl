@@ -7,6 +7,9 @@ const current = Dict{Symbol, Union{Nothing, MySQL.Connection}}(
     :conn => nothing
 )
 
+current_conn() = current[:conn]
+
+# load
 function load(; kwargs...)
     args = (:hostname, :username, :password)
     (hostname, username, password) = getindex.(kwargs, args)
@@ -15,7 +18,12 @@ function load(; kwargs...)
     current[:conn] = conn
 end
 
-current_conn() = current[:conn]
+# disconnect
+function disconnect()
+    conn = current_conn()
+    MySQL.disconnect(conn)
+    current[:conn] = nothing
+end
 
 # query
 function query(sql::String)

@@ -180,6 +180,12 @@ function to_sql(query::Structured)::String
     _to_sql(SQL, query)
 end
 
+# _paramholders
+
+function _paramholders(db::DB, changes::NamedTuple) where DB <: Database.AbstractDatabase
+    Enclosed(fill(QuestionMark, length(changes)))
+end
+
 # _show
 
 function Base.show(io::IO, mime::MIME"text/plain", query::Structured)
@@ -219,7 +225,7 @@ end
 @keywords SELECT DISTINCT FROM AS WHERE LIKE EXISTS AND OR NOT LIMIT OFFSET INTO
 @keywords INNER OUTER LEFT RIGHT FULL JOIN ON USING
 @keywords GROUP BY HAVING ORDER ASC DESC
-@keywords CREATE DROP TABLE IF INSERT VALUES UPDATE SET DELETE
+@keywords CREATE DROP DATABASE TABLE IF INSERT VALUES UPDATE SET DELETE
 
 @aggregates COUNT SUM AVG
 

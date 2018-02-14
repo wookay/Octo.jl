@@ -27,6 +27,7 @@ u = from(User, :u)
 @test to_sql([SUM(u.age)]) == "SUM(u.age)"
 @test to_sql([AVG(u.age)]) == "AVG(u.age)"
 
+Repo.config(adapter=Octo.Adapters.SQL)
 @test sprint(show, MIME"text/plain"(), [FROM u]) == "FROM users AS u"
 
 end # module adapters_sql_structured_test

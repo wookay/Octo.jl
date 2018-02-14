@@ -3,7 +3,9 @@ module Backends
 function backend(adapter::Module)
     sym = nameof(adapter)
     L = Symbol(sym, :Loader)
-    if !isdefined(Backends, L)
+    if isdefined(Backends, L)
+        getfield(Backends, L)
+    else
         try
             path = normpath(dirname(@__FILE__), "backends", string(sym, ".jl"))
             Backends.include(path)

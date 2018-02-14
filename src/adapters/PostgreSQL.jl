@@ -16,5 +16,6 @@ function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
          sqlpart(sqlrepr.(db, [clause.__octo_model, clause.__octo_as]), " ")
     end
 end
+paramholders(changes::NamedTuple) = Enclosed([Raw("\$$x") for x in 1:length(changes)])
 
 end # Octo.Adapters.PostgreSQL

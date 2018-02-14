@@ -25,8 +25,13 @@ function config(; adapter::Module, kwargs...)
     Base.invokelatest(loader.load; kwargs...)
 end
 
-# Repo.execute
+# Repo.disconnect
+function disconnect()
+    loader = current_loader()
+    loader.disconnect()
+end
 
+# Repo.execute
 function execute(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
@@ -45,8 +50,11 @@ function execute(raw::AdapterBase.Raw)
     execute([raw])
 end
 
-# Repo.query
+function execute(raw::AdapterBase.Raw, values::Tuple)
+    execute([raw], values)
+end
 
+# Repo.query
 function query(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
@@ -114,8 +122,7 @@ function insert!(M, changes::NamedTuple)
     a = current_adapter()
     table = a.from(M)
     fieldnames = a.Enclosed(keys(changes))
-    paramholders = a.Enclosed(fill(a.QuestionMark, length(changes)))
-    execute([a.INSERT a.INTO table fieldnames a.VALUES paramholders], values(changes))
+    execute([a.INSERT a.INTO table fieldnames a.VALUES a.paramholders(changes)], values(changes))
 end
 
 # Repo.update!
