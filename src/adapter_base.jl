@@ -11,31 +11,30 @@ end # module Octo.AdapterBase.Database
 
 import ...Schema
 import ...Queryable: Structured, FromClause, from
-import ...Octo: Field, AggregateFunction, Predicate
+import ...Octo: SQLElement, Field, AggregateFunction, Predicate
 
 const current = Dict{Symbol, Database.AbstractDatabase}(
     :database => Database.SQLDatabase()
 )
 
-struct Enclosed
+struct Raw <: SQLElement
+    string::String
+end
+
+struct Enclosed <: SQLElement
     values
 end
 
-struct QuestionMark
+struct QuestionMark <: SQLElement
 end
 
-struct SqlElement
-    color::Union{Symbol, Int}
-    body
-end
-
-struct SqlPart
-    elements::Vector{Union{SqlPart, SqlElement}}
-    sep::String
-end
-
-struct Keyword
+struct Keyword <: SQLElement
     name::Symbol
+end
+
+struct KeywordAllKeyword <: SQLElement
+    left::Keyword
+    right::Keyword
 end
 
 struct Aggregate
@@ -43,13 +42,18 @@ struct Aggregate
 end
 (a::Aggregate)(field, as=nothing) = AggregateFunction(a.name, field, as)
 
-struct KeywordAllKeyword
-    left::Keyword
-    right::Keyword
+struct SqlPartElement
+    color::Union{Symbol, Int}
+    body
+end
+
+struct SqlPart
+    elements::Vector{Union{SqlPart, SqlPartElement}}
+    sep::String
 end
 
 # sqlpart
-function sqlpart(element::SqlElement)::SqlPart
+function sqlpart(element::SqlPartElement)::SqlPart
     SqlPart([element], "")
 end
 
@@ -57,19 +61,20 @@ function sqlpart(elements::Vector, sep::String)::SqlPart
     SqlPart(elements, sep)
 end
 
-# sqlrepr - SqlElement
+# sqlrepr - SqlPartElement
 
-sqlrepr(::Database.Default, el::Keyword)::SqlElement = SqlElement(:cyan, el.name)
-sqlrepr(::Database.Default, sym::Symbol)::SqlElement = SqlElement(:normal, sym)
-sqlrepr(::Database.Default, num::Number)::SqlElement = SqlElement(:normal, num)
-sqlrepr(::Database.Default, f::Function)::SqlElement = SqlElement(:normal, f)
-sqlrepr(::Database.Default, ::Type{QuestionMark})::SqlElement = SqlElement(:normal, '?')
+sqlrepr(::Database.Default, el::Keyword)::SqlPartElement = SqlPartElement(:cyan, el.name)
+sqlrepr(::Database.Default, sym::Symbol)::SqlPartElement = SqlPartElement(:normal, sym)
+sqlrepr(::Database.Default, num::Number)::SqlPartElement = SqlPartElement(:normal, num)
+sqlrepr(::Database.Default, f::Function)::SqlPartElement = SqlPartElement(:normal, f)
+sqlrepr(::Database.Default, ::Type{QuestionMark})::SqlPartElement = SqlPartElement(:normal, '?')
+sqlrepr(::Database.Default, raw::Raw)::SqlPartElement = SqlPartElement(:normal, raw.string)
 
-function sqlrepr(::Database.Default, M::Type)::SqlElement
+function sqlrepr(::Database.Default, M::Type)::SqlPartElement
     Tname = Base.typename(M)
     if haskey(Schema.tables, Tname)
         info = Schema.tables[Tname]
-        SqlElement(:normal, info[:table_name])
+        SqlPartElement(:normal, info[:table_name])
     else
         name = nameof(M)
         throw(Schema.TableNameError("""Provide schema table_name by `Schema.model($name, table_name="tbl")`"""))
@@ -77,18 +82,18 @@ function sqlrepr(::Database.Default, M::Type)::SqlElement
 end
 
 function sqlrepr(::Database.Default, str::String)::SqlPart
-    quot = SqlElement(:light_magenta, "'")
-    sqlpart([quot, SqlElement(:light_magenta, str), quot], "")
+    quot = SqlPartElement(:light_magenta, "'")
+    sqlpart([quot, SqlPartElement(:light_magenta, str), quot], "")
 end
 
 function sqlrepr(::Database.Default, field::Field)::SqlPart
     if field.clause.__octo_as isa Nothing
-        sqlpart(SqlElement(:normal, field.name))
+        sqlpart(SqlPartElement(:normal, field.name))
     else
         sqlpart([
-            SqlElement(:normal, field.clause.__octo_as),
-            SqlElement(:normal, '.'),
-            SqlElement(:normal, field.name)], "")
+            SqlPartElement(:normal, field.clause.__octo_as),
+            SqlPartElement(:normal, '.'),
+            SqlPartElement(:normal, field.name)], "")
     end
 end
 
@@ -126,17 +131,17 @@ end
 function sqlrepr(def::Database.Default, enclosed::Enclosed)::SqlPart
     vals = sqlpart(sqlrepr.(def, [enclosed.values...]), ", ")
     sqlpart([
-        SqlElement(:normal, '('),
+        SqlPartElement(:normal, '('),
         vals,
-        SqlElement(:normal, ')')], "")
+        SqlPartElement(:normal, ')')], "")
 end
 
 function sqlrepr(def::Database.Default, f::AggregateFunction)::SqlPart
     part = sqlpart([
-        SqlElement(:yellow, f.name),
-        SqlElement(:normal, '('),
+        SqlPartElement(:yellow, f.name),
+        SqlPartElement(:normal, '('),
         sqlrepr(def, f.field),
-        SqlElement(:normal, ')')], "")
+        SqlPartElement(:normal, ')')], "")
     if f.as isa Nothing
         part
     else
@@ -148,7 +153,7 @@ function joinpart(part::SqlPart)::String
     join(map(part.elements) do el
         if el isa SqlPart
             joinpart(el)
-        elseif el isa SqlElement
+        elseif el isa SqlPartElement
             el.body
         end
     end, part.sep)
@@ -158,7 +163,7 @@ function printpart(io::IO, part::SqlPart)
     for (idx, el) in enumerate(part.elements)
         if el isa SqlPart
             printpart(io, el)
-        elseif el isa SqlElement
+        elseif el isa SqlPartElement
             printstyled(io, el.body; color=el.color)
         end
         length(part.elements) == idx || print(io, part.sep)
@@ -183,7 +188,7 @@ function Base.show(io::IO, mime::MIME"text/plain", query::Structured)
 end
 
 function _show(io::IO, ::MIME"text/plain", db::DB, query::Structured) where DB <: Database.AbstractDatabase
-    if any(x -> x isa Keyword || x isa KeywordAllKeyword || x isa AggregateFunction || x isa FromClause, query)
+    if any(x -> x isa SQLElement, query)
         printpart(io, sqlpart(vcat(sqlrepr.(db, query)...), " "))
     else
         Base.show(io, query)
@@ -214,6 +219,7 @@ end
 @keywords SELECT DISTINCT FROM AS WHERE LIKE EXISTS AND OR NOT LIMIT OFFSET INTO
 @keywords INNER OUTER LEFT RIGHT FULL JOIN ON USING
 @keywords GROUP BY HAVING ORDER ASC DESC
+@keywords CREATE DROP TABLE IF INSERT VALUES UPDATE SET DELETE
 
 @aggregates COUNT SUM AVG
 

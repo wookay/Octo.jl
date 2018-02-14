@@ -14,7 +14,7 @@ current_loader() = current[:loader]
 current_adapter() = current[:adapter]
 
 # Repo.config
-function config(; adapter::Module, database::String)
+function config(; adapter::Module, kwargs...)
     sym = nameof(adapter)
     DatabaseID = getfield(AdapterBase.Database, Symbol(sym, :Database))
     AdapterBase.current[:database] = DatabaseID()
@@ -22,22 +22,36 @@ function config(; adapter::Module, database::String)
     current[:adapter] = adapter
     loader = Backends.backend(adapter)
     current[:loader] = loader
-    Base.invokelatest(loader.load, database)
+    Base.invokelatest(loader.load; kwargs...)
+end
+
+# Repo.execute
+
+function execute(stmt::Structured)
+    a = current_adapter()
+    sql = a.to_sql(stmt)
+    loader = current_loader()
+    loader.execute(sql)
+end
+
+function execute(stmt::Structured, values::Tuple)
+    a = current_adapter()
+    sql = a.to_sql(stmt)
+    loader = current_loader()
+    loader.execute(sql, values)
+end
+
+function execute(raw::AdapterBase.Raw)
+    execute([raw])
 end
 
 # Repo.query
+
 function query(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
     loader = current_loader()
     loader.query(sql)
-end
-
-function query(stmt::Structured, vals::Tuple)
-    a = current_adapter()
-    sql = a.to_sql(stmt)
-    loader = current_loader()
-    loader.query(sql, collect(vals))
 end
 
 # Repo.all
@@ -83,13 +97,25 @@ function get(M, pk::Union{Int, String}) # throws Schema.PrimaryKeyError
     query([a.SELECT * a.FROM table a.WHERE key == pk])
 end
 
+function get(M, tup::NamedTuple)
+    a = current_adapter()
+    table = a.from(M)
+    v = [a.SELECT, *, a.FROM, table, a.WHERE]
+    for (idx, kv) in enumerate(pairs(tup))
+        key = Base.getproperty(table, kv.first)
+        push!(v, key == kv.second)
+        idx != length(tup) && push!(v, a.AND)
+    end
+    query(v)
+end
+
 # Repo.insert!
 function insert!(M, changes::NamedTuple)
     a = current_adapter()
     table = a.from(M)
     fieldnames = a.Enclosed(keys(changes))
     paramholders = a.Enclosed(fill(a.QuestionMark, length(changes)))
-    query([a.INSERT a.INTO table fieldnames a.VALUES paramholders], values(changes))
+    execute([a.INSERT a.INTO table fieldnames a.VALUES paramholders], values(changes))
 end
 
 # Repo.update!
@@ -97,7 +123,8 @@ function update!(M, changes::NamedTuple) # throws Schema.PrimaryKeyError
     (key, pk) = _get_primary_key(M, changes)
     a = current_adapter()
     table = a.from(M)
-    query([a.UPDATE table a.SET changes a.WHERE key == pk])
+    vals = (; filter(kv -> kv.first != key, collect(pairs(changes)))...)
+    execute([a.UPDATE table a.SET vals a.WHERE key == pk])
 end
 
 # Repo.delete!
@@ -105,7 +132,7 @@ function delete!(M, changes::NamedTuple) # throws Schema.PrimaryKeyError
     (key, pk) = _get_primary_key(M, changes)
     a = current_adapter()
     table = a.from(M)
-    query([a.DELETE a.FROM table a.WHERE key == pk])
+    execute([a.DELETE a.FROM table a.WHERE key == pk])
 end
 
 end # module Octo.Repo

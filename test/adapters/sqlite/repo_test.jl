@@ -49,6 +49,9 @@ df = Repo.all(Temp)
 df = Repo.get(Temp, 6)
 @test df[1, :Title] == "Jagged Little Pill"
 
+df = Repo.get(Temp, (Title="Jagged Little Pill",))
+@test df[1, :Title] == "Jagged Little Pill"
+
 changes = (AlbumId=6, Title="Texas")
 Repo.update!(Temp, changes)
 df = Repo.get(Temp, 6)

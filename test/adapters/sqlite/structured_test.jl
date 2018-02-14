@@ -23,7 +23,7 @@ u = from(User, :u)
 @test to_sql([WHERE u.id == 2]) == "WHERE u.id = 2"
 @test to_sql([SELECT (u.id, u.name) FROM u WHERE u.id == 2]) == "SELECT u.id, u.name FROM users u WHERE u.id = 2" #
 
-
+# using Octo.Adapters.SQLite # INSERT INTO VALUES UPDATE SET
 using Octo.Adapters.SQLite: Enclosed, QuestionMark
 
 struct Temp
