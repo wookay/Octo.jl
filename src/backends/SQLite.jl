@@ -31,9 +31,11 @@ function execute(sql::String)
     query(sql)
 end
 
-function execute(sql::String, values::Tuple)
+function execute(sql::String, tups::Vector{Tuple})
     db = current_db()
-    SQLite.query(db, sql; values=values)
+    for tup in tups
+        SQLite.query(db, sql; values=tup)
+    end
 end
 
 end # module Octo.Backends.SQLiteLoader

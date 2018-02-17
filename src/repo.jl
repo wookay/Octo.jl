@@ -39,19 +39,27 @@ function execute(stmt::Structured)
     loader.execute(sql)
 end
 
-function execute(stmt::Structured, values::Tuple)
+function execute(stmt::Structured, nts::Vector) # Vector{NamedTuple}
     a = current_adapter()
     sql = a.to_sql(stmt)
     loader = current_loader()
-    loader.execute(sql, values)
+    loader.execute(sql, Vector{Tuple}(values.(nts)))
+end
+
+function execute(stmt::Structured, nt::NamedTuple)
+    loader.execute(stmt, [nt])
 end
 
 function execute(raw::AdapterBase.Raw)
     execute([raw])
 end
 
-function execute(raw::AdapterBase.Raw, values::Tuple)
-    execute([raw], values)
+function execute(raw::AdapterBase.Raw, nts::Vector) # Vector{NamedTuple}
+    execute([raw], nts)
+end
+
+function execute(raw::AdapterBase.Raw, nt::NamedTuple)
+    execute(raw, [nt])
 end
 
 # Repo.query
@@ -82,7 +90,7 @@ function _get_primary_key(M) # throws Schema.PrimaryKeyError
     end
 end
 
-function _get_primary_key(M, changes::NamedTuple) # throws Schema.PrimaryKeyError
+function _get_primary_key(M, nt::NamedTuple) # throws Schema.PrimaryKeyError
     Tname = Base.typename(M)
     info = Schema.tables[Tname]
     if haskey(info, :primary_key)
@@ -90,7 +98,7 @@ function _get_primary_key(M, changes::NamedTuple) # throws Schema.PrimaryKeyErro
         table = a.from(M)
         primary_key = Symbol(info[:primary_key])
         key = Base.getproperty(table, primary_key)
-        pk = getfield(changes, primary_key)
+        pk = getfield(nt, primary_key)
         (key, pk)
     else
         throws(Schema.PrimaryKeyError(""))
@@ -105,38 +113,45 @@ function get(M, pk::Union{Int, String}) # throws Schema.PrimaryKeyError
     query([a.SELECT * a.FROM table a.WHERE key == pk])
 end
 
-function get(M, tup::NamedTuple)
+function get(M, nt::NamedTuple)
     a = current_adapter()
     table = a.from(M)
     v = [a.SELECT, *, a.FROM, table, a.WHERE]
-    for (idx, kv) in enumerate(pairs(tup))
+    for (idx, kv) in enumerate(pairs(nt))
         key = Base.getproperty(table, kv.first)
         push!(v, key == kv.second)
-        idx != length(tup) && push!(v, a.AND)
+        idx != length(nt) && push!(v, a.AND)
     end
     query(v)
 end
 
 # Repo.insert!
-function insert!(M, changes::NamedTuple)
-    a = current_adapter()
-    table = a.from(M)
-    fieldnames = a.Enclosed(keys(changes))
-    execute([a.INSERT a.INTO table fieldnames a.VALUES a.paramholders(changes)], values(changes))
+function insert!(M, nts::Vector) # Vector{NamedTuple}
+    if !isempty(nts)
+        a = current_adapter()
+        table = a.from(M)
+        nt = first(nts)
+        fieldnames = a.Enclosed(keys(nt))
+        execute([a.INSERT a.INTO table fieldnames a.VALUES a.paramholders(nt)], nts)
+   end
+end
+
+function insert!(M, nt::NamedTuple)
+    insert!(M, [nt])
 end
 
 # Repo.update!
-function update!(M, changes::NamedTuple) # throws Schema.PrimaryKeyError
-    (key, pk) = _get_primary_key(M, changes)
+function update!(M, nt::NamedTuple) # throws Schema.PrimaryKeyError
+    (key, pk) = _get_primary_key(M, nt)
     a = current_adapter()
     table = a.from(M)
-    vals = (; filter(kv -> kv.first != key, collect(pairs(changes)))...)
+    vals = (; filter(kv -> kv.first != key, collect(pairs(nt)))...)
     execute([a.UPDATE table a.SET vals a.WHERE key == pk])
 end
 
 # Repo.delete!
-function delete!(M, changes::NamedTuple) # throws Schema.PrimaryKeyError
-    (key, pk) = _get_primary_key(M, changes)
+function delete!(M, nt::NamedTuple) # throws Schema.PrimaryKeyError
+    (key, pk) = _get_primary_key(M, nt)
     a = current_adapter()
     table = a.from(M)
     execute([a.DELETE a.FROM table a.WHERE key == pk])

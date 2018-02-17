@@ -2,6 +2,11 @@ module adapters_sqlite_repo_test
 
 using Test # @test
 using Octo.Adapters.SQLite # Repo Schema from SELECT FROM WHERE
+using Pkg # Pkg.dir
+
+dbfile = joinpath(Pkg.dir("SQLite"), "test", "Chinook_Sqlite.sqlite")
+dbfile2 = joinpath(dirname(@__FILE__), "test.sqlite")
+cp(dbfile, dbfile2; force=true)
 
 repo = Repo.config(
     adapter = Octo.Adapters.SQLite,

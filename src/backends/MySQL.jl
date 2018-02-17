@@ -37,10 +37,12 @@ function execute(sql::String)
     MySQL.execute!(conn, sql)
 end
 
-function execute(sql::String, values::Tuple)
+function execute(sql::String, tups::Vector{Tuple})
     conn = current_conn()
     stmt = MySQL.Stmt(conn, sql)
-    MySQL.execute!(stmt, values)
+    for tup in tups
+        MySQL.execute!(stmt, tup)
+    end
 end
 
 end # module Octo.Backends.MySQLLoader

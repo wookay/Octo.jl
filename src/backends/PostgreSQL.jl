@@ -35,7 +35,7 @@ function query(sql::String)
     result = PostgreSQL.execute(stmt)
     df = PostgreSQL.fetchdf(result)
     PostgreSQL.finish(stmt)
-    df 
+    df
 end
 
 # execute
@@ -44,10 +44,12 @@ function execute(sql::String)
     PostgreSQL.run(conn, sql)
 end
 
-function execute(sql::String, values::Tuple)
+function execute(sql::String, tups::Vector{Tuple})
     conn = current_conn()
     stmt = PostgreSQL.prepare(conn, sql)
-    PostgreSQL.execute(stmt, collect(values))
+    for tup in tups
+        PostgreSQL.execute(stmt, collect(tup))
+    end
     PostgreSQL.finish(stmt)
 end
 

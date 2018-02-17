@@ -16,7 +16,7 @@ end
 function execute(sql::String)
 end
 
-function execute(sql::String, values::Tuple)
+function execute(sql::String, tups::Vector{Tuple})
 end
 
 end # module Octo.Backends.SQLLoader
