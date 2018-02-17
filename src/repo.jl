@@ -5,21 +5,31 @@ import ..AdapterBase
 import ..Queryable: Structured
 import ..Schema
 
-const current = Dict{Symbol, Union{Nothing, Module, Bool}}(
+@enum RepoLogLevel::Int32 begin
+    LogLevelDebugSQL = -1
+    LogLevelInfo = 0
+end
+
+const current = Dict{Symbol, Union{Nothing, Module, RepoLogLevel}}(
     :loader => nothing,
     :adapter => nothing,
-    :debug_sql => false
+    :log_level => LogLevelInfo
 )
 
 current_loader() = current[:loader]
 current_adapter() = current[:adapter]
 
 function debug_sql(stmt::Structured) 
-    if current[:debug_sql]
+    if current[:log_level] <= LogLevelDebugSQL
         buf = IOBuffer()
         show(IOContext(buf, :color=>true), MIME"text/plain"(), stmt)
         @info String(take!(buf))
     end
+end
+
+# Repo.set_log_level
+function set_log_level(level::RepoLogLevel)
+    current[:log_level] = level
 end
 
 # Repo.config
@@ -32,10 +42,7 @@ function config(; adapter::Module, kwargs...)
     loader = Backends.backend(adapter)
     current[:loader] = loader
 
-    haskey(kwargs, :debug_sql) && setindex!(current, kwargs[:debug_sql], :debug_sql)
-    excepts = (:debug_sql,)
-    kwargs_excepts = filter(kv -> !(kv.first in excepts), kwargs)
-    Base.invokelatest(loader.load; kwargs_excepts...)
+    Base.invokelatest(loader.load; kwargs...)
 end
 
 # Repo.disconnect
