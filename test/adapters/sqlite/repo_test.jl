@@ -8,9 +8,12 @@ dbfile = joinpath(Pkg.dir("SQLite"), "test", "Chinook_Sqlite.sqlite")
 dbfile2 = joinpath(dirname(@__FILE__), "test.sqlite")
 cp(dbfile, dbfile2; force=true)
 
+const debug_sql = false
+
 repo = Repo.config(
     adapter = Octo.Adapters.SQLite,
-    database = joinpath(dirname(@__FILE__), "test.sqlite")
+    database = joinpath(dirname(@__FILE__), "test.sqlite"),
+    debug_sql = debug_sql
 )
 
 struct Employee

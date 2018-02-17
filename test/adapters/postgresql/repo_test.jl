@@ -3,11 +3,14 @@ module adapters_postgresql_repo_test
 using Test # @test
 using Octo.Adapters.PostgreSQL # Repo Schema Raw
 
+const debug_sql = false
+
 Repo.config(
     adapter = Octo.Adapters.PostgreSQL,
     username = "postgres",
     password = "",
-    hostname = "localhost"
+    hostname = "localhost",
+    debug_sql = debug_sql
 )
 
 # using Octo.Adapters.PostgreSQL # DROP DATABASE IF EXISTS CREATE TABLE
@@ -20,7 +23,8 @@ Repo.config(
     username = "postgres",
     password = "",
     hostname = "localhost",
-    database = "postgresqltest"
+    database = "postgresqltest",
+    debug_sql = debug_sql
 )
 
 const ncolumns = 3

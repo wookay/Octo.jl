@@ -3,12 +3,15 @@ module adapters_mysql_repo_test
 using Test # @test
 using Octo.Adapters.MySQL # Repo Schema Raw USE
 
-repo = Repo.config(
+const debug_sql = false
+
+Repo.config(
     adapter = Octo.Adapters.MySQL,
     username = "root",
     password = "",
     hostname = "localhost",
-    port = 3306
+    port = 3306,
+    debug_sql = debug_sql
 )
 
 Repo.execute([DROP DATABASE IF EXISTS :mysqltest])

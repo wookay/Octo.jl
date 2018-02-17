@@ -5,13 +5,22 @@ import ..AdapterBase
 import ..Queryable: Structured
 import ..Schema
 
-const current = Dict{Symbol, Union{Nothing, Module}}(
+const current = Dict{Symbol, Union{Nothing, Module, Bool}}(
     :loader => nothing,
-    :adapter => nothing
+    :adapter => nothing,
+    :debug_sql => false
 )
 
 current_loader() = current[:loader]
 current_adapter() = current[:adapter]
+
+function debug_sql(stmt::Structured) 
+    if current[:debug_sql]
+        buf = IOBuffer()
+        show(IOContext(buf, :color=>true), MIME"text/plain"(), stmt)
+        @info String(take!(buf))
+    end
+end
 
 # Repo.config
 function config(; adapter::Module, kwargs...)
@@ -22,7 +31,11 @@ function config(; adapter::Module, kwargs...)
     current[:adapter] = adapter
     loader = Backends.backend(adapter)
     current[:loader] = loader
-    Base.invokelatest(loader.load; kwargs...)
+
+    haskey(kwargs, :debug_sql) && setindex!(current, kwargs[:debug_sql], :debug_sql)
+    excepts = (:debug_sql,)
+    kwargs_excepts = filter(kv -> !(kv.first in excepts), kwargs)
+    Base.invokelatest(loader.load; kwargs_excepts...)
 end
 
 # Repo.disconnect
@@ -35,6 +48,7 @@ end
 function execute(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
+    debug_sql(stmt)
     loader = current_loader()
     loader.execute(sql)
 end
@@ -42,6 +56,7 @@ end
 function execute(stmt::Structured, nts::Vector) # Vector{NamedTuple}
     a = current_adapter()
     sql = a.to_sql(stmt)
+    debug_sql(stmt)
     loader = current_loader()
     loader.execute(sql, Vector{Tuple}(values.(nts)))
 end
@@ -66,6 +81,7 @@ end
 function query(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
+    debug_sql(stmt)
     loader = current_loader()
     loader.query(sql)
 end

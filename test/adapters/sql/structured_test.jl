@@ -28,6 +28,8 @@ u = from(User, :u)
 @test to_sql([AVG(u.age)]) == "AVG(u.age)"
 
 Repo.config(adapter=Octo.Adapters.SQL)
-@test sprint(show, MIME"text/plain"(), [FROM u]) == "FROM users AS u"
+buf = IOBuffer()
+show(IOContext(buf, :color=>true), MIME"text/plain"(), [FROM u])
+@test String(take!(buf)) == "\e[36mFROM\e[39m \e[0musers \e[36mAS\e[39m \e[0mu"
 
 end # module adapters_sql_structured_test
