@@ -2,7 +2,7 @@
 
 module Queryable
 
-import ..Octo: FromClause, Field
+import ..Octo: FromClause, Field, Structured
 
 function from(M::Type, as=nothing)::FromClause
     FromClause(M, as)
@@ -15,7 +15,5 @@ function Base.getproperty(clause::FromClause, field::Symbol)
          Field(clause, field)
      end
 end
-
-const Structured = Array
 
 end # module Octo.Queryable

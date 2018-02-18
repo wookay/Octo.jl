@@ -1,0 +1,5 @@
+# Schema
+
+```@docs
+Schema.model
+```

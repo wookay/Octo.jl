@@ -1,0 +1,6 @@
+# AdapterBase
+
+```@docs
+@keywords
+@aggregates
+```

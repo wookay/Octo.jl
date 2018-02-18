@@ -11,36 +11,11 @@ end # module Octo.AdapterBase.Database
 
 import ...Schema
 import ...Queryable: Structured, FromClause, from
-import ...Octo: SQLElement, Field, AggregateFunction, Predicate
+import ...Octo: SQLElement, Field, AggregateFunction, Predicate, Raw, Enclosed, QuestionMark, Keyword, KeywordAllKeyword, Aggregate
 
 const current = Dict{Symbol, Database.AbstractDatabase}(
     :database => Database.SQLDatabase()
 )
-
-struct Raw <: SQLElement
-    string::String
-end
-
-struct Enclosed <: SQLElement
-    values
-end
-
-struct QuestionMark <: SQLElement
-end
-
-struct Keyword <: SQLElement
-    name::Symbol
-end
-
-struct KeywordAllKeyword <: SQLElement
-    left::Keyword
-    right::Keyword
-end
-
-struct Aggregate
-    name::Symbol
-end
-(a::Aggregate)(field, as=nothing) = AggregateFunction(a.name, field, as)
 
 struct SqlPartElement
     color::Union{Symbol, Int}
