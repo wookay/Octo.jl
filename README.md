@@ -1,4 +1,11 @@
-# Octo
+# Octo.jl
+
+[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://wookay.github.io/docs/Octo.jl/)
+
+Octo.jl 🐙 is an SQL Query DSL in Julia (https://julialang.org).
+
+It's influenced by Ecto (https://github.com/elixir-ecto/ecto).
+
 
 ```julia
 julia> using Octo.Adapters.SQL

@@ -1,5 +1,10 @@
 # Octo.jl Documentation
 
+Octo.jl 🐙  is an SQL Query DSL in [Julia](https://julialang.org).
+
+It's influenced by [Ecto](https://github.com/elixir-ecto/ecto).
+
+
 ```julia-repl
 julia> using Octo.Adapters.SQL
 
