@@ -2,14 +2,13 @@
 import ...Octo
 
 # import: keywords
-import .Octo.AdapterBase: SELECT, DISTINCT, FROM, AS, WHERE, LIKE, EXISTS, AND, OR, NOT, LIMIT, OFFSET, INTO
-import .Octo.AdapterBase: INNER, OUTER, LEFT, RIGHT, FULL, JOIN, ON, USING
-import .Octo.AdapterBase: GROUP, BY, HAVING, ORDER, ASC, DESC
-import .Octo.AdapterBase: CREATE, DROP, DATABASE, TABLE, IF, INSERT, VALUES, UPDATE, SET, DELETE
-import .Octo.AdapterBase: IS, NULL
+import .Octo.AdapterBase:
+    AND, AS, ASC, BY, CREATE, DATABASE, DELETE, DESC, DISTINCT, DROP, EXISTS, FROM, FULL, GROUP,
+    HAVING, IF, INNER, INSERT, INTO, IS, JOIN, LEFT, LIKE, LIMIT, NOT, NULL, OFFSET, ON, OR, ORDER, OUTER,
+    RIGHT, SELECT, SET, TABLE, UPDATE, USING, VALUES, WHERE
 
 # import: aggregate functions
-import .Octo.AdapterBase: COUNT, SUM, AVG
+import .Octo.AdapterBase: AVG, COUNT, SUM
 
 # import:                      ()        ?
 import .Octo.AdapterBase: Raw, Enclosed, QuestionMark
