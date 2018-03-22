@@ -10,6 +10,11 @@ const current = Dict{Symbol, Any}(
 current_db() = current[:db]
 current_sink() = current[:sink]
 
+# sink
+function sink(T::Type)
+   current[:sink] = T
+end
+
 # load
 function load(; kwargs...)
     database = getindex(kwargs, :database)

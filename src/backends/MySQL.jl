@@ -1,5 +1,6 @@
 module MySQLLoader
 
+# https://github.com/JuliaDatabases/MySQL.jl
 import MySQL
 
 const current = Dict{Symbol, Any}(

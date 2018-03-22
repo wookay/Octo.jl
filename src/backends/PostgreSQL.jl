@@ -1,9 +1,7 @@
 module PostgreSQLLoader
 
 # https://github.com/invenia/LibPQ.jl
-using LibPQ
-using LibPQ: clear!
-import DataFrames: DataFrame
+import LibPQ
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
@@ -12,6 +10,11 @@ const current = Dict{Symbol, Any}(
 
 current_conn() = current[:conn]
 current_sink() = current[:sink]
+
+# sink
+function sink(T::Type)
+   current[:sink] = T
+end
 
 # load
 function load(; kwargs...)
@@ -31,10 +34,10 @@ end
 function query(sql::String)
     conn = current_conn()
     sink = current_sink()
-    stmt = prepare(conn, sql)
+    stmt = LibPQ.prepare(conn, sql)
     result = LibPQ.execute(stmt)
-    df = fetch!(sink, result)
-    clear!(result)
+    df = LibPQ.fetch!(sink, result)
+    LibPQ.clear!(result)
     df
 end
 
@@ -47,14 +50,14 @@ end
 
 function execute(prepared::String, vals::Vector)::Nothing
     conn = current_conn()
-    stmt = prepare(conn, prepared)
+    stmt = LibPQ.prepare(conn, prepared)
     LibPQ.execute(stmt, vals)
     nothing
 end
 
 function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
     conn = current_conn()
-    stmt = prepare(conn, prepared)
+    stmt = LibPQ.prepare(conn, prepared)
     for tup in nts
         LibPQ.execute(stmt, collect(tup))
     end
