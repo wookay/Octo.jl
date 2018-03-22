@@ -1,56 +1,64 @@
 module PostgreSQLLoader
 
-import PostgreSQL
+# https://github.com/invenia/LibPQ.jl
+using LibPQ
+using LibPQ: clear!
+import DataFrames: DataFrame
 
-const current = Dict{Symbol, Union{Nothing, PostgreSQL.PostgresDatabaseHandle}}(
-    :conn => nothing
+const current = Dict{Symbol, Any}(
+    :conn => nothing,
+    :sink => NamedTuple,
 )
 
 current_conn() = current[:conn]
+current_sink() = current[:sink]
 
 # load
 function load(; kwargs...)
-    args = (:hostname, :username, :password)
-    (hostname, username, password) = getindex.(kwargs, args)
-    options = filter(kv -> !(kv.first in (args..., :database)), kwargs)
-    if haskey(kwargs, :database)
-        conn = PostgreSQL.connect(PostgreSQL.Postgres, hostname, username, password, kwargs[:database]; options...)
-    else
-        conn = PostgreSQL.connect(PostgreSQL.Postgres, hostname, username, password; options...)
-    end
+    str = join(map(kv->join(kv, '='), collect(kwargs)), ' ')
+    conn = LibPQ.Connection(str)
     current[:conn] = conn
 end
 
 # disconnect
 function disconnect()
     conn = current_conn()
-    PostgreSQL.disconnect(conn)
+    close(conn)
     current[:conn] = nothing
 end
 
 # query
 function query(sql::String)
     conn = current_conn()
-    stmt = PostgreSQL.prepare(conn, sql)
-    result = PostgreSQL.execute(stmt)
-    df = PostgreSQL.fetchdf(result)
-    PostgreSQL.finish(stmt)
+    sink = current_sink()
+    stmt = prepare(conn, sql)
+    result = LibPQ.execute(stmt)
+    df = fetch!(sink, result)
+    clear!(result)
     df
 end
 
 # execute
-function execute(sql::String)
+function execute(sql::String)::Nothing
     conn = current_conn()
-    PostgreSQL.run(conn, sql)
+    LibPQ.execute(conn, sql)
+    nothing
 end
 
-function execute(sql::String, tups::Vector{Tuple})
+function execute(prepared::String, vals::Vector)::Nothing
     conn = current_conn()
-    stmt = PostgreSQL.prepare(conn, sql)
-    for tup in tups
-        PostgreSQL.execute(stmt, collect(tup))
+    stmt = prepare(conn, prepared)
+    LibPQ.execute(stmt, vals)
+    nothing
+end
+
+function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
+    conn = current_conn()
+    stmt = prepare(conn, prepared)
+    for tup in nts
+        LibPQ.execute(stmt, collect(tup))
     end
-    PostgreSQL.finish(stmt)
+    nothing
 end
 
 end # module Octo.Backends.PostgreSQLLoader

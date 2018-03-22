@@ -10,8 +10,8 @@ export AVG, COUNT, SUM
 # export: Raw, Enclosed
 export Raw, Enclosed
 
-# export: Octo, Repo, Schema, from
-export Octo, Repo, Schema, from
+# export: Octo, Repo, Schema, from, as
+export Octo, Repo, Schema, from, as
 
 # export: to_sql
 export to_sql

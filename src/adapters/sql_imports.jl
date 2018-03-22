@@ -11,8 +11,8 @@ import .Octo.AdapterBase:
 import .Octo.AdapterBase: AVG, COUNT, SUM
 
 # import:                      ()        ?
-import .Octo.AdapterBase: Raw, Enclosed, QuestionMark
+import .Octo.AdapterBase: Raw, Enclosed, PlaceHolder, Field
 
-# import: Repo, Schema, from
+# import: Repo, Schema, from, as
 import .Octo: Repo, Schema
-import .Octo.Queryable: from
+import .Octo.Queryable: from, as

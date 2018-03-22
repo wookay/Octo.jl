@@ -2,7 +2,7 @@
 
 module Queryable
 
-import ..Octo: FromClause, Field, Structured
+import ..Octo: FromClause, Field, SQLAlias, AggregateFunction, Structured
 
 function from(M::Type, as=nothing)::FromClause
     FromClause(M, as)
@@ -14,6 +14,10 @@ function Base.getproperty(clause::FromClause, field::Symbol)
      else
          Field(clause, field)
      end
+end
+
+function as(field::Union{Field, AggregateFunction}, alias::Symbol)::SQLAlias
+    SQLAlias(field, alias)
 end
 
 end # module Octo.Queryable

@@ -11,7 +11,8 @@ end # module Octo.AdapterBase.Database
 
 import ...Schema
 import ...Queryable: Structured, FromClause, from
-import ...Octo: SQLElement, Field, AggregateFunction, Predicate, Raw, Enclosed, QuestionMark, Keyword, KeywordAllKeyword, Aggregate
+import ...Octo: SQLElement, Field, SQLAlias, AggregateFunction, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword, Aggregate
+import ...Octo: @keywords, @aggregates
 
 const current = Dict{Symbol, Database.AbstractDatabase}(
     :database => Database.SQLDatabase()
@@ -42,7 +43,7 @@ sqlrepr(::Database.Default, el::Keyword)::SqlPartElement = SqlPartElement(:cyan,
 sqlrepr(::Database.Default, sym::Symbol)::SqlPartElement = SqlPartElement(:normal, sym)
 sqlrepr(::Database.Default, num::Number)::SqlPartElement = SqlPartElement(:normal, num)
 sqlrepr(::Database.Default, f::Function)::SqlPartElement = SqlPartElement(:normal, f)
-sqlrepr(::Database.Default, ::Type{QuestionMark})::SqlPartElement = SqlPartElement(:normal, '?')
+sqlrepr(::Database.Default, h::PlaceHolder)::SqlPartElement = SqlPartElement(:yellow, h.body)
 sqlrepr(::Database.Default, raw::Raw)::SqlPartElement = SqlPartElement(:normal, raw.string)
 
 function sqlrepr(::Database.Default, M::Type)::SqlPartElement
@@ -105,23 +106,25 @@ end
 
 function sqlrepr(def::Database.Default, enclosed::Enclosed)::SqlPart
     vals = sqlpart(sqlrepr.(def, [enclosed.values...]), ", ")
-    sqlpart([
+    if enclosed.values isa Vector{PlaceHolder}
+        length(enclosed.values) == 1 && return vals
+    end
+    return sqlpart([
         SqlPartElement(:normal, '('),
         vals,
         SqlPartElement(:normal, ')')], "")
 end
 
+function sqlrepr(def::Database.Default, a::SQLAlias)::SqlPart
+    sqlpart(vcat(sqlrepr(def, a.field), sqlrepr.(def, [AS, a.alias])), " ")
+end
+
 function sqlrepr(def::Database.Default, f::AggregateFunction)::SqlPart
-    part = sqlpart([
+    sqlpart([
         SqlPartElement(:yellow, f.name),
         SqlPartElement(:normal, '('),
         sqlrepr(def, f.field),
         SqlPartElement(:normal, ')')], "")
-    if f.as isa Nothing
-        part
-    else
-        sqlpart(vcat(part, sqlrepr.(def, [AS, f.as])), " ")
-    end
 end
 
 function joinpart(part::SqlPart)::String
@@ -155,10 +158,14 @@ function to_sql(query::Structured)::String
     _to_sql(SQL, query)
 end
 
-# _paramholders
+# _placeholder, _placeholders
 
-function _paramholders(db::DB, changes::NamedTuple) where DB <: Database.AbstractDatabase
-    Enclosed(fill(QuestionMark, length(changes)))
+function _placeholder(db::DB, nth::Int) where DB <: Database.AbstractDatabase
+    PlaceHolder("?")
+end
+
+function _placeholders(db::DB, n::Int) where DB <: Database.AbstractDatabase
+    Enclosed(fill(_placeholder(db, 1), n))
 end
 
 # _show
@@ -174,26 +181,6 @@ function _show(io::IO, ::MIME"text/plain", db::DB, query::Structured) where DB <
     else
         Base.show(io, query)
     end
-end
-
-
-# @keywords
-
-macro keywords(args...)
-    esc(keywords(args))
-end
-keywords(s) = :(($(s...),) = $(map(Keyword, s)))
-
-
-# @aggregates
-
-macro aggregates(args...)
-    esc(aggregates(args))
-end
-aggregates(s) = :(($(s...),) = $(map(Aggregate, s)))
-
-function Base.:*(left::Keyword, right::Keyword)
-    KeywordAllKeyword(left, right)
 end
 
 

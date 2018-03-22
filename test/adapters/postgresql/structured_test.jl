@@ -38,7 +38,8 @@ f = from(Film, :f)
 
 d = from(Distributor)
 f = from(Film)
-@test to_sql([SELECT (f.kind, SUM(f.len, :total)) FROM f GROUP BY :kind]) ==
+total = as(SUM(f.len), :total)
+@test to_sql([SELECT (f.kind, total) FROM f GROUP BY :kind]) ==
              "SELECT kind, SUM(len) AS total FROM films GROUP BY kind"
 @test to_sql([SELECT d.name FROM d WHERE d.name LIKE "W%"]) ==
              "SELECT name FROM distributors WHERE name LIKE 'W%'"

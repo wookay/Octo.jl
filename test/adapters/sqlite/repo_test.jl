@@ -8,7 +8,7 @@ dbfile = joinpath(Pkg.dir("SQLite"), "test", "Chinook_Sqlite.sqlite")
 dbfile2 = joinpath(dirname(@__FILE__), "test.sqlite")
 cp(dbfile, dbfile2; force=true)
 
-# Repo.set_log_level(Repo.LogLevelDebugSQL)
+Repo.set_log_level(Repo.LogLevelDebugSQL)
 
 repo = Repo.config(
     adapter = Octo.Adapters.SQLite,
@@ -25,15 +25,15 @@ Schema.model(Employee,
 import DataFrames
 
 df = Repo.all(Employee)
-@test df isa DataFrames.DataFrame
-@test size(df) == (8, 15)
+@test df isa NamedTuple
+@test length(df.EmployeeId) == 8
 
 df = Repo.get(Employee, 2)
-@test size(df) == (1, 15)
+@test length(df.EmployeeId) == 1
 
-e = from(Employee)
-df = Repo.query([SELECT * FROM e WHERE e.EmployeeId == 2])
-@test size(df) == (1, 15)
+em = from(Employee)
+df = Repo.query([SELECT * FROM em WHERE em.EmployeeId == 2])
+@test length(df.EmployeeId) == 1
 
 
 # using Octo.Adapters.SQLite # DROP TABLE IF EXISTS CREATE AS
@@ -46,26 +46,26 @@ end
 Schema.model(Temp, table_name="temp", primary_key="AlbumId")
 
 df = Repo.all(Temp)
-@test size(df) == (347, 3)
+@test length(df.AlbumId) == 347
 
 changes = (AlbumId=0, Title="Test Album", ArtistId=0)
 Repo.insert!(Temp, changes)
 df = Repo.all(Temp)
-@test size(df) == (348, 3)
+@test length(df.AlbumId) == 348
 
 df = Repo.get(Temp, 6)
-@test df[1, :Title] == "Jagged Little Pill"
+@test df.Title[1] == "Jagged Little Pill"
 
 df = Repo.get(Temp, (Title="Jagged Little Pill",))
-@test df[1, :Title] == "Jagged Little Pill"
+@test df.Title[1] == "Jagged Little Pill"
 
 changes = (AlbumId=6, Title="Texas")
 Repo.update!(Temp, changes)
 df = Repo.get(Temp, 6)
-@test df[1, :Title] == "Texas"
+@test df.Title[1] == "Texas"
 
 Repo.delete!(Temp, changes)
 df = Repo.get(Temp, 6)
-@test size(df) == (0, 3)
+@test length(df.AlbumId) == 0
 
 end # module adapters_sqlite_repo_test

@@ -2,11 +2,13 @@ module SQLiteLoader
 
 import SQLite
 
-const current = Dict{Symbol, Union{Nothing, SQLite.DB}}(
-    :db => nothing
+const current = Dict{Symbol, Any}(
+    :db => nothing,
+    :sink => NamedTuple,
 )
 
 current_db() = current[:db]
+current_sink() = current[:sink]
 
 # load
 function load(; kwargs...)
@@ -23,19 +25,29 @@ end
 # query
 function query(sql::String)
     db = current_db()
-    SQLite.query(db, sql)
+    sink = current_sink()
+    SQLite.query(db, sql, sink)
 end
 
 # execute
-function execute(sql::String)
-    query(sql)
+function execute(sql::String)::Nothing
+    db = current_db()
+    SQLite.query(db, sql)
+    nothing
 end
 
-function execute(sql::String, tups::Vector{Tuple})
+function execute(prepared::String, vals::Vector)::Nothing
     db = current_db()
-    for tup in tups
-        SQLite.query(db, sql; values=tup)
+    SQLite.query(db, prepared; values=vals)
+    nothing
+end
+
+function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
+    db = current_db()
+    for nt in nts
+        SQLite.query(db, prepared; values=values(nt))
     end
+    nothing
 end
 
 end # module Octo.Backends.SQLiteLoader

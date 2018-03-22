@@ -2,11 +2,13 @@ module adapters_mysql_repo_test
 
 using Test # @test
 using Octo.Adapters.MySQL # Repo Schema Raw USE
+import DataFrames: DataFrame
 
-# Repo.set_log_level(Repo.LogLevelDebugSQL)
+Repo.set_log_level(Repo.LogLevelDebugSQL)
 
 Repo.config(
     adapter = Octo.Adapters.MySQL,
+    sink = DataFrame,
     username = "root",
     password = "",
     hostname = "localhost",
@@ -58,7 +60,7 @@ df = Repo.get(Employee, (Name="Tim",))
 @test size(df) == (1, 10)
 @test df[1, :Salary] == 15000.50
 
-changes = (ID=2, Name="Chloe")
+changes = (ID=2, Name="Chloe", OfficeNo=56)
 Repo.update!(Employee, changes)
 df = Repo.get(Employee, 2)
 @test df[1, :Name] == "Chloe"

@@ -2,4 +2,5 @@
 
 ```@docs
 from
+as
 ```

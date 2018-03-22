@@ -1,10 +1,11 @@
 using Documenter, Octo
 
 makedocs(
+    build = joinpath(@__DIR__, "local" in ARGS ? "build_local" : "build"),
     modules = [Octo],
     clean = false,
     format = :html,
-    sitename = "Octo.jl",
+    sitename = "Octo.jl 🐙",
     authors = "WooKyoung Noh",
     pages = Any[
         "Home" => "index.md",

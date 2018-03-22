@@ -3,13 +3,13 @@ module MySQL
 include("sql_exports.jl")
 include("sql_imports.jl")
 
-import .Octo.AdapterBase: Database, Structured, _to_sql, _paramholders
+import .Octo.AdapterBase: Database, Structured, _to_sql, _placeholder, _placeholders
+import .Octo: @keywords
 
 const DatabaseID = Database.MySQLDatabase
 to_sql(query::Structured)::String = _to_sql(DatabaseID(), query)
-paramholders(changes::NamedTuple) = _paramholders(DatabaseID(), changes)
-
-import .Octo.AdapterBase: @keywords
+placeholder(nth::Int) = _placeholder(DatabaseID(), nth)
+placeholders(n::Int) = _placeholders(DatabaseID(), n)
 
 export    USE
 @keywords USE

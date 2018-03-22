@@ -1,13 +1,19 @@
 module MySQLLoader
 
 import MySQL
-import DataFrames
 
-const current = Dict{Symbol, Union{Nothing, MySQL.Connection}}(
-    :conn => nothing
+const current = Dict{Symbol, Any}(
+    :conn => nothing,
+    :sink => NamedTuple,
 )
 
 current_conn() = current[:conn]
+current_sink() = current[:sink]
+
+# sink
+function sink(T::Type)
+   current[:sink] = T
+end
 
 # load
 function load(; kwargs...)
@@ -28,21 +34,29 @@ end
 # query
 function query(sql::String)
     conn = current_conn()
-    MySQL.query(conn, sql, DataFrames.DataFrame)
+    sink = current_sink()
+    MySQL.query(conn, sql, sink)
 end
 
 # execute
-function execute(sql::String)
+function execute(sql::String)::Nothing
     conn = current_conn()
     MySQL.execute!(conn, sql)
+    nothing
 end
 
-function execute(sql::String, tups::Vector{Tuple})
+function execute(prepared::String, vals::Vector)::Nothing
     conn = current_conn()
-    stmt = MySQL.Stmt(conn, sql)
-    for tup in tups
-        MySQL.execute!(stmt, tup)
-    end
+    stmt = MySQL.Stmt(conn, prepared)
+    MySQL.execute!(stmt, vals)
+    nothing
+end
+
+function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
+    conn = current_conn()
+    stmt = MySQL.Stmt(conn, prepared)
+    MySQL.Data.stream!(nts, stmt)
+    nothing
 end
 
 end # module Octo.Backends.MySQLLoader

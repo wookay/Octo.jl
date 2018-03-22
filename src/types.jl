@@ -13,16 +13,20 @@ struct Field <: SQLElement
     name::Symbol
 end
 
+struct SQLAlias <: SQLElement
+    field
+    alias::Symbol
+end
+
 struct AggregateFunction <: SQLElement
     name::Symbol
     field
-    as::Union{Symbol, Nothing}
 end
 
 struct Predicate <: SQLElement
     func::Function
-    left::Union{Bool, Number, String, Symbol, Field, AggregateFunction, Predicate}
-    right::Union{Bool, Number, String, Symbol, Field, AggregateFunction, Predicate}
+    left::Union{Bool, Number, String, Symbol, <: SQLElement}
+    right::Union{Bool, Number, String, Symbol, <: SQLElement}
 end
 
 struct Raw <: SQLElement
@@ -30,10 +34,11 @@ struct Raw <: SQLElement
 end
 
 struct Enclosed <: SQLElement
-    values
+    values::Vector
 end
 
-struct QuestionMark <: SQLElement
+struct PlaceHolder <: SQLElement
+    body::String
 end
 
 struct Keyword <: SQLElement
@@ -48,6 +53,26 @@ end
 struct Aggregate
     name::Symbol
 end
-(a::Aggregate)(field, as=nothing) = AggregateFunction(a.name, field, as)
+(a::Aggregate)(field) = AggregateFunction(a.name, field)
 
 const Structured = Array # Union{<:SQLElement, Any}
+
+
+# @keywords
+
+macro keywords(args...)
+    esc(keywords(args))
+end
+keywords(s) = :(($(s...),) = $(map(Keyword, s)))
+
+
+# @aggregates
+
+macro aggregates(args...)
+    esc(aggregates(args))
+end
+aggregates(s) = :(($(s...),) = $(map(Aggregate, s)))
+
+function Base.:*(left::Keyword, right::Keyword)
+    KeywordAllKeyword(left, right)
+end
