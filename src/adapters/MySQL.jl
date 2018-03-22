@@ -9,7 +9,7 @@ import .Octo: @keywords
 const DatabaseID = Database.MySQLDatabase
 to_sql(query::Structured)::String = _to_sql(DatabaseID(), query)
 placeholder(nth::Int) = _placeholder(DatabaseID(), nth)
-placeholders(n::Int) = _placeholders(DatabaseID(), n)
+placeholders(dims::Int) = _placeholders(DatabaseID(), dims)
 
 export    USE
 @keywords USE

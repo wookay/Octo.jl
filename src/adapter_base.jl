@@ -164,8 +164,8 @@ function _placeholder(db::DB, nth::Int) where DB <: Database.AbstractDatabase
     PlaceHolder("?")
 end
 
-function _placeholders(db::DB, n::Int) where DB <: Database.AbstractDatabase
-    Enclosed(fill(_placeholder(db, 1), n))
+function _placeholders(db::DB, dims::Int) where DB <: Database.AbstractDatabase
+    Enclosed(fill(_placeholder(db, 1), dims))
 end
 
 # _show

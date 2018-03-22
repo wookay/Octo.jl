@@ -180,7 +180,11 @@ function update!(M, nt::NamedTuple) # throws Schema.PrimaryKeyError
     table = a.from(M)
     rest = filter(kv -> kv.first != key.name, pairs(nt))
     v = Any[a.UPDATE, table, a.SET]
+
+    # tup[1] : idx
+    # tup[2] : kv
     push!(v, tuple(map(tup -> a.Field(table, tup[2].first) == a.placeholder(tup[1]), enumerate(rest))...))
+
     push!(v, a.WHERE)
     push!(v, key == pk)
     execute(v, collect(values(rest)))

@@ -30,9 +30,10 @@ struct Temp
 end
 Schema.model(Temp, table_name="temp")
 
+import Octo.Adapters.SQLite: placeholders
+
 temp = from(Temp)
-placeholders = Enclosed(fill(PlaceHolder("?"), 3))
-@test to_sql([INSERT INTO temp VALUES placeholders]) == "INSERT INTO temp VALUES (?, ?, ?)"
+@test to_sql([INSERT INTO temp VALUES placeholders(3)]) == "INSERT INTO temp VALUES (?, ?, ?)"
 @test to_sql([UPDATE temp SET (title="Texas",) WHERE temp.AlbumId == 6]) == "UPDATE temp SET title = 'Texas' WHERE AlbumId = 6"
 
 end # module adapters_sqlite_structured_test

@@ -8,7 +8,7 @@ import .Octo.AdapterBase: Database, Structured, _to_sql
 const DatabaseID = Database.PostgreSQLDatabase
 to_sql(query::Structured)::String = _to_sql(DatabaseID(), query)
 placeholder(nth::Int) = PlaceHolder("\$$nth")
-placeholders(n::Int) = Enclosed([PlaceHolder("\$$x") for x in 1:n])
+placeholders(dims::Int) = Enclosed([PlaceHolder("\$$x") for x in 1:dims])
 
 import .Octo.AdapterBase: FromClause, SqlPart, sqlrepr, sqlpart
 function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart

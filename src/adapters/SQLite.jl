@@ -8,7 +8,7 @@ import .Octo.AdapterBase: Database, Structured, _to_sql, _placeholder, _placehol
 const DatabaseID = Database.SQLiteDatabase
 to_sql(query::Structured)::String = _to_sql(DatabaseID(), query)
 placeholder(nth::Int) = _placeholder(DatabaseID(), nth)
-placeholders(n::Int) = _placeholders(DatabaseID(), n)
+placeholders(dims::Int) = _placeholders(DatabaseID(), dims)
 
 import .Octo.AdapterBase: FromClause, SqlPart, sqlrepr, sqlpart
 function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
