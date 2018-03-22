@@ -1,12 +1,34 @@
 ## Documentation: http://docs.travis-ci.com/user/languages/julia/
+
 language: julia
+
+services:
+ - postgresql
+ - mysql
+
 os:
   - linux
   - osx
+
 julia:
   - nightly
+
+env:
+  - POSTGRESQL_VERSION=9.6 PGHOST="/var/run/postgresql"
+
+before_install:
+  - sudo service postgresql stop && sudo service postgresql start $POSTGRESQL_VERSION
+  - psql -U postgres -tc 'SHOW server_version'
+  - psql -U postgres -c '\conninfo'
+
+matrix:
+  allow_failures:
+    - julia: nightly
+  fast_finish: true
+
 notifications:
   email: false
+
 git:
   depth: 99999999
 
@@ -21,12 +43,22 @@ git:
 #  apt: # apt-get for linux
 #    packages:
 #    - gfortran
-#before_script: # homebrew for mac
+
+before_script: # homebrew for mac
+  - export OLD_PATH=$LD_LIBRARY_PATH
+  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`mysql_config --libs | cut -d ' ' -f1 | sed 's/-L//'`
+  - if [ "$TRAVIS_OS_NAME" == osx ]; then brew install mysql          ; fi
+  - if [ "$TRAVIS_OS_NAME" == osx ]; then mysql.server start          ; fi
 #  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
 
 ## uncomment the following lines to override the default test script
-#script:
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("Octo"); Pkg.test("Octo"; coverage=true)'
+script:
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("Octo"); Pkg.test("Octo"; coverage=true)'
+
+after_script:
+  - export LD_LIBRARY_PATH=$OLD_PATH
+  - unset OLD_PATH
+
 after_success:
   # push coverage results to Coveralls
   - julia -e 'cd(Pkg.dir("Octo")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
