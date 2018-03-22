@@ -22,8 +22,6 @@ Schema.model(Employee,
     primary_key = "EmployeeId"
 )
 
-import DataFrames
-
 df = Repo.all(Employee)
 @test df isa NamedTuple
 @test length(df.EmployeeId) == 8
