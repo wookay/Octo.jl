@@ -1,4 +1,6 @@
-using Documenter, Octo
+using Documenter
+using Octo
+import Octo: Repo, Schema
 
 makedocs(
     build = joinpath(@__DIR__, "local" in ARGS ? "build_local" : "build"),
@@ -15,9 +17,9 @@ makedocs(
         "Adapters" => [
             "AdapterBase.md",
             "adapters/SQL.md",
-            #"adapters/SQLite.md",
-            #"adapters/MySQL.md",
-            #"adapters/PostgreSQL.md",
+            "adapters/PostgreSQL.md",
+            "adapters/MySQL.md",
+            "adapters/SQLite.md",
         ],
     ],
     html_prettyurls = !("local" in ARGS),

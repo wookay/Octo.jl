@@ -16,8 +16,19 @@ const current = Dict{Symbol, Union{Nothing, Module, RepoLogLevel}}(
     :log_level => LogLevelInfo
 )
 
+struct NeedsConnectError <: Exception
+    message
+end
+
 current_loader() = current[:loader]
-current_adapter() = current[:adapter]
+
+function current_adapter() # throws Repo.NeedsConnectError
+    if current[:adapter] isa Nothing
+        throws(NeedsConnectError("Needs a Repo.connect"))
+    else
+        current[:adapter]
+    end
+end
 
 function debug_sql_params(io, params)
     printstyled(io, "   ")
@@ -37,12 +48,18 @@ function debug_sql(stmt::Structured, params = nothing)
 end
 
 # Repo.set_log_level
+"""
+    Repo.set_log_level(level::RepoLogLevel)
+"""
 function set_log_level(level::RepoLogLevel)
     current[:log_level] = level
 end
 
-# Repo.config
-function config(; adapter::Module, kwargs...)
+# Repo.connect
+"""
+    Repo.connect(; adapter::Module, kwargs...)
+"""
+function connect(; adapter::Module, kwargs...)
     sym = nameof(adapter)
     DatabaseID = getfield(AdapterBase.Database, Symbol(sym, :Database))
     AdapterBase.current[:database] = DatabaseID()
@@ -57,16 +74,22 @@ function config(; adapter::Module, kwargs...)
     args = (:sink,)
     options = filter(kv -> !(kv.first in args), kwargs)
 
-    Base.invokelatest(loader.load; options...)
+    Base.invokelatest(loader.connect; options...)
 end
 
 # Repo.disconnect
+"""
+    Repo.disconnect()
+"""
 function disconnect()
     loader = current_loader()
     loader.disconnect()
 end
 
 # Repo.query
+"""
+    Repo.query(stmt::Structured)
+"""
 function query(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
@@ -76,6 +99,9 @@ function query(stmt::Structured)
 end
 
 # Repo.execute
+"""
+    Repo.execute(stmt::Structured)
+"""
 function execute(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
@@ -84,6 +110,9 @@ function execute(stmt::Structured)
     loader.execute(sql)
 end
 
+"""
+    Repo.execute(stmt::Structured, vals::Vector)
+"""
 function execute(stmt::Structured, vals::Vector)
     a = current_adapter()
     sql = a.to_sql(stmt)
@@ -92,6 +121,9 @@ function execute(stmt::Structured, vals::Vector)
     loader.execute(sql, vals)
 end
 
+"""
+    Repo.execute(stmt::Structured, nts::Vector{<:NamedTuple})
+"""
 function execute(stmt::Structured, nts::Vector{<:NamedTuple})
     a = current_adapter()
     sql = a.to_sql(stmt)
@@ -106,7 +138,10 @@ execute(raw::AdapterBase.Raw, nts::Vector{<:NamedTuple}) = execute([raw], nts)
 execute(raw::AdapterBase.Raw, vals::Vector) = execute([raw], vals)
 
 # Repo.all
-function all(M)
+"""
+    Repo.all(M::Type)
+"""
+function all(M::Type)
     a = current_adapter()
     table = a.from(M)
     query([a.SELECT * a.FROM table])
@@ -139,14 +174,20 @@ function _get_primary_key_with(M, nt::NamedTuple) # throws Schema.PrimaryKeyErro
 end
 
 # Repo.get
-function get(M, pk::Union{Int, String}) # throws Schema.PrimaryKeyError
+"""
+    Repo.get(M::Type, pk::Union{Int, String})
+"""
+function get(M::Type, pk::Union{Int, String}) # throws Schema.PrimaryKeyError
     a = current_adapter()
     table = a.from(M)
     key = _get_primary_key(M)
     query([a.SELECT * a.FROM table a.WHERE key == pk])
 end
 
-function get(M, nt::NamedTuple)
+"""
+    Repo.get(M::Type, nt::NamedTuple)
+"""
+function get(M::Type, nt::NamedTuple)
     a = current_adapter()
     table = a.from(M)
     v = [a.SELECT, *, a.FROM, table, a.WHERE]
@@ -159,7 +200,10 @@ function get(M, nt::NamedTuple)
 end
 
 # Repo.insert!
-function insert!(M, nts::Vector{<:NamedTuple})
+"""
+    Repo.insert!(M::Type, nts::Vector{<:NamedTuple})
+"""
+function insert!(M::Type, nts::Vector{<:NamedTuple})
     if !isempty(nts)
         a = current_adapter()
         table = a.from(M)
@@ -169,14 +213,20 @@ function insert!(M, nts::Vector{<:NamedTuple})
    end
 end
 
+"""
+    Repo.insert!(M, nt::NamedTuple)
+"""
 function insert!(M, nt::NamedTuple)
     insert!(M, [nt])
 end
 
 # Repo.update!
-function update!(M, nt::NamedTuple) # throws Schema.PrimaryKeyError
-    (key, pk) = _get_primary_key_with(M, nt)
+"""
+    Repo.update!(M::Type, nt::NamedTuple)
+"""
+function update!(M::Type, nt::NamedTuple) # throws Schema.PrimaryKeyError
     a = current_adapter()
+    (key, pk) = _get_primary_key_with(M, nt)
     table = a.from(M)
     rest = filter(kv -> kv.first != key.name, pairs(nt))
     v = Any[a.UPDATE, table, a.SET]
@@ -191,9 +241,12 @@ function update!(M, nt::NamedTuple) # throws Schema.PrimaryKeyError
 end
 
 # Repo.delete!
-function delete!(M, nt::NamedTuple) # throws Schema.PrimaryKeyError
-    (key, pk) = _get_primary_key_with(M, nt)
+"""
+    Repo.delete!(M::Type, nt::NamedTuple)
+"""
+function delete!(M::Type, nt::NamedTuple) # throws Schema.PrimaryKeyError
     a = current_adapter()
+    (key, pk) = _get_primary_key_with(M, nt)
     table = a.from(M)
     execute([a.DELETE a.FROM table a.WHERE key == pk])
 end

@@ -5,7 +5,7 @@ using Octo.Adapters.PostgreSQL # Repo Schema Raw
 
 Repo.set_log_level(Repo.LogLevelDebugSQL)
 
-Repo.config(
+Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
     user = "postgres",
 )
@@ -15,8 +15,9 @@ Repo.execute([DROP DATABASE IF EXISTS :postgresqltest])
 Repo.execute([CREATE DATABASE :postgresqltest])
 Repo.disconnect()
 
-Repo.config(
+Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
+    # sink = DataFrames.DataFrame,
     dbname = "postgresqltest",
     user = "postgres",
 )

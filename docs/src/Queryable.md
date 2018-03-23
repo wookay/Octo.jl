@@ -1,6 +1,6 @@
 # Queryable
 
 ```@docs
-from
-as
+Octo.Queryable.from
+Octo.Queryable.as
 ```

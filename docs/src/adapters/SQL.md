@@ -1,5 +1,5 @@
 # Octo.Adapters.SQL
 
 ```@docs
-to_sql
+Octo.Adapters.SQL.to_sql
 ```

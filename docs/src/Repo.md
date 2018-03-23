@@ -1,7 +1,7 @@
 # Repo
 
 ```@docs
-Repo.config
+Repo.connect
 Repo.all
 Repo.get
 Repo.insert!

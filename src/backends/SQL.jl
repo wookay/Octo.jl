@@ -4,8 +4,8 @@ module SQLLoader
 function sink(::Type)
 end
 
-# load
-function load(; kwargs...)
+# connect
+function connect(; kwargs...)
 end
 
 # disconnect

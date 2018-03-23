@@ -76,7 +76,7 @@ end
 # sqlrepr - SqlPart
 
 function sqlrepr(def::Database.Default, el::KeywordAllKeyword)::SqlPart
-    sqlpart(sqlrepr.(def, [el.left, *, el.right]), " ")
+    sqlpart(sqlrepr.(Ref(def), [el.left, *, el.right]), " ")
 end
 
 function sqlrepr(def::Database.Default, pred::Predicate)::SqlPart
@@ -85,19 +85,19 @@ function sqlrepr(def::Database.Default, pred::Predicate)::SqlPart
     else
         op = pred.func
     end
-    sqlpart(sqlrepr.(def, [pred.left, op, pred.right]), " ")
+    sqlpart(sqlrepr.(Ref(def), [pred.left, op, pred.right]), " ")
 end
 
 function sqlrepr(def::Database.Default, clause::FromClause)::SqlPart
     if clause.__octo_as isa Nothing
-         sqlpart(sqlrepr(def, clause.__octo_model))
+         sqlpart(sqlrepr(Ref(def), clause.__octo_model))
     else
-         sqlpart(sqlrepr.(def, [clause.__octo_model, AS, clause.__octo_as]), " ")
+         sqlpart(sqlrepr.(Ref(def), [clause.__octo_model, AS, clause.__octo_as]), " ")
     end
 end
 
 function sqlrepr(def::Database.Default, tup::Tuple)::SqlPart
-    sqlpart(sqlrepr.(def, [tup...]), ", ")
+    sqlpart(sqlrepr.(Ref(def), [tup...]), ", ")
 end
 
 function sqlrepr(def::Database.Default, tup::NamedTuple)::SqlPart
@@ -116,7 +116,7 @@ function sqlrepr(def::Database.Default, enclosed::Enclosed)::SqlPart
 end
 
 function sqlrepr(def::Database.Default, a::SQLAlias)::SqlPart
-    sqlpart(vcat(sqlrepr(def, a.field), sqlrepr.(def, [AS, a.alias])), " ")
+    sqlpart(vcat(sqlrepr(Ref(def), a.field), sqlrepr.(Ref(def), [AS, a.alias])), " ")
 end
 
 function sqlrepr(def::Database.Default, f::AggregateFunction)::SqlPart
@@ -151,7 +151,7 @@ end
 # _to_sql
 
 function _to_sql(db::DB, query::Structured)::String where DB <: Database.AbstractDatabase
-    joinpart(sqlpart(vcat(sqlrepr.(db, query)...), " "))
+    joinpart(sqlpart(vcat(sqlrepr.(Ref(db), query)...), " "))
 end
 
 function to_sql(query::Structured)::String
@@ -177,7 +177,7 @@ end
 
 function _show(io::IO, ::MIME"text/plain", db::DB, query::Structured) where DB <: Database.AbstractDatabase
     if any(x -> x isa SQLElement, query)
-        printpart(io, sqlpart(vcat(sqlrepr.(db, query)...), " "))
+        printpart(io, sqlpart(vcat(sqlrepr.(Ref(db), query)...), " "))
     else
         Base.show(io, query)
     end

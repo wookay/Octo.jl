@@ -6,7 +6,7 @@ import DataFrames: DataFrame
 
 Repo.set_log_level(Repo.LogLevelDebugSQL)
 
-Repo.config(
+Repo.connect(
     adapter = Octo.Adapters.MySQL,
     sink = DataFrame,
     username = "root",

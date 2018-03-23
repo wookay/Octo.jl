@@ -10,8 +10,9 @@ cp(dbfile, dbfile2; force=true)
 
 Repo.set_log_level(Repo.LogLevelDebugSQL)
 
-repo = Repo.config(
+repo = Repo.connect(
     adapter = Octo.Adapters.SQLite,
+    # sink = DataFrames.DataFrame,
     database = joinpath(dirname(@__FILE__), "test.sqlite")
 )
 

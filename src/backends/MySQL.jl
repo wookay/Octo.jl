@@ -16,8 +16,8 @@ function sink(T::Type)
    current[:sink] = T
 end
 
-# load
-function load(; kwargs...)
+# connect
+function connect(; kwargs...)
     args = (:hostname, :username, :password)
     (hostname, username, password) = getindex.(kwargs, args)
     options = filter(kv -> !(kv.first in args), kwargs)
