@@ -4,7 +4,7 @@ import SQLite
 
 const current = Dict{Symbol, Any}(
     :db => nothing,
-    :sink => NamedTuple,
+    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
 )
 
 current_db() = current[:db]

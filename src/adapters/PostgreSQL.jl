@@ -20,7 +20,7 @@ function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
     if clause.__octo_as isa Nothing
          sqlpart(sqlrepr(db, clause.__octo_model))
     else
-         sqlpart(sqlrepr.(db, [clause.__octo_model, clause.__octo_as]), " ")
+         sqlpart(sqlrepr.(Ref(db), [clause.__octo_model, clause.__octo_as]), " ")
     end
 end
 

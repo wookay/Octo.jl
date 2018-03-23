@@ -90,7 +90,7 @@ end
 
 function sqlrepr(def::Database.Default, clause::FromClause)::SqlPart
     if clause.__octo_as isa Nothing
-         sqlpart(sqlrepr(Ref(def), clause.__octo_model))
+         sqlpart(sqlrepr(def, clause.__octo_model))
     else
          sqlpart(sqlrepr.(Ref(def), [clause.__octo_model, AS, clause.__octo_as]), " ")
     end
@@ -101,11 +101,11 @@ function sqlrepr(def::Database.Default, tup::Tuple)::SqlPart
 end
 
 function sqlrepr(def::Database.Default, tup::NamedTuple)::SqlPart
-    sqlpart(sqlrepr.(def, map(kv -> Predicate(==, kv.first, kv.second), collect(pairs(tup)))), ", ")
+    sqlpart(sqlrepr.(Ref(def), map(kv -> Predicate(==, kv.first, kv.second), collect(pairs(tup)))), ", ")
 end
 
 function sqlrepr(def::Database.Default, enclosed::Enclosed)::SqlPart
-    vals = sqlpart(sqlrepr.(def, [enclosed.values...]), ", ")
+    vals = sqlpart(sqlrepr.(Ref(def), [enclosed.values...]), ", ")
     if enclosed.values isa Vector{PlaceHolder}
         length(enclosed.values) == 1 && return vals
     end
@@ -116,7 +116,7 @@ function sqlrepr(def::Database.Default, enclosed::Enclosed)::SqlPart
 end
 
 function sqlrepr(def::Database.Default, a::SQLAlias)::SqlPart
-    sqlpart(vcat(sqlrepr(Ref(def), a.field), sqlrepr.(Ref(def), [AS, a.alias])), " ")
+    sqlpart(vcat(sqlrepr(def, a.field), sqlrepr.(Ref(def), [AS, a.alias])), " ")
 end
 
 function sqlrepr(def::Database.Default, f::AggregateFunction)::SqlPart

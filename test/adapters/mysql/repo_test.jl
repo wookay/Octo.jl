@@ -2,13 +2,12 @@ module adapters_mysql_repo_test
 
 using Test # @test
 using Octo.Adapters.MySQL # Repo Schema Raw USE
-import DataFrames: DataFrame
 
 Repo.set_log_level(Repo.LogLevelDebugSQL)
 
 Repo.connect(
     adapter = Octo.Adapters.MySQL,
-    sink = DataFrame,
+    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
     username = "root",
     password = "",
     hostname = "localhost",
@@ -46,28 +45,28 @@ Schema.model(Employee,
     primary_key = "ID"
 )
 df = Repo.all(Employee)
-@test size(df) == (3, 10)
+@test size(df) == (3,)
 
 df = Repo.get(Employee, 2)
-@test df[1, :Name] == "Tom"
-@test size(df) == (1, 10)
+@test df[1].Name == "Tom"
+@test size(df) == (1,)
 
 changes = (Name="Tim", Salary=15000.50, JoinDate="2015-7-25", LastLogin="2015-10-10 12:12:25",
            LunchTime="12:30:00", OfficeNo=56, JobType="Accounts", empno=3200)
 Repo.insert!(Employee, changes)
 
 df = Repo.get(Employee, (Name="Tim",))
-@test size(df) == (1, 10)
-@test df[1, :Salary] == 15000.50
+@test size(df) == (1,)
+@test df[1].Salary == 15000.50
 
 changes = (ID=2, Name="Chloe", OfficeNo=56)
 Repo.update!(Employee, changes)
 df = Repo.get(Employee, 2)
-@test df[1, :Name] == "Chloe"
+@test df[1].Name == "Chloe"
 
 Repo.delete!(Employee, changes)
 df = Repo.get(Employee, 2)
-@test size(df) == (0, 10)
+@test size(df) == (0,)
 
 Repo.disconnect()
 

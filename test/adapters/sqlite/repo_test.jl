@@ -12,7 +12,7 @@ Repo.set_log_level(Repo.LogLevelDebugSQL)
 
 repo = Repo.connect(
     adapter = Octo.Adapters.SQLite,
-    # sink = DataFrames.DataFrame,
+    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
     database = joinpath(dirname(@__FILE__), "test.sqlite")
 )
 
@@ -24,15 +24,15 @@ Schema.model(Employee,
 )
 
 df = Repo.all(Employee)
-@test df isa NamedTuple
-@test length(df.EmployeeId) == 8
+@test df isa Vector{<:NamedTuple}
+@test size(df) == (8,)
 
 df = Repo.get(Employee, 2)
-@test length(df.EmployeeId) == 1
+@test size(df) == (1,)
 
 em = from(Employee)
 df = Repo.query([SELECT * FROM em WHERE em.EmployeeId == 2])
-@test length(df.EmployeeId) == 1
+@test size(df) == (1,)
 
 
 # using Octo.Adapters.SQLite # DROP TABLE IF EXISTS CREATE AS
@@ -45,26 +45,26 @@ end
 Schema.model(Temp, table_name="temp", primary_key="AlbumId")
 
 df = Repo.all(Temp)
-@test length(df.AlbumId) == 347
+@test size(df) == (347,)
 
 changes = (AlbumId=0, Title="Test Album", ArtistId=0)
 Repo.insert!(Temp, changes)
 df = Repo.all(Temp)
-@test length(df.AlbumId) == 348
+@test size(df) == (348,)
 
 df = Repo.get(Temp, 6)
-@test df.Title[1] == "Jagged Little Pill"
+@test df[1].Title == "Jagged Little Pill"
 
 df = Repo.get(Temp, (Title="Jagged Little Pill",))
-@test df.Title[1] == "Jagged Little Pill"
+@test df[1].Title == "Jagged Little Pill"
 
 changes = (AlbumId=6, Title="Texas")
 Repo.update!(Temp, changes)
 df = Repo.get(Temp, 6)
-@test df.Title[1] == "Texas"
+@test df[1].Title == "Texas"
 
 Repo.delete!(Temp, changes)
 df = Repo.get(Temp, 6)
-@test length(df.AlbumId) == 0
+@test size(df) == (0,)
 
 end # module adapters_sqlite_repo_test

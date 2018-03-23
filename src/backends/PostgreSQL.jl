@@ -5,7 +5,7 @@ import LibPQ
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
-    :sink => NamedTuple,
+    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
 )
 
 current_conn() = current[:conn]

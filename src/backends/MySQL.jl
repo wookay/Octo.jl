@@ -5,7 +5,7 @@ import MySQL
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
-    :sink => NamedTuple,
+    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
 )
 
 current_conn() = current[:conn]
@@ -19,7 +19,7 @@ end
 # connect
 function connect(; kwargs...)
     args = (:hostname, :username, :password)
-    (hostname, username, password) = getindex.(kwargs, args)
+    (hostname, username, password) = getindex.(Ref(kwargs), args)
     options = filter(kv -> !(kv.first in args), kwargs)
     conn = MySQL.connect(hostname, username, password; options...)
     current[:conn] = conn

@@ -19,7 +19,7 @@ julia> struct User
        end
 
 julia> Schema.model(User, table_name="users")
-"users"
+User => Dict(:primary_key=>"id",:table_name=>"users")
 
 julia> u = from(User)
 Octo.FromClause(User, nothing)
@@ -41,7 +41,6 @@ Current supported databases: PostgreSQL(via LibPQ.jl), MySQL(via MySQL.jl), SQLi
 
 ```julia
 using Octo.Adapters.PostgreSQL
-import DataFrames
 
 struct Employee
 end
@@ -51,7 +50,7 @@ Repo.set_log_level(Repo.LogLevelDebugSQL)
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
-    sink = DataFrames.DataFrame,
+    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
     dbname = "postgresqltest",
     user = "postgres",
 )

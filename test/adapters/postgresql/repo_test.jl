@@ -7,6 +7,7 @@ Repo.set_log_level(Repo.LogLevelDebugSQL)
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
+    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
     user = "postgres",
 )
 
@@ -51,38 +52,38 @@ Repo.insert!(Employee, multiple_changes)
 Repo.execute(Raw("""INSERT INTO Employee (Name, Salary) VALUES (\$1, \$2)"""), multiple_changes)
 
 df = Repo.all(Employee)
-@test length(df.id) == 6
+@test size(df,) == (6,)
 
 df = Repo.get(Employee, 2)
-@test length(df.id) == 1
-@test df.name[1] == "John"
+@test size(df) == (1,)
+@test df[1].name == "John"
 
 df = Repo.get(Employee, (Name="Tom",))
-@test length(df.id) == 2
-@test df.name[1] == "Tom"
+@test size(df) == (2,)
+@test df[1].name == "Tom"
 
 changes = (Name="Tim", Salary=15000.50)
 Repo.insert!(Employee, changes)
 df = Repo.all(Employee)
-@test length(df.id) == 7
+@test size(df) == (7,)
 df = Repo.get(Employee, (Name="Tim",))
-@test length(df.id) == 1
-@test df.salary[1] == 15000.50
+@test size(df) == (1,)
+@test df[1].salary == 15000.50
 
 changes = (ID=2, Name="Chloe", Salary=15000.50)
 Repo.update!(Employee, changes)
 df = Repo.get(Employee, 2)
-@test df.name[1] == "Chloe"
+@test df[1].name == "Chloe"
 
 changes = (ID=2, Name="Chloe")
 Repo.delete!(Employee, changes)
 df = Repo.get(Employee, 2)
-@test isempty(df.id)
+@test size(df) == (0,)
 
-e = from(Employee)
-df = Repo.query([SELECT * FROM e WHERE e.Name == "Tim"])
-@test length(df.id) == 1
-@test df.name[1] == "Tim"
+em = from(Employee)
+df = Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
+@test size(df) == (1,)
+@test df[1].name == "Tim"
 
 Repo.disconnect()
 
