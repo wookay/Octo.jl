@@ -1,0 +1,6 @@
+name = "Octo"
+uuid = "c980e7ac-2ea9-11e8-1f3c-e1d64ddcfff6"
+version = "0.1.0"
+authors = ["WooKyoung Noh <wookay.noh@gmail.com>"]
+
+[deps]

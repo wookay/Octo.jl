@@ -8,7 +8,7 @@ import .Octo.AdapterBase: Database, Structured, _to_sql, _placeholder, _placehol
 const DatabaseID = Database.SQLiteDatabase
 
 """
-    to_sql
+    to_sql(query::Structured)::String
 """
 to_sql(query::Structured)::String = _to_sql(DatabaseID(), query)
 

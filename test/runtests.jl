@@ -1,5 +1,7 @@
 using Test
 
+ignores = [r"adapters/jdbc/"]
+
 all_tests = []
 for (root, dirs, files) in walkdir(".")
     for filename in files
@@ -7,6 +9,7 @@ for (root, dirs, files) in walkdir(".")
         "runtests.jl" == filename && continue
         filepath = joinpath(root, filename)[3:end]
         !isempty(ARGS) && !any(x->startswith(filepath, x), ARGS) && continue
+        isempty(ARGS) && any(pat->occursin(pat, filepath), ignores) && continue
         push!(all_tests, filepath)
     end
 end

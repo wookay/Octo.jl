@@ -9,7 +9,7 @@ import .Octo: @keywords
 const DatabaseID = Database.MySQLDatabase
 
 """
-    to_sql
+    to_sql(query::Structured)::String
 """
 to_sql(query::Structured)::String = _to_sql(DatabaseID(), query)
 
