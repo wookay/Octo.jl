@@ -3,7 +3,7 @@ module Repo
 import ..Backends
 import ..AdapterBase
 import ..Queryable: Structured
-import ..Schema
+import ..Schema # Schema.validates
 
 @enum RepoLogLevel::Int32 begin
     LogLevelDebugSQL = -1
@@ -22,9 +22,9 @@ end
 
 current_loader() = current[:loader]
 
-function current_adapter() # throws Repo.NeedsConnectError
+function current_adapter() # throw Repo.NeedsConnectError
     if current[:adapter] isa Nothing
-        throws(NeedsConnectError("Needs a Repo.connect"))
+        throw(NeedsConnectError("Needs a Repo.connect"))
     else
         current[:adapter]
     end
@@ -147,7 +147,7 @@ function all(M::Type)
     query([a.SELECT * a.FROM table])
 end
 
-function _get_primary_key(M) # throws Schema.PrimaryKeyError
+function _get_primary_key(M) # throw Schema.PrimaryKeyError
     Tname = Base.typename(M)
     info = Schema.tables[Tname]
     if haskey(info, :primary_key)
@@ -156,11 +156,11 @@ function _get_primary_key(M) # throws Schema.PrimaryKeyError
         primary_key = Symbol(info[:primary_key])
         a.Field(table, primary_key)
     else
-        throws(Schema.PrimaryKeyError(""))
+        throw(Schema.PrimaryKeyError(""))
     end
 end
 
-function _get_primary_key_with(M, nt::NamedTuple) # throws Schema.PrimaryKeyError
+function _get_primary_key_with(M, nt::NamedTuple) # throw Schema.PrimaryKeyError
     Tname = Base.typename(M)
     info = Schema.tables[Tname]
     if haskey(info, :primary_key)
@@ -169,7 +169,7 @@ function _get_primary_key_with(M, nt::NamedTuple) # throws Schema.PrimaryKeyErro
         pk = getfield(nt, primary_key)
         (key, pk)
      else
-        throws(Schema.PrimaryKeyError(""))
+        throw(Schema.PrimaryKeyError(""))
     end
 end
 
@@ -177,7 +177,7 @@ end
 """
     Repo.get(M::Type, pk::Union{Int, String})
 """
-function get(M::Type, pk::Union{Int, String}) # throws Schema.PrimaryKeyError
+function get(M::Type, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
     a = current_adapter()
     table = a.from(M)
     key = _get_primary_key(M)
@@ -205,6 +205,7 @@ end
 """
 function insert!(M::Type, nts::Vector{<:NamedTuple})
     if !isempty(nts)
+        Schema.validates.(M, nts) # throw InvalidChangesetError
         a = current_adapter()
         table = a.from(M)
         nt = first(nts)
@@ -224,7 +225,8 @@ end
 """
     Repo.update!(M::Type, nt::NamedTuple)
 """
-function update!(M::Type, nt::NamedTuple) # throws Schema.PrimaryKeyError
+function update!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
+    Schema.validates(M, nt) # throw InvalidChangesetError
     a = current_adapter()
     (key, pk) = _get_primary_key_with(M, nt)
     table = a.from(M)
@@ -244,7 +246,7 @@ end
 """
     Repo.delete!(M::Type, nt::NamedTuple)
 """
-function delete!(M::Type, nt::NamedTuple) # throws Schema.PrimaryKeyError
+function delete!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
     a = current_adapter()
     (key, pk) = _get_primary_key_with(M, nt)
     table = a.from(M)
