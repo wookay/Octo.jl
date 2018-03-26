@@ -1,8 +1,8 @@
 # Octo.jl
 
-[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://wookay.github.io/docs/Octo.jl/)
-
-[![Travis CI](https://api.travis-ci.org/wookay/Octo.jl.svg?branch=master)](https://travis-ci.org/wookay/Octo.jl)
+|  **Documentation**                        |  **Build Status**                                                 |
+|:-----------------------------------------:|:-----------------------------------------------------------------:|
+|  [![][docs-latest-img]][docs-latest-url]  |  [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]  |
 
 
 Octo.jl 🐙 is an SQL Query DSL in Julia (https://julialang.org).
@@ -37,7 +37,7 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 
 ### Repo
 
-Current supported databases: PostgreSQL(via LibPQ.jl), MySQL(via MySQL.jl), SQLite(via SQLite.jl)
+Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
 
 ```julia
 using Octo.Adapters.PostgreSQL
@@ -65,3 +65,24 @@ Repo.delete!(Employee, (ID=2,))
 em = from(Employee)
 Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
 ```
+
+
+### Requirements
+
+You need latest [Julia 0.7 DEV](https://julialang.org/downloads/nightlies.html).
+
+```julia
+using Pkg
+Pkg.clone("https://github.com/wookay/Octo.jl.git")
+```
+
+
+
+[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
+[docs-latest-url]: https://wookay.github.io/docs/Octo.jl/
+
+[travis-img]: https://api.travis-ci.org/wookay/Octo.jl.svg?branch=master
+[travis-url]: https://travis-ci.org/wookay/Octo.jl
+
+[appveyor-img]: https://ci.appveyor.com/api/projects/status/fkup126yxtfb62f1/branch/master?svg=true
+[appveyor-url]: https://ci.appveyor.com/project/wookay/octo-jl/branch/master

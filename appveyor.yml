@@ -1,7 +1,6 @@
 environment:
   PGPASSWORD: Password12!
   matrix:
-  - JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x86/julia-latest-win32.exe"
   - JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x64/julia-latest-win64.exe"
 
 ## uncomment the following lines to allow failures on nightly julia
@@ -43,8 +42,8 @@ install:
 build_script:
 # Need to convert from shallow to complete for Pkg.clone to work
   - IF EXIST .git\shallow (git fetch --unshallow)
-  - C:\projects\julia\bin\julia -e "versioninfo();
-      Pkg.clone(pwd(), \"Octo\"); Pkg.build(\"Octo\")"
+  - C:\projects\julia\bin\julia --color=yes -e "using InteractiveUtils; versioninfo()"
+  - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.clone(pwd(), \"Octo\"); Pkg.build(\"Octo\")"
 
 test_script:
-  - C:\projects\julia\bin\julia -e "Pkg.test(\"Octo\")"
+  - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.test(\"Octo\")"
