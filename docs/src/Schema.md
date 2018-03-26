@@ -2,4 +2,5 @@
 
 ```@docs
 Schema.model
+Schema.changeset
 ```

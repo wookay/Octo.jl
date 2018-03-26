@@ -3,7 +3,7 @@ module PostgreSQL
 include("sql_exports.jl")
 include("sql_imports.jl")
 
-import .Octo.AdapterBase: Database, Structured, _to_sql
+import .Octo.AdapterBase: Database, Structured, SubQuery, _to_sql
 
 const DatabaseID = Database.PostgreSQLDatabase
 
@@ -11,6 +11,11 @@ const DatabaseID = Database.PostgreSQLDatabase
     to_sql(query::Structured)::String
 """
 to_sql(query::Structured)::String = _to_sql(DatabaseID(), query)
+
+"""
+    to_sql(subquery::SubQuery)::String
+"""
+to_sql(subquery::SubQuery)::String = _to_sql(DatabaseID(), subquery)
 
 placeholder(nth::Int) = PlaceHolder("\$$nth")
 placeholders(dims::Int) = Enclosed([PlaceHolder("\$$x") for x in 1:dims])

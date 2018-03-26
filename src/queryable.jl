@@ -2,13 +2,20 @@
 
 module Queryable
 
-import ..Octo: FromClause, Field, SQLAlias, AggregateFunction, Structured
+import ..Octo: FromClause, SubQuery, Field, SQLAlias, AggregateFunction, Structured
 
 """
     from(M::Type, as=nothing)::FromClause
 """
 function from(M::Type, as=nothing)::FromClause
     FromClause(M, as)
+end
+
+"""
+    from(query::Structured, as=nothing)::SubQuery
+"""
+function from(query::Structured, as=nothing)::SubQuery
+    SubQuery(query, as)
 end
 
 """

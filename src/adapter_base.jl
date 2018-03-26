@@ -12,7 +12,7 @@ end # module Octo.AdapterBase.Database
 
 import ...Schema
 import ...Queryable: Structured, FromClause, from
-import ...Octo: SQLElement, Field, SQLAlias, AggregateFunction, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword, Aggregate
+import ...Octo: SQLElement, SubQuery, Field, SQLAlias, AggregateFunction, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword, Aggregate
 import ...Octo: @keywords, @aggregates
 
 const current = Dict{Symbol, Database.AbstractDatabase}(
@@ -71,6 +71,20 @@ function sqlrepr(::Database.Default, field::Field)::SqlPart
             SqlPartElement(:normal, field.clause.__octo_as),
             SqlPartElement(:normal, '.'),
             SqlPartElement(:normal, field.name)], "")
+    end
+end
+
+function sqlrepr(def::Database.Default, subquery::SubQuery)::SqlPart
+    query = subquery.__octo_query
+    body = sqlpart(vcat(sqlrepr.(Ref(def), query)...), " ")
+    part = sqlpart([
+        SqlPartElement(:normal, '('),
+        body,
+        SqlPartElement(:normal, ')')], "")
+    if subquery.__octo_as isa Nothing
+        part
+    else
+        sqlpart([part, sqlrepr.(Ref(def), [AS, subquery.__octo_as])...], " ")
     end
 end
 
@@ -151,12 +165,12 @@ end
 
 # _to_sql
 
-function _to_sql(db::DB, query::Structured)::String where DB <: Database.AbstractDatabase
-    joinpart(sqlpart(vcat(sqlrepr.(Ref(db), query)...), " "))
+function _to_sql(db::DB, subquery::SubQuery)::String where DB <: Database.AbstractDatabase
+    joinpart(sqlrepr(db, subquery))
 end
 
-function to_sql(query::Structured)::String
-    _to_sql(SQL, query)
+function _to_sql(db::DB, query::Structured)::String where DB <: Database.AbstractDatabase
+    joinpart(sqlpart(vcat(sqlrepr.(Ref(db), query)...), " "))
 end
 
 # _placeholder, _placeholders

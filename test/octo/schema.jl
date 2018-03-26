@@ -1,4 +1,4 @@
-module octo_schema
+module test_octo_schema
 
 using Test # @test_throws
 using Octo.Adapters.SQL # Schema.changeset Repo
@@ -17,4 +17,4 @@ Repo.connect(adapter=Octo.Adapters.SQL)
 Repo.insert!(User, (username="abcdef",))
 @test_throws InvalidChangesetError Repo.insert!(User, (username="a",))
 
-end # module octo_schema
+end # module test_octo_schema

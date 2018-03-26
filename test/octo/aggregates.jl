@@ -1,4 +1,4 @@
-module octo_aggregates
+module test_octo_aggregates
 
 using Test
 using Octo.Adapters.SQL
@@ -12,4 +12,4 @@ t = from(T)
 s = as(AVG(t.salary), :s)
 @test to_sql([s]) == "AVG(salary) AS s"
 
-end # module octo_aggregates
+end # module test_octo_aggregates

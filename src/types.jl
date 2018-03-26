@@ -3,8 +3,15 @@
 # SQLElement
 abstract type SQLElement end
 
+const Structured = Array # Union{<:SQLElement, Any}
+
 struct FromClause <: SQLElement
     __octo_model::Type
+    __octo_as::Union{Symbol, Nothing}
+end
+
+struct SubQuery <: SQLElement
+    __octo_query::Structured
     __octo_as::Union{Symbol, Nothing}
 end
 
@@ -54,8 +61,6 @@ struct Aggregate
     name::Symbol
 end
 (a::Aggregate)(field) = AggregateFunction(a.name, field)
-
-const Structured = Array # Union{<:SQLElement, Any}
 
 
 # @keywords
