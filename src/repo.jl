@@ -33,7 +33,7 @@ end
 function debug_sql_params(io, params)
     printstyled(io, "   ")
     for (idx, x) in enumerate(params)
-        printstyled(io, x, color=:green)
+        printstyled(io, repr(x), color=:green)
         length(params) != idx && printstyled(io, ", ")
     end
 end

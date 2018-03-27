@@ -31,7 +31,7 @@ end
 Schema.model(User, table_name="users")
 u = from(User)
 
-❔ = PlaceHolder
+❔ = Octo.PlaceHolder
 
 userName = """ ' OR '1'='1 """
 @test_throws UnsupportedError Repo.query([SELECT * FROM u WHERE u.name == ❔ AND u.salary > ❔], [userName, 2000])

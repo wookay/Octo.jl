@@ -1,7 +1,6 @@
 module SQLiteLoader
 
 import SQLite
-import Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
     :db => nothing,
@@ -35,8 +34,10 @@ function query(sql::String)
     SQLite.query(db, sql, sink)
 end
 
-function query(prepared::String, vals::Vector) # throw UnsupportedError
-    throw(UnsupportedError("needs to be implemented"))
+function query(prepared::String, vals::Vector)
+    db = current_db()
+    sink = current_sink()
+    SQLite.query(db, prepared, sink; values=vals)
 end
 
 # execute
