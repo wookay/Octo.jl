@@ -2,7 +2,7 @@ module adapters_mysql_placeholder_test
 
 using Test # @test_throws
 using Octo.Adapters.MySQL # from to_sql Schema.model PlaceHolder SELECT FROM WHERE
-import Octo.Backends
+import Octo.Backends: UnsupportedError
 
 Repo.set_log_level(Repo.LogLevelDebugSQL)
 
@@ -34,7 +34,7 @@ u = from(User)
 ❔ = PlaceHolder
 
 userName = """ ' OR '1'='1 """
-@test_throws Backends.UnsupportedError Repo.query([SELECT * FROM u WHERE u.name == ❔ AND u.salary > ❔], [userName, 2000])
+@test_throws UnsupportedError Repo.query([SELECT * FROM u WHERE u.name == ❔ AND u.salary > ❔], [userName, 2000])
 
 Repo.disconnect()
 

@@ -99,7 +99,7 @@ function query(stmt::Structured)
 end
 
 """
-    query(stmt::Structured, vasl::Vector)
+    Repo.query(stmt::Structured, vasl::Vector)
 """
 function query(stmt::Structured, vals::Vector) # throw Backends.UnsupportedError
     a = current_adapter()

@@ -59,11 +59,14 @@ Repo.all(Employee)
 Repo.get(Employee, 2)
 Repo.get(Employee, (Name="Tim",))
 Repo.insert!(Employee, (Name="Tim", Salary=15000.50))
-Repo.update!(Employee, (ID=2, Name="Chloe", OfficeNo=56))
+Repo.update!(Employee, (ID=2, Name="Chloe",))
 Repo.delete!(Employee, (ID=2,))
 
 em = from(Employee)
 Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
+
+❔ = Octo.PlaceHolder
+Repo.query([SELECT * FROM em WHERE em.Name == ❔], ["Tim"])
 ```
 
 
