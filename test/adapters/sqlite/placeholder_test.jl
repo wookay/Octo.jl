@@ -2,6 +2,11 @@ module adapters_sqlite_placeholder_test
 
 using Test # @test
 using Octo.Adapters.SQLite # from to_sql Schema.model PlaceHolder SELECT FROM WHERE
+using Pkg # Pkg.dir
+
+dbfile = joinpath(Pkg.dir("SQLite"), "test", "Chinook_Sqlite.sqlite")
+dbfile2 = joinpath(@__DIR__, "test.sqlite")
+cp(dbfile, dbfile2; force=true)
 
 Repo.set_log_level(Repo.LogLevelDebugSQL)
 
@@ -11,9 +16,8 @@ Repo.connect(
     database = joinpath(@__DIR__, "test.sqlite")
 )
 
-# using Octo.Adapters.SQLite # DROP TABLE IF EXISTS CREATE AS
-Repo.query([DROP TABLE IF EXISTS :temp])
-Repo.query([CREATE TABLE :temp AS SELECT * FROM :Album])
+# using Octo.Adapters.SQLite # CREATE TABLE IF NOT EXISTS
+Repo.query([CREATE TABLE IF NOT EXISTS :temp AS SELECT * FROM :Album])
 
 struct Temp
 end

@@ -34,10 +34,8 @@ em = from(Employee)
 df = Repo.query([SELECT * FROM em WHERE em.EmployeeId == 2])
 @test size(df) == (1,)
 
-
-# using Octo.Adapters.SQLite # DROP TABLE IF EXISTS CREATE AS
-Repo.query([DROP TABLE IF EXISTS :temp])
-Repo.query([CREATE TABLE :temp AS SELECT * FROM :Album])
+# using Octo.Adapters.SQLite # CREATE TABLE IF NOT EXISTS
+Repo.query([CREATE TABLE IF NOT EXISTS :temp AS SELECT * FROM :Album])
 
 struct Temp
 end
