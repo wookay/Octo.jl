@@ -12,6 +12,7 @@ import .Octo.AdapterBase: AVG, COUNT, SUM
 
 # import:                      ()        ?
 import .Octo.AdapterBase: Raw, Enclosed, PlaceHolder, Field
+import .Octo.AdapterBase: Database, Structured, SubQuery, _to_sql, _placeholder, _placeholders
 
 # import: Repo, Schema, from, as
 import .Octo: Repo, Schema

@@ -30,10 +30,14 @@ struct AggregateFunction <: SQLElement
     field
 end
 
+struct PlaceHolder <: SQLElement
+    body::String
+end
+
 struct Predicate <: SQLElement
     func::Function
     left::Union{Bool, Number, String, Symbol, <: SQLElement}
-    right::Union{Bool, Number, String, Symbol, <: SQLElement}
+    right::Union{Bool, Number, String, Symbol, <: SQLElement, Type{PlaceHolder}}
 end
 
 struct Raw <: SQLElement
@@ -42,10 +46,6 @@ end
 
 struct Enclosed <: SQLElement
     values::Vector
-end
-
-struct PlaceHolder <: SQLElement
-    body::String
 end
 
 struct Keyword <: SQLElement

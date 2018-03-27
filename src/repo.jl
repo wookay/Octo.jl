@@ -98,6 +98,17 @@ function query(stmt::Structured)
     loader.query(sql)
 end
 
+"""
+    query(stmt::Structured, vasl::Vector)
+"""
+function query(stmt::Structured, vals::Vector) # throw Backends.UnsupportedError
+    a = current_adapter()
+    prepared = a.to_sql(stmt)
+    debug_sql(stmt, vals)
+    loader = current_loader()
+    loader.query(prepared, vals)
+end
+
 # Repo.execute
 """
     Repo.execute(stmt::Structured)
@@ -115,10 +126,10 @@ end
 """
 function execute(stmt::Structured, vals::Vector)
     a = current_adapter()
-    sql = a.to_sql(stmt)
+    prepared = a.to_sql(stmt)
     debug_sql(stmt, vals)
     loader = current_loader()
-    loader.execute(sql, vals)
+    loader.execute(prepared, vals)
 end
 
 """
@@ -126,10 +137,10 @@ end
 """
 function execute(stmt::Structured, nts::Vector{<:NamedTuple})
     a = current_adapter()
-    sql = a.to_sql(stmt)
+    prepared = a.to_sql(stmt)
     debug_sql(stmt, nts)
     loader = current_loader()
-    loader.execute(sql, nts)
+    loader.execute(prepared, nts)
 end
 
 execute(raw::AdapterBase.Raw) = execute([raw])

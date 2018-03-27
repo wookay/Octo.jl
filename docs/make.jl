@@ -14,8 +14,9 @@ makedocs(
         "Repo" => "Repo.md",
         "Schema" => "Schema.md",
         "Queryable" => "Queryable.md",
+        "keywords and aggregate functions" => "keywords_and_aggregates.md",
+        "SQL elements" => "elements.md",
         "Adapters" => [
-            "AdapterBase.md",
             "adapters/SQL.md",
             "adapters/PostgreSQL.md",
             "adapters/MySQL.md",

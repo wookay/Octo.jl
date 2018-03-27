@@ -41,6 +41,16 @@ function query(sql::String)
     df
 end
 
+function query(prepared::String, vals::Vector)
+    conn = current_conn()
+    sink = current_sink()
+    stmt = LibPQ.prepare(conn, prepared)
+    result = LibPQ.execute(stmt, vals)
+    df = LibPQ.fetch!(sink, result)
+    LibPQ.clear!(result)
+    df
+end
+
 # execute
 function execute(sql::String)::Nothing
     conn = current_conn()

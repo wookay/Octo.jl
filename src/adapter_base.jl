@@ -47,6 +47,10 @@ sqlrepr(::Database.Default, f::Function)::SqlPartElement = SqlPartElement(:norma
 sqlrepr(::Database.Default, h::PlaceHolder)::SqlPartElement = SqlPartElement(:yellow, h.body)
 sqlrepr(::Database.Default, raw::Raw)::SqlPartElement = SqlPartElement(:normal, raw.string)
 
+function sqlrepr(::Database.Default, M::Type{PlaceHolder})::SqlPartElement
+    SqlPartElement(:yellow, '?')
+end
+
 function sqlrepr(::Database.Default, M::Type)::SqlPartElement
     Tname = Base.typename(M)
     if haskey(Schema.tables, Tname)
@@ -170,7 +174,20 @@ function _to_sql(db::DB, subquery::SubQuery)::String where DB <: Database.Abstra
 end
 
 function _to_sql(db::DB, query::Structured)::String where DB <: Database.AbstractDatabase
-    joinpart(sqlpart(vcat(sqlrepr.(Ref(db), query)...), " "))
+    nth = 1
+    q = []
+    for el in query
+        if el isa Type{PlaceHolder}
+            push!(q, _placeholder(db, nth))
+            nth += 1
+        elseif el isa Predicate && el.right isa Type{PlaceHolder}
+            push!(q, Predicate(el.func, el.left, _placeholder(db, nth)))
+            nth += 1
+        else
+            push!(q, el)
+        end
+    end
+    joinpart(sqlpart(vcat(sqlrepr.(Ref(db), q)...), " "))
 end
 
 # _placeholder, _placeholders

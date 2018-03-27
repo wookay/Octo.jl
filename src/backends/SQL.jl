@@ -1,5 +1,7 @@
 module SQLLoader
 
+import Octo.Backends: UnsupportedError
+
 # sink
 function sink(::Type)
 end
@@ -14,6 +16,9 @@ end
 
 # query
 function query(sql::String)
+end
+
+function query(prepared::String, vals::Vector)
 end
 
 # execute

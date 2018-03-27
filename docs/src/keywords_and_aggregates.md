@@ -1,4 +1,4 @@
-# AdapterBase
+# SQL keywords and aggregate functions
 
 ### @keywords
 

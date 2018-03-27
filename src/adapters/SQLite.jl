@@ -1,9 +1,7 @@
 module SQLite
 
 include("sql_exports.jl")
-include("sql_imports.jl")
-
-import .Octo.AdapterBase: Database, Structured, SubQuery, _to_sql, _placeholder, _placeholders
+include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
 
 const DatabaseID = Database.SQLiteDatabase
 

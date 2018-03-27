@@ -2,6 +2,7 @@ module MySQLLoader
 
 # https://github.com/JuliaDatabases/MySQL.jl
 import MySQL
+import Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
@@ -37,6 +38,10 @@ function query(sql::String)
     conn = current_conn()
     sink = current_sink()
     MySQL.query(conn, sql, sink)
+end
+
+function query(prepared::String, vals::Vector) # throw UnsupportedError
+    throw(UnsupportedError("needs to be implemented"))
 end
 
 # execute

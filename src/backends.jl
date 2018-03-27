@@ -1,5 +1,9 @@
 module Backends
 
+struct UnsupportedError <: Exception
+    msg
+end
+
 function backend(adapter::Module)
     sym = nameof(adapter)
     L = Symbol(sym, :Loader)

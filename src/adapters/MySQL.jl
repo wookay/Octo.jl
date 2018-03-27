@@ -1,9 +1,8 @@
 module MySQL
 
 include("sql_exports.jl")
-include("sql_imports.jl")
+include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
 
-import .Octo.AdapterBase: Database, Structured, SubQuery, _to_sql, _placeholder, _placeholders
 import .Octo: @keywords
 
 const DatabaseID = Database.MySQLDatabase

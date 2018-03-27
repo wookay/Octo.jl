@@ -7,8 +7,8 @@ export
 # export: aggregate functions
 export AVG, COUNT, SUM
 
-# export: Raw, Enclosed
-export Raw, Enclosed
+# export: PlaceHolder, Raw, Enclosed
+export PlaceHolder, Raw, Enclosed
 
 # export: Octo, Repo, Schema, from, as
 export Octo, Repo, Schema, from, as
