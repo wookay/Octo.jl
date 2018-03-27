@@ -1,4 +1,4 @@
-module Repo
+module Repo # Octo
 
 import ..Backends
 import ..AdapterBase

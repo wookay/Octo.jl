@@ -1,6 +1,4 @@
-# module Octo
-
-module Queryable
+module Queryable # Octo
 
 import ..Octo: FromClause, SubQuery, Field, SQLAlias, AggregateFunction, Structured
 

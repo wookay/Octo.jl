@@ -3,13 +3,12 @@ __precompile__(true)
 module Octo
 
 include("types.jl")
-include("changeset.jl")
-include("schema.jl")
-include("queryable.jl")
+include("Schema.jl")
+include("Queryable.jl")
 include("predicates.jl")
-include("backends.jl")
+include("Backends.jl")
 include("adapter_base.jl")
-include("repo.jl")
-include("adapters.jl")
+include("Repo.jl")
+include("Adapters.jl")
 
 end # module Octo

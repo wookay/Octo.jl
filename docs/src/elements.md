@@ -1,5 +1,5 @@
 # SQL elements
 
 ```@docs
-PlaceHolder
+Octo.PlaceHolder
 ```

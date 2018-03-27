@@ -1,4 +1,4 @@
-module Schema
+module Schema # Octo
 
 tables = Dict{Core.TypeName,Dict{Symbol,String}}()
 validation_models = Dict{Core.TypeName,Function}()

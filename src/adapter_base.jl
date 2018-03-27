@@ -1,4 +1,4 @@
-module AdapterBase
+module AdapterBase # Octo
 
 module Database
 abstract type AbstractDatabase end
