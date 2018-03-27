@@ -7,7 +7,7 @@ include("Schema.jl")
 include("Queryable.jl")
 include("predicates.jl")
 include("Backends.jl")
-include("adapter_base.jl")
+include("AdapterBase.jl")
 include("Repo.jl")
 include("Adapters.jl")
 
