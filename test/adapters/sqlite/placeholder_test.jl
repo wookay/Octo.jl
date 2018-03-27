@@ -8,8 +8,12 @@ Repo.set_log_level(Repo.LogLevelDebugSQL)
 Repo.connect(
     adapter = Octo.Adapters.SQLite,
     sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-    database = joinpath(dirname(@__FILE__), "test.sqlite")
+    database = joinpath(@__DIR__, "test.sqlite")
 )
+
+# using Octo.Adapters.SQLite # DROP TABLE IF EXISTS CREATE AS
+Repo.query([DROP TABLE IF EXISTS :temp])
+Repo.query([CREATE TABLE :temp AS SELECT * FROM :Album])
 
 struct Temp
 end

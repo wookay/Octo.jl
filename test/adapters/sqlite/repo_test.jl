@@ -5,7 +5,7 @@ using Octo.Adapters.SQLite # Repo Schema from SELECT FROM WHERE
 using Pkg # Pkg.dir
 
 dbfile = joinpath(Pkg.dir("SQLite"), "test", "Chinook_Sqlite.sqlite")
-dbfile2 = joinpath(dirname(@__FILE__), "test.sqlite")
+dbfile2 = joinpath(@__DIR__, "test.sqlite")
 cp(dbfile, dbfile2; force=true)
 
 Repo.set_log_level(Repo.LogLevelDebugSQL)
@@ -36,7 +36,6 @@ df = Repo.query([SELECT * FROM em WHERE em.EmployeeId == 2])
 
 
 # using Octo.Adapters.SQLite # DROP TABLE IF EXISTS CREATE AS
-
 Repo.query([DROP TABLE IF EXISTS :temp])
 Repo.query([CREATE TABLE :temp AS SELECT * FROM :Album])
 
