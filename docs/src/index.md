@@ -60,6 +60,6 @@ Repo.delete!(Employee, (ID=2,))
 em = from(Employee)
 Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
 
-❔  = Octo.PlaceHolder
-Repo.query([SELECT * FROM em WHERE em.Name == ❔ ], ["Tim"])
+❓  = Octo.PlaceHolder
+Repo.query([SELECT * FROM em WHERE em.Name == ❓ ], ["Tim"])
 ```
