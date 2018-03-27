@@ -3,6 +3,8 @@ module PostgreSQL
 include("sql_exports.jl")
 include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
 
+import .Octo: @keywords
+
 const DatabaseID = Database.PostgreSQLDatabase
 
 """
@@ -29,5 +31,8 @@ function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
          sqlpart(sqlrepr.(Ref(db), [clause.__octo_model, clause.__octo_as]), " ")
     end
 end
+
+export    FALSE, LATERAL, PARTITION, TRUE
+@keywords FALSE  LATERAL  PARTITION  TRUE
 
 end # Octo.Adapters.PostgreSQL

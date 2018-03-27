@@ -10,5 +10,5 @@ Repo.delete!
 Repo.query
 Repo.execute
 Repo.disconnect
-Repo.set_log_level
+Repo.debug_sql
 ```

@@ -11,9 +11,10 @@ struct JDBCDatabase <: AbstractDatabase end
 end # module Octo.AdapterBase.Database
 
 import ...Schema
-import ...Queryable: Structured, FromClause, from
-import ...Octo: SQLElement, SubQuery, Field, SQLAlias, AggregateFunction, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword, Aggregate
-import ...Octo: @keywords, @aggregates
+import ...Queryable: Structured, FromClause, SubQuery, OverClause
+import ...Octo: SQLElement, Field, SQLAlias, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
+import ...Octo: AggregateFunction, RankingFunction
+import ...Octo: @keywords, @aggregates, @rankings
 
 const current = Dict{Symbol, Database.AbstractDatabase}(
     :database => Database.SQLDatabase()
@@ -78,20 +79,6 @@ function sqlrepr(::Database.Default, field::Field)::SqlPart
     end
 end
 
-function sqlrepr(def::Database.Default, subquery::SubQuery)::SqlPart
-    query = subquery.__octo_query
-    body = sqlpart(vcat(sqlrepr.(Ref(def), query)...), " ")
-    part = sqlpart([
-        SqlPartElement(:normal, '('),
-        body,
-        SqlPartElement(:normal, ')')], "")
-    if subquery.__octo_as isa Nothing
-        part
-    else
-        sqlpart([part, sqlrepr.(Ref(def), [AS, subquery.__octo_as])...], " ")
-    end
-end
-
 # sqlrepr - SqlPart
 
 function sqlrepr(def::Database.Default, el::KeywordAllKeyword)::SqlPart
@@ -112,6 +99,50 @@ function sqlrepr(def::Database.Default, clause::FromClause)::SqlPart
          sqlpart(sqlrepr(def, clause.__octo_model))
     else
          sqlpart(sqlrepr.(Ref(def), [clause.__octo_model, AS, clause.__octo_as]), " ")
+    end
+end
+
+function sqlrepr(def::Database.Default, subquery::SubQuery)::SqlPart
+    query = subquery.__octo_query
+    body = sqlpart(vcat(sqlrepr.(Ref(def), query)...), " ")
+    part = sqlpart([
+        SqlPartElement(:normal, '('),
+        body,
+        SqlPartElement(:normal, ')')], "")
+    if subquery.__octo_as isa Nothing
+        part
+    else
+        sqlpart([
+            part,
+            sqlrepr.(Ref(def), [AS, subquery.__octo_as])...
+        ], " ")
+    end
+end
+
+struct OverClauseError <: Exception
+    msg
+end
+
+function sqlrepr(def::Database.Default, clause::OverClause)::SqlPart # throw OverClauseError
+    if length(clause.__octo_query) >= 3 && clause.__octo_query[2] isa Keyword && clause.__octo_query[2].name == :OVER
+        body = sqlpart([
+            SqlPartElement(:normal, '('),
+            sqlpart(sqlrepr.(Ref(def), clause.__octo_query[3:end]), " "),
+            SqlPartElement(:normal, ')')], "")
+        part = sqlpart([
+            sqlrepr.(Ref(def), [clause.__octo_query[1], OVER])...,
+            body
+        ], " ")
+        if clause.__octo_as isa Nothing
+             part
+        else
+            sqlpart([
+                part,
+                sqlrepr.(Ref(def), [AS, clause.__octo_as])...
+            ], " ")
+        end
+    else
+        throw(OverClauseError(""))
     end
 end
 
@@ -143,6 +174,13 @@ function sqlrepr(def::Database.Default, f::AggregateFunction)::SqlPart
         SqlPartElement(:yellow, f.name),
         SqlPartElement(:normal, '('),
         sqlrepr(def, f.field),
+        SqlPartElement(:normal, ')')], "")
+end
+
+function sqlrepr(def::Database.Default, f::RankingFunction)::SqlPart
+    sqlpart([
+        SqlPartElement(:yellow, f.name),
+        SqlPartElement(:normal, '('),
         SqlPartElement(:normal, ')')], "")
 end
 
@@ -217,9 +255,11 @@ end
 
 
 @keywords AND AS ASC BY CREATE DATABASE DELETE DESC DISTINCT DROP EXISTS FROM FULL GROUP
-@keywords HAVING IF INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER
+@keywords HAVING IF INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER OVER
 @keywords RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
 
 @aggregates AVG COUNT SUM
+
+@rankings DENSE_RANK RANK ROW_NUMBER
 
 end # module Octo.AdapterBase

@@ -1,9 +1,9 @@
 module adapters_postgresql_placeholder_test
 
 using Test # @test
-using Octo.Adapters.PostgreSQL # from to_sql Schema.model PlaceHolder SELECT FROM WHERE
+using Octo.Adapters.PostgreSQL # Repo from to_sql Schema.model Octo.PlaceHolder SELECT FROM WHERE
 
-Repo.set_log_level(Repo.LogLevelDebugSQL)
+Repo.debug_sql()
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,

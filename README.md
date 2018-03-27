@@ -44,9 +44,9 @@ using Octo.Adapters.PostgreSQL
 
 struct Employee
 end
-Schema.model(Employee, table_name = "Employee", primary_key = "ID")
+Schema.model(Employee, table_name="Employee", primary_key="ID")
 
-Repo.set_log_level(Repo.LogLevelDebugSQL)
+Repo.debug_sql()
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
