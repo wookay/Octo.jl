@@ -8,7 +8,7 @@ dbfile = joinpath(Pkg.dir("SQLite"), "test", "Chinook_Sqlite.sqlite")
 dbfile2 = joinpath(@__DIR__, "test.sqlite")
 cp(dbfile, dbfile2; force=true)
 
-Repo.set_log_level(Repo.LogLevelDebugSQL)
+Repo.debug_sql()
 
 repo = Repo.connect(
     adapter = Octo.Adapters.SQLite,

@@ -1,6 +1,6 @@
 module Queryable # Octo
 
-import ..Octo: FromClause, SubQuery, OverClause, Field, SQLAlias, AggregateFunction, Structured
+import ..Octo: FromClause, SubQuery, OverClause, OverClauseError, Field, SQLAlias, AggregateFunction, Structured
 
 """
     from(M::Type, as=nothing)::FromClause

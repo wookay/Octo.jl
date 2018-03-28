@@ -2,7 +2,7 @@ module PostgreSQL
 
 include("sql_exports.jl")
 include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
-
+import .Octo.Queryable: window
 import .Octo: @keywords
 
 const DatabaseID = Database.PostgreSQLDatabase
@@ -32,7 +32,7 @@ function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
     end
 end
 
-export    FALSE, LATERAL, PARTITION, TRUE
-@keywords FALSE  LATERAL  PARTITION  TRUE
+export    FALSE, LATERAL, TRUE
+@keywords FALSE  LATERAL  TRUE
 
 end # Octo.Adapters.PostgreSQL

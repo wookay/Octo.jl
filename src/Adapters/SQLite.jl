@@ -27,4 +27,6 @@ function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
     end
 end
 
+window(query::Structured, as::Union{Nothing,Symbol}=nothing) = @warn "SQLite does not support"
+
 end # Octo.Adapters.SQLite

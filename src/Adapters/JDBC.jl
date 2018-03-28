@@ -4,6 +4,7 @@ include("sql_exports.jl")
 include("sql_imports.jl")
 
 import .Octo.AdapterBase: Database, Structured, SubQuery, _to_sql
+import .Octo.Queryable: window
 
 const DatabaseID = Database.JDBCDatabase
 

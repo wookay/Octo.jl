@@ -11,7 +11,7 @@ struct JDBCDatabase <: AbstractDatabase end
 end # module Octo.AdapterBase.Database
 
 import ...Schema
-import ...Queryable: Structured, FromClause, SubQuery, OverClause
+import ...Queryable: Structured, FromClause, SubQuery, OverClause, OverClauseError
 import ...Octo: SQLElement, Field, SQLAlias, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
 import ...Octo: AggregateFunction, RankingFunction
 import ...Octo: @keywords, @aggregates, @rankings
@@ -117,10 +117,6 @@ function sqlrepr(def::Database.Default, subquery::SubQuery)::SqlPart
             sqlrepr.(Ref(def), [AS, subquery.__octo_as])...
         ], " ")
     end
-end
-
-struct OverClauseError <: Exception
-    msg
 end
 
 function sqlrepr(def::Database.Default, clause::OverClause)::SqlPart # throw OverClauseError
@@ -256,7 +252,7 @@ end
 
 @keywords AND AS ASC BY CREATE DATABASE DELETE DESC DISTINCT DROP EXISTS FROM FULL GROUP
 @keywords HAVING IF INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER OVER
-@keywords RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
+@keywords PARTITION RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
 
 @aggregates AVG COUNT SUM
 

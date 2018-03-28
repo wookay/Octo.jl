@@ -2,7 +2,7 @@ module MySQL
 
 include("sql_exports.jl")
 include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
-
+import .Octo.Queryable: window
 import .Octo: @keywords
 
 const DatabaseID = Database.MySQLDatabase

@@ -4,7 +4,7 @@ using Test # @test_throws
 using Octo.Adapters.MySQL # from to_sql Schema.model PlaceHolder SELECT FROM WHERE
 import Octo.Backends: UnsupportedError
 
-Repo.set_log_level(Repo.LogLevelDebugSQL)
+Repo.debug_sql()
 
 Repo.connect(
     adapter = Octo.Adapters.MySQL,

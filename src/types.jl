@@ -20,6 +20,10 @@ struct OverClause <: SQLElement
     __octo_as::Union{Symbol, Nothing}
 end
 
+struct OverClauseError <: Exception
+    msg
+end
+
 struct Field <: SQLElement
     clause::Union{FromClause, SubQuery}
     name::Symbol
