@@ -22,6 +22,7 @@ makedocs(
             "Adapters/MySQL.md",
             "Adapters/SQLite.md",
         ],
+        "Pretty" => "Pretty.md",
     ],
     html_prettyurls = !("local" in ARGS),
 )

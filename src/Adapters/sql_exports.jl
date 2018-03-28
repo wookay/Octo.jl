@@ -13,8 +13,8 @@ export DENSE_RANK, RANK, ROW_NUMBER
 # export: PlaceHolder, Raw, Enclosed
 export PlaceHolder, Raw, Enclosed
 
-# export: Octo, Repo, Schema, from, as
-export Octo, Repo, Schema, from, as
+# export: Octo, Repo, Schema, Pretty, from, as
+export Octo, Repo, Schema, Pretty, from, as
 
 # export: window
 export window
