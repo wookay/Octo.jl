@@ -1,11 +1,14 @@
 module Pretty # Octo
 
+const nrows_limit = 20
+
 function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple})
     isempty(nts) && return
-    nrows = length(nts)
     uno = first(nts)
+    real_nrows = length(nts)
+    nrows = min(nrows_limit, real_nrows)
     ncols = length(uno)
-    A = vcat(map(v -> vcat(v...), nts)...)
+    A = vcat(map(v -> vcat(v...), nts[1:nrows])...)
     rt = reshape(A, ncols, nrows)
     colnames = keys(uno)
     paddings = maximum((length ∘ string).(rt), dims=2)
@@ -38,6 +41,11 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple})
         end
         row_spike(" |")
         nrows != rowidx && println(io)
+    end
+    if real_nrows > nrows_limit
+        printstyled(io, "\nFetched ")
+        printstyled(io, real_nrows, color=:cyan)
+        printstyled(io, " rows...")
     end
 end
 

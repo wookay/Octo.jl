@@ -201,6 +201,16 @@ function get(M::Type, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
 end
 
 """
+    Repo.get(M::Type, pk_range::UnitRange{Int64})
+"""
+function get(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
+    a = current_adapter()
+    table = a.from(M)
+    key = _get_primary_key(M)
+    query([a.SELECT * a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop])
+end
+
+"""
     Repo.get(M::Type, nt::NamedTuple)
 """
 function get(M::Type, nt::NamedTuple)
