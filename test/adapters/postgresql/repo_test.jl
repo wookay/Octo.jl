@@ -3,7 +3,7 @@ module adapters_postgresql_repo_test
 using Test # @test
 using Octo.Adapters.PostgreSQL # Repo Schema Raw
 
-Repo.set_log_level(Repo.LogLevelDebugSQL)
+Repo.debug_sql()
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,

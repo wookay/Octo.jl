@@ -18,9 +18,11 @@ end
 
 # connect
 function connect(; kwargs...)
-    str = join(map(kv->join(kv, '='), collect(kwargs)), ' ')
-    conn = LibPQ.Connection(str)
-    current[:conn] = conn
+    if !isempty(kwargs)
+        str = join(map(kv->join(kv, '='), collect(kwargs)), ' ')
+        conn = LibPQ.Connection(str)
+        current[:conn] = conn
+    end
 end
 
 # disconnect

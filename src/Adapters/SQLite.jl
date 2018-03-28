@@ -18,13 +18,16 @@ to_sql(subquery::SubQuery)::String = _to_sql(DatabaseID(), subquery)
 placeholder(nth::Int) = _placeholder(DatabaseID(), nth)
 placeholders(dims::Int) = _placeholders(DatabaseID(), dims)
 
-import .Octo.AdapterBase: FromClause, SqlPart, sqlrepr, sqlpart
+import .Octo.AdapterBase: FromClause, SqlPart, sqlrepr
 function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
     if clause.__octo_as isa Nothing
-         sqlpart(sqlrepr(db, clause.__octo_model))
+         els = [clause.__octo_model]
     else
-         sqlpart(sqlrepr.(Ref(db), [clause.__octo_model, clause.__octo_as]), " ")
+         els = [clause.__octo_model, clause.__octo_as]
     end
+    SqlPart(sqlrepr.(Ref(db), els), " ")
 end
+
+window(query::Structured, as::Union{Nothing,Symbol}=nothing) = @warn "SQLite does not support"
 
 end # Octo.Adapters.SQLite

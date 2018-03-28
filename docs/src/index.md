@@ -32,16 +32,16 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 
 ### Repo
 
-Current supported databases: PostgreSQL(via LibPQ.jl), MySQL(via MySQL.jl), SQLite(via SQLite.jl)
+Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
 
 ```julia
 using Octo.Adapters.PostgreSQL
 
 struct Employee
 end
-Schema.model(Employee, table_name = "Employee", primary_key = "ID")
+Schema.model(Employee, table_name="Employee", primary_key="ID")
 
-Repo.set_log_level(Repo.LogLevelDebugSQL)
+Repo.debug_sql()
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,

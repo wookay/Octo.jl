@@ -5,6 +5,10 @@ import ..AdapterBase
 import ..Queryable: Structured
 import ..Schema # Schema.validates
 
+struct NeedsConnectError <: Exception
+    message
+end
+
 @enum RepoLogLevel::Int32 begin
     LogLevelDebugSQL = -1
     LogLevelInfo = 0
@@ -16,12 +20,9 @@ const current = Dict{Symbol, Union{Nothing, Module, RepoLogLevel}}(
     :log_level => LogLevelInfo
 )
 
-struct NeedsConnectError <: Exception
-    message
-end
+const color_params = :yellow
 
 current_loader() = current[:loader]
-
 function current_adapter() # throw Repo.NeedsConnectError
     if current[:adapter] isa Nothing
         throw(NeedsConnectError("Needs a Repo.connect"))
@@ -30,29 +31,32 @@ function current_adapter() # throw Repo.NeedsConnectError
     end
 end
 
-function debug_sql_params(io, params)
+function set_log_level(level::RepoLogLevel)
+    current[:log_level] = level
+end
+
+"""
+    Repo.debug_sql(debug::Bool = true)
+"""
+function debug_sql(debug::Bool = true)
+    current[:log_level] = debug ? LogLevelDebugSQL : LogLevelInfo
+end
+
+function print_debug_sql_params(io, params)
     printstyled(io, "   ")
     for (idx, x) in enumerate(params)
-        printstyled(io, repr(x), color=:green)
+        printstyled(io, repr(x), color=color_params)
         length(params) != idx && printstyled(io, ", ")
     end
 end
 
-function debug_sql(stmt::Structured, params = nothing)
+function print_debug_sql(stmt::Structured, params = nothing)
     if current[:log_level] <= LogLevelDebugSQL
         buf = IOBuffer()
         show(IOContext(buf, :color=>true), MIME"text/plain"(), stmt)
-        !(params isa Nothing) && debug_sql_params(IOContext(buf, :color=>true), params)
+        !(params isa Nothing) && print_debug_sql_params(IOContext(buf, :color=>true), params)
         @info String(take!(buf))
     end
-end
-
-# Repo.set_log_level
-"""
-    Repo.set_log_level(level::RepoLogLevel)
-"""
-function set_log_level(level::RepoLogLevel)
-    current[:log_level] = level
 end
 
 # Repo.connect
@@ -93,7 +97,7 @@ end
 function query(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
-    debug_sql(stmt)
+    print_debug_sql(stmt)
     loader = current_loader()
     loader.query(sql)
 end
@@ -104,7 +108,7 @@ end
 function query(stmt::Structured, vals::Vector) # throw Backends.UnsupportedError
     a = current_adapter()
     prepared = a.to_sql(stmt)
-    debug_sql(stmt, vals)
+    print_debug_sql(stmt, vals)
     loader = current_loader()
     loader.query(prepared, vals)
 end
@@ -116,7 +120,7 @@ end
 function execute(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
-    debug_sql(stmt)
+    print_debug_sql(stmt)
     loader = current_loader()
     loader.execute(sql)
 end
@@ -127,7 +131,7 @@ end
 function execute(stmt::Structured, vals::Vector)
     a = current_adapter()
     prepared = a.to_sql(stmt)
-    debug_sql(stmt, vals)
+    print_debug_sql(stmt, vals)
     loader = current_loader()
     loader.execute(prepared, vals)
 end
@@ -138,7 +142,7 @@ end
 function execute(stmt::Structured, nts::Vector{<:NamedTuple})
     a = current_adapter()
     prepared = a.to_sql(stmt)
-    debug_sql(stmt, nts)
+    print_debug_sql(stmt, nts)
     loader = current_loader()
     loader.execute(prepared, nts)
 end

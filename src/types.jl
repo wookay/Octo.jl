@@ -15,19 +15,23 @@ struct SubQuery <: SQLElement
     __octo_as::Union{Symbol, Nothing}
 end
 
+struct OverClause <: SQLElement
+    __octo_query::Structured
+    __octo_as::Union{Symbol, Nothing}
+end
+
+struct OverClauseError <: Exception
+    msg
+end
+
 struct Field <: SQLElement
-    clause::FromClause
+    clause::Union{FromClause, SubQuery}
     name::Symbol
 end
 
 struct SQLAlias <: SQLElement
     field
     alias::Symbol
-end
-
-struct AggregateFunction <: SQLElement
-    name::Symbol
-    field
 end
 
 """
@@ -65,6 +69,15 @@ struct Aggregate
 end
 (a::Aggregate)(field) = AggregateFunction(a.name, field)
 
+struct AggregateFunction <: SQLElement
+    name::Symbol
+    field
+end
+
+struct RankingFunction <: SQLElement
+    name::Symbol
+end
+(a::RankingFunction)() = RankingFunction(a.name)
 
 # @keywords
 
@@ -72,7 +85,6 @@ macro keywords(args...)
     esc(keywords(args))
 end
 keywords(s) = :(($(s...),) = $(map(Keyword, s)))
-
 
 # @aggregates
 
@@ -84,3 +96,10 @@ aggregates(s) = :(($(s...),) = $(map(Aggregate, s)))
 function Base.:*(left::Keyword, right::Keyword)
     KeywordAllKeyword(left, right)
 end
+
+# @rankings
+
+macro rankings(args...)
+    esc(rankings(args))
+end
+rankings(s) = :(($(s...),) = $(map(RankingFunction, s)))
