@@ -4,6 +4,7 @@ import ..Backends
 import ..AdapterBase
 import ..Queryable: Structured
 import ..Schema # Schema.validates
+import ..Pretty: show
 
 struct NeedsConnectError <: Exception
     message
