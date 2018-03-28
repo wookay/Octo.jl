@@ -8,7 +8,7 @@ import .Octo.AdapterBase:
     PARTITION, RIGHT, SELECT, SET, TABLE, UPDATE, USING, VALUES, WHERE
 
 # import: aggregate functions
-import .Octo.AdapterBase: AVG, COUNT, SUM
+import .Octo.AdapterBase: AVG, COUNT, MAX, MIN, SUM
 
 # import: ranking functions
 import .Octo.AdapterBase: DENSE_RANK, RANK, ROW_NUMBER

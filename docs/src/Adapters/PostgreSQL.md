@@ -6,4 +6,4 @@ Octo.Adapters.PostgreSQL.to_sql
 
 ### additional [@keywords](@ref keywords)
 
-FALSE LATERAL TRUE
+FALSE LATERAL TRUE WITH

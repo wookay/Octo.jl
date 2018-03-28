@@ -5,7 +5,7 @@ export
     PARTITION, RIGHT, SELECT, SET, TABLE, UPDATE, USING, VALUES, WHERE
 
 # export: aggregate functions
-export AVG, COUNT, SUM
+export AVG, COUNT, MAX, MIN, SUM
 
 # export: ranking functions
 export DENSE_RANK, RANK, ROW_NUMBER

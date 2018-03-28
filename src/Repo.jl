@@ -20,6 +20,8 @@ const current = Dict{Symbol, Union{Nothing, Module, RepoLogLevel}}(
     :log_level => LogLevelInfo
 )
 
+const color_params = :yellow
+
 current_loader() = current[:loader]
 function current_adapter() # throw Repo.NeedsConnectError
     if current[:adapter] isa Nothing
@@ -43,7 +45,7 @@ end
 function print_debug_sql_params(io, params)
     printstyled(io, "   ")
     for (idx, x) in enumerate(params)
-        printstyled(io, repr(x), color=:green)
+        printstyled(io, repr(x), color=color_params)
         length(params) != idx && printstyled(io, ", ")
     end
 end

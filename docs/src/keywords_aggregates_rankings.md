@@ -9,9 +9,9 @@ PARTITION RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
 
 ### [@aggregates](@id aggregates)
 
-AVG COUNT SUM
+AVG COUNT MAX MIN SUM
 
 
 ### [@rankings](@id rankings)
 
-DENSE_RANK RANK ROW_NUMBER
+`DENSE_RANK`  `RANK`  `ROW_NUMBER`

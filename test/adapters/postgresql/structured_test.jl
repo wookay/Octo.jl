@@ -1,9 +1,7 @@
 module adapters_postgresql_structured_test
 
 using Test # @test
-using Octo.Adapters.PostgreSQL # Schema from SELECT FROM WHERE INNER JOIN ON GROUP BY
-
-## 
+using Octo.Adapters.PostgreSQL # Repo.connect Schema from SELECT FROM WHERE INNER JOIN ON GROUP BY
 
 struct Weather
 end
@@ -33,6 +31,10 @@ Schema.model(Film, table_name="films")
 
 d = from(Distributor, :d)
 f = from(Film, :f)
+
+@test to_sql([SELECT (f.title,) FROM (d, f)]) ==
+             "SELECT f.title FROM distributors d, films f"
+
 @test to_sql([SELECT (f.title, f.did, d.name, f.date_prod, f.kind) FROM (d, f) WHERE f.did == d.did]) ==
              "SELECT f.title, f.did, d.name, f.date_prod, f.kind FROM distributors d, films f WHERE f.did = d.did"
 
