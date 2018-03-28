@@ -36,12 +36,13 @@ struct SqlPart
     sep::String
 end
 
-const style_placeholders = ElementStyle(:green, true)
-const style_functions    = ElementStyle(:yellow)
-const style_subquery     = ElementStyle(:light_green, true)
-const style_string       = ElementStyle(:light_magenta)
-const style_keyword      = ElementStyle(:cyan)
 const style_normal       = ElementStyle(:normal)
+const style_subquery     = ElementStyle(:light_green, true)
+const style_overclause   = ElementStyle(:light_blue, true)
+const style_placeholders = ElementStyle(:green, true)
+const style_keyword      = ElementStyle(:cyan)
+const style_string       = ElementStyle(:light_magenta)
+const style_functions    = ElementStyle(:yellow)
 
 # sqlrepr -> SqlPartElement
 
@@ -91,24 +92,24 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, el::KeywordAllKeyword)::SqlP
     SqlPart(sqlrepr.(Ref(db), els), " ")
 end
 
-function _over_clause_predicate_side(side)
+function _over_clause_predicate_side(db::DB where DB<:AbstractDatabase, side)
     if side isa OverClause && side.__octo_as isa Symbol
-        side.__octo_as
+        SqlPartElement(style_overclause, side.__octo_as)
     else
-        side
+        sqlrepr(db, side)
     end
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, pred::Predicate)::SqlPart
-    left  = _over_clause_predicate_side(pred.left)
-    right = _over_clause_predicate_side(pred.right)
+    left  = _over_clause_predicate_side(db, pred.left)
+    right = _over_clause_predicate_side(db, pred.right)
     if ==(pred.func, ==)
         op = :(=)
     else
         op = pred.func
     end
-    els = [left, op, right]
-    SqlPart(sqlrepr.(Ref(db), els), " ")
+    parts = [left, sqlrepr(db, op), right]
+    SqlPart(parts, " ")
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, clause::FromClause)::SqlPart
@@ -141,9 +142,9 @@ end
 function sqlrepr(db::DB where DB<:AbstractDatabase, clause::OverClause)::SqlPart # throw OverClauseError
     if length(clause.__octo_query) >= 3 && clause.__octo_query[2] isa Keyword && clause.__octo_query[2].name == :OVER
         bodypart = SqlPart([
-            SqlPartElement(style_normal, '('),
+            SqlPartElement(style_overclause, '('),
             SqlPart(sqlrepr.(Ref(db), clause.__octo_query[3:end]), " "),
-            SqlPartElement(style_normal, ')')], "")
+            SqlPartElement(style_overclause, ')')], "")
         part = SqlPart([
             sqlrepr(db, clause.__octo_query[1]),
             sqlrepr(db, OVER),
@@ -155,7 +156,7 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, clause::OverClause)::SqlPart
             SqlPart([
                 part,
                 sqlrepr(db, AS),
-                sqlrepr(db, clause.__octo_as),
+                SqlPartElement(style_overclause, clause.__octo_as),
             ], " ")
         end
     else
