@@ -33,6 +33,6 @@ function changeset(validations, M::Type)
     Pair(Tname, validations)
 end
 
-include("schema/validations.jl")
+include("Schema/validations.jl")
 
 end # module Octo.Schema

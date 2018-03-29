@@ -11,13 +11,15 @@ Repo.connect(
     username = "root",
     password = "",
     hostname = "localhost",
-    port = 3306
+    port = 3306,
+    db = "mysqltest",
 )
 
-Repo.execute([DROP DATABASE IF EXISTS :mysqltest])
-Repo.execute([CREATE DATABASE :mysqltest])
-Repo.execute([USE :mysqltest])
-Repo.execute(Raw("""CREATE TABLE Employee
+#Repo.execute([DROP DATABASE IF EXISTS :mysqltest])
+#Repo.execute([CREATE DATABASE :mysqltest])
+#Repo.execute([USE :mysqltest])
+Repo.execute([DROP TABLE IF EXISTS :Employee])
+Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS Employee
                  (
                      ID INT NOT NULL AUTO_INCREMENT,
                      Name VARCHAR(255),
