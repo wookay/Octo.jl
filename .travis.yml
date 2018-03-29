@@ -8,7 +8,7 @@ services:
 
 os:
   - linux
-  - osx
+#  - osx
 
 julia:
   - nightly
@@ -17,9 +17,15 @@ env:
   - POSTGRESQL_VERSION=9.6 PGHOST="/var/run/postgresql"
 
 before_install:
+  # PostgreSQL 9.6.6
   - sudo service postgresql stop && sudo service postgresql start $POSTGRESQL_VERSION
+  - psql --version
   - psql -U postgres -tc 'SHOW server_version'
   - psql -U postgres -c '\conninfo'
+  # MySQL
+  - mysql --version
+  - mysql -e 'CREATE DATABASE mysqltest;' -uroot
+  - mysql -e 'GRANT ALL PRIVILEGES ON mysqltest.* TO "root"@"localhost" IDENTIFIED BY ""' -uroot
 
 matrix:
   allow_failures:
@@ -47,13 +53,12 @@ git:
 before_script: # homebrew for mac
   - export OLD_PATH=$LD_LIBRARY_PATH
   - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`mysql_config --libs | cut -d ' ' -f1 | sed 's/-L//'`
-  - if [ "$TRAVIS_OS_NAME" == osx ]; then brew install mysql          ; fi
-  - if [ "$TRAVIS_OS_NAME" == osx ]; then mysql.server start          ; fi
-#  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
+#  - if [ "$TRAVIS_OS_NAME" == osx ]; then brew install mysql          ; fi
+#  - if [ "$TRAVIS_OS_NAME" == osx ]; then mysql.server start          ; fi
 
 ## uncomment the following lines to override the default test script
 script:
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("Octo"); Pkg.test("Octo"; coverage=true)'
+  - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("Octo"); Pkg.test("Octo"; coverage=true)'
 
 after_script:
   - export LD_LIBRARY_PATH=$OLD_PATH
@@ -61,6 +66,6 @@ after_script:
 
 after_success:
   # push coverage results to Coveralls
-  - julia -e 'cd(Pkg.dir("Octo")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia -e 'using Pkg; cd(Pkg.dir("Octo")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
-  - julia -e 'cd(Pkg.dir("Octo")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'using Pkg; cd(Pkg.dir("Octo")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
