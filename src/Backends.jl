@@ -12,7 +12,7 @@ function backend(adapter::Module)
         getfield(mod, L)
     else
         try
-            path = normpath(dirname(@__FILE__), "backends", string(sym, ".jl"))
+            path = normpath(@__DIR__, "Backends", string(sym, ".jl"))
             mod.include(path)
         catch err
             error(err)
