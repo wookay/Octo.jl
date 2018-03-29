@@ -24,6 +24,7 @@ before_install:
   - psql -U postgres -c '\conninfo'
   # MySQL
   - mysql --version
+  - mysql -e 'show variables like "socket";' -uroot
   - mysql -e 'CREATE DATABASE mysqltest;' -uroot
   - mysql -e 'GRANT ALL PRIVILEGES ON mysqltest.* TO "root"@"localhost" IDENTIFIED BY ""' -uroot
 
@@ -57,7 +58,10 @@ before_script: # homebrew for mac
 #  - if [ "$TRAVIS_OS_NAME" == osx ]; then mysql.server start          ; fi
 
 ## uncomment the following lines to override the default test script
+
 script:
+  # DataStreams not compatible with julia 0.6 - https://github.com/wookay/DataStreams.jl/pull/1
+  - julia -e 'using Pkg; Pkg.clone("https://github.com/wookay/DataStreams.jl.git"); Pkg.checkout("DataStreams", "fix_07"); using DataStreams'
   - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("Octo"); Pkg.test("Octo"; coverage=true)'
 
 after_script:

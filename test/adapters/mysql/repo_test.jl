@@ -5,14 +5,11 @@ using Octo.Adapters.MySQL # Repo Schema Raw USE
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+Repo.connect(;
     adapter = Octo.Adapters.MySQL,
     sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-    username = "root",
-    password = "",
-    hostname = "localhost",
-    port = 3306,
-    db = "mysqltest",
+    Options.arguments...
 )
 
 #Repo.execute([DROP DATABASE IF EXISTS :mysqltest])

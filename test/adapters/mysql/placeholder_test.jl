@@ -6,16 +6,12 @@ import Octo.Backends: UnsupportedError
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+Repo.connect(;
     adapter = Octo.Adapters.MySQL,
     sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-    username = "root",
-    password = "",
-    hostname = "localhost",
-    port = 3306
+    Options.arguments...
 )
-
-Repo.execute([USE :mysqltest])
 
 Repo.execute([DROP TABLE IF EXISTS :users])
 Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS users (
