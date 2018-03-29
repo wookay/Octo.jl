@@ -2,6 +2,7 @@ module JDBCLoader
 
 # https://github.com/JuliaDatabases/JDBC.jl
 import JDBC
+import Octo.Repo: ExecuteResult
 import Octo.Backends: UnsupportedError
 
 # sink
@@ -26,15 +27,15 @@ function query(prepared::String, vals::Vector)
 end
 
 # execute
-function execute(sql::String)
+function execute(sql::String)::ExecuteResult
     throw(UnsupportedError("needs to be implemented"))
 end
 
-function execute(prepared::String, vals::Vector)::Nothing
+function execute(prepared::String, vals::Vector)::ExecuteResult
     throw(UnsupportedError("needs to be implemented"))
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
+function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     throw(UnsupportedError("needs to be implemented"))
 end
 

@@ -39,38 +39,130 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 
 Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
 
-```julia
-using Octo.Adapters.PostgreSQL
+```julia-repl
+julia> using Octo.Adapters.PostgreSQL
 
-struct Employee
-end
-Schema.model(Employee, table_name="Employee", primary_key="ID")
+julia> Repo.debug_sql()
+LogLevelDebugSQL::Octo.Repo.RepoLogLevel = -1
 
-Repo.debug_sql()
+julia> Repo.connect(
+           adapter = Octo.Adapters.PostgreSQL,
+           dbname = "postgresqltest",
+           user = "postgres",
+       )
+PostgreSQL connection (CONNECTION_OK) with parameters:
+  user = postgres
+  passfile = /Users/wookyoung/.pgpass
+  dbname = postgresqltest
+  port = 5432
+  client_encoding = UTF8
+  application_name = LibPQ.jl
+  sslmode = prefer
+  sslcompression = 1
+  krbsrvname = postgres
+  target_session_attrs = any
 
-Repo.connect(
-    adapter = Octo.Adapters.PostgreSQL,
-    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-    dbname = "postgresqltest",
-    user = "postgres",
-)
+julia> Repo.execute([DROP TABLE IF EXISTS :Employee])
+[ Info: DROP TABLE IF EXISTS Employee
 
-Repo.all(Employee)
-Repo.get(Employee, 2)
-Repo.get(Employee, 2:5)
-Repo.get(Employee, (Name="Tim",))
-Repo.insert!(Employee, (Name="Tim", Salary=15000.50))
-Repo.update!(Employee, (ID=2, Name="Chloe",))
-Repo.delete!(Employee, (ID=2,))
-Repo.delete!(Employee, 2:5)
+julia> Repo.execute(Raw("""
+           CREATE TABLE Employee (
+               ID SERIAL,
+               Name VARCHAR(255),
+               Salary FLOAT(8),
+               PRIMARY KEY (ID)
+           )"""))
+┌ Info: CREATE TABLE Employee (
+│     ID SERIAL,
+│     Name VARCHAR(255),
+│     Salary FLOAT(8),
+│     PRIMARY KEY (ID)
+└ )
 
-em = from(Employee)
-Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
+julia> struct Employee
+       end
 
-❓ = Octo.PlaceHolder
-Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Tim"])
+julia> Schema.model(Employee, table_name="Employee", primary_key="ID")
+Employee => Dict(:primary_key=>"ID",:table_name=>"Employee")
+
+julia> Repo.insert!(Employee, [
+           (Name="Jeremy",  Salary=10000.50),
+           (Name="Cloris",  Salary=20000.50),
+           (Name="John",    Salary=30000.50),
+           (Name="Hyunden", Salary=40000.50),
+           (Name="Justin",  Salary=50000.50),
+           (Name="Tom",     Salary=60000.50),
+       ])
+[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jeremy", Salary = 10000.5), (Name = "Cloris", Salary = 20000.5), (Name = "John", Salary = 30000.5), (Name = "Hyunden", Salary = 40000.5), (Name = "Justin", Salary = 50000.5), (Name = "Tom", Salary = 60000.5)
+
+julia> Repo.all(Employee)
+[ Info: SELECT * FROM Employee
+|   id | name      |    salary |
+| ---- | --------- | --------- |
+|    1 | Jeremy    |   10000.5 |
+|    2 | Cloris    |   20000.5 |
+|    3 | John      |   30000.5 |
+|    4 | Hyunden   |   40000.5 |
+|    5 | Justin    |   50000.5 |
+|    6 | Tom       |   60000.5 |
+6 rows.
+
+julia> Repo.get(Employee, 2)
+[ Info: SELECT * FROM Employee WHERE ID = 2
+|   id | name     |    salary |
+| ---- | -------- | --------- |
+|    2 | Cloris   |   20000.5 |
+1 row.
+
+julia> Repo.get(Employee, 2:5)
+[ Info: SELECT * FROM Employee WHERE ID BETWEEN 2 AND 5
+|   id | name      |    salary |
+| ---- | --------- | --------- |
+|    2 | Cloris    |   20000.5 |
+|    3 | John      |   30000.5 |
+|    4 | Hyunden   |   40000.5 |
+|    5 | Justin    |   50000.5 |
+4 rows.
+
+julia> Repo.get(Employee, (Name="Jeremy",))
+[ Info: SELECT * FROM Employee WHERE Name = 'Jeremy'
+|   id | name     |    salary |
+| ---- | -------- | --------- |
+|    1 | Jeremy   |   10000.5 |
+1 row.
+
+julia> Repo.insert!(Employee, (Name="Jessica", Salary=70000.50))
+[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jessica", Salary = 70000.5)
+
+julia> Repo.update!(Employee, (ID=2, Salary=85000))
+[ Info: UPDATE Employee SET Salary = $1 WHERE ID = 2   85000
+
+julia> Repo.delete!(Employee, (ID=3,))
+[ Info: DELETE FROM Employee WHERE ID = 3
+
+julia> Repo.delete!(Employee, 3:5)
+[ Info: DELETE FROM Employee WHERE ID BETWEEN 3 AND 5
+
+julia> em = from(Employee)
+Octo.FromClause(Employee, nothing)
+
+julia> Repo.query([SELECT * FROM em WHERE em.Name == "Cloris"])
+[ Info: SELECT * FROM Employee WHERE Name = 'Cloris'
+|   id | name     |    salary |
+| ---- | -------- | --------- |
+|    2 | Cloris   |   85000.0 |
+1 row.
+
+julia> ❓ = Octo.PlaceHolder
+PlaceHolder
+
+julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
+[ Info: SELECT * FROM Employee WHERE Name = ?   "Cloris"
+|   id | name     |    salary |
+| ---- | -------- | --------- |
+|    2 | Cloris   |   85000.0 |
+1 row.
 ```
-
 
 ### Requirements
 

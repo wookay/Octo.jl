@@ -2,6 +2,7 @@ module PostgreSQLLoader
 
 # https://github.com/invenia/LibPQ.jl
 import LibPQ
+import Octo.Repo: ExecuteResult
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
@@ -54,26 +55,26 @@ function query(prepared::String, vals::Vector)
 end
 
 # execute
-function execute(sql::String)::Nothing
+function execute(sql::String)::ExecuteResult
     conn = current_conn()
     LibPQ.execute(conn, sql)
-    nothing
+    ExecuteResult()
 end
 
-function execute(prepared::String, vals::Vector)::Nothing
+function execute(prepared::String, vals::Vector)::ExecuteResult
     conn = current_conn()
     stmt = LibPQ.prepare(conn, prepared)
     LibPQ.execute(stmt, vals)
-    nothing
+    ExecuteResult()
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
+function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     conn = current_conn()
     stmt = LibPQ.prepare(conn, prepared)
     for tup in nts
         LibPQ.execute(stmt, collect(tup))
     end
-    nothing
+    ExecuteResult()
 end
 
 end # module Octo.Backends.PostgreSQLLoader

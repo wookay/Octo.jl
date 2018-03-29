@@ -23,13 +23,14 @@ Repo.connect(
     user = "postgres",
 )
 
-const ncolumns = 3
-Repo.execute(Raw("""CREATE TABLE Employee (
-                     ID SERIAL,
-                     Name VARCHAR(255),
-                     Salary FLOAT(8),
-                     PRIMARY KEY (ID) )
-                 """))
+Repo.execute([DROP TABLE IF EXISTS :Employee])
+Repo.execute(Raw("""
+    CREATE TABLE Employee (
+        ID SERIAL,
+        Name VARCHAR(255),
+        Salary FLOAT(8),
+        PRIMARY KEY (ID)
+    )"""))
 
 struct Employee
 end
@@ -47,7 +48,8 @@ multiple_changes = [
     (Name="Tom", Salary=20000.25),
     (Name="Jim", Salary=30000.00),
 ]
-Repo.insert!(Employee, multiple_changes)
+result = Repo.insert!(Employee, multiple_changes)
+@test result isa Repo.ExecuteResult
 
 Repo.execute(Raw("""INSERT INTO Employee (Name, Salary) VALUES (\$1, \$2)"""), multiple_changes)
 

@@ -1,6 +1,6 @@
 module SQLLoader
 
-import Octo.Backends: UnsupportedError
+import Octo.Repo: ExecuteResult
 
 # sink
 function sink(::Type)
@@ -22,13 +22,16 @@ function query(prepared::String, vals::Vector)
 end
 
 # execute
-function execute(sql::String)
+function execute(sql::String)::ExecuteResult
+    ExecuteResult()
 end
 
-function execute(prepared::String, vals::Vector)::Nothing
+function execute(prepared::String, vals::Vector)::ExecuteResult
+    ExecuteResult()
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
+function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
+    ExecuteResult()
 end
 
 end # module Octo.Backends.SQLLoader

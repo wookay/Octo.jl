@@ -1,6 +1,7 @@
 module SQLiteLoader
 
 import SQLite
+import Octo.Repo: ExecuteResult
 
 const current = Dict{Symbol, Any}(
     :db => nothing,
@@ -41,24 +42,24 @@ function query(prepared::String, vals::Vector)
 end
 
 # execute
-function execute(sql::String)::Nothing
+function execute(sql::String)::ExecuteResult
     db = current_db()
     SQLite.query(db, sql)
-    nothing
+    ExecuteResult()
 end
 
-function execute(prepared::String, vals::Vector)::Nothing
+function execute(prepared::String, vals::Vector)::ExecuteResult
     db = current_db()
     SQLite.query(db, prepared; values=vals)
-    nothing
+    ExecuteResult()
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
+function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     db = current_db()
     for nt in nts
         SQLite.query(db, prepared; values=values(nt))
     end
-    nothing
+    ExecuteResult()
 end
 
 end # module Octo.Backends.SQLiteLoader

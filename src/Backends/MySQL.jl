@@ -2,6 +2,7 @@ module MySQLLoader
 
 # https://github.com/JuliaDatabases/MySQL.jl
 import MySQL
+import Octo.Repo: ExecuteResult
 import Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
@@ -45,24 +46,24 @@ function query(prepared::String, vals::Vector) # throw UnsupportedError
 end
 
 # execute
-function execute(sql::String)::Nothing
+function execute(sql::String)::ExecuteResult
     conn = current_conn()
     MySQL.execute!(conn, sql)
-    nothing
+    ExecuteResult()
 end
 
-function execute(prepared::String, vals::Vector)::Nothing
+function execute(prepared::String, vals::Vector)::ExecuteResult
     conn = current_conn()
     stmt = MySQL.Stmt(conn, prepared)
     MySQL.execute!(stmt, vals)
-    nothing
+    ExecuteResult()
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::Nothing
+function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     conn = current_conn()
     stmt = MySQL.Stmt(conn, prepared)
     MySQL.Data.stream!(nts, stmt)
-    nothing
+    ExecuteResult()
 end
 
 end # module Octo.Backends.MySQLLoader
