@@ -279,4 +279,14 @@ function delete!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
     execute([a.DELETE a.FROM table a.WHERE key == pk])
 end
 
+"""
+    Repo.delete!(M::Type, pk_range::UnitRange{Int64})
+"""
+function delete!(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
+    a = current_adapter()
+    table = a.from(M)
+    key = _get_primary_key(M)
+    execute([a.DELETE a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop])
+end
+
 end # module Octo.Repo

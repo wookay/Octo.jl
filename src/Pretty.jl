@@ -89,7 +89,7 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple})
     function fetched_info()
         printstyled(io, "\n")
         printstyled(io, real_nrows, color=:cyan)
-        printstyled(io, " rows.", real_nrows > limit_nrows ? ".." :  "")
+        printstyled(io, " row", real_nrows == 1 ? "" : 's', '.',  real_nrows > limit_nrows ? ".." :  "")
     end
     if isempty(nts)
         paddings = (length ∘ string).(colnames) .+ 2

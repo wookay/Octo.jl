@@ -62,6 +62,7 @@ Repo.get(Employee, (Name="Tim",))
 Repo.insert!(Employee, (Name="Tim", Salary=15000.50))
 Repo.update!(Employee, (ID=2, Name="Chloe",))
 Repo.delete!(Employee, (ID=2,))
+Repo.delete!(Employee, 2:5)
 
 em = from(Employee)
 Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
