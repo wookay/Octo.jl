@@ -22,6 +22,7 @@ before_install:
   - psql --version
   - psql -U postgres -tc 'SHOW server_version'
   - psql -U postgres -c '\conninfo'
+  - psql -c "CREATE DATABASE postgresqltest;" -U postgres
   # MySQL
   - mysql --version
   - mysql -e 'show variables like "socket";' -uroot
@@ -60,9 +61,8 @@ before_script: # homebrew for mac
 ## uncomment the following lines to override the default test script
 
 script:
-  # DataStreams not compatible with julia 0.6 - https://github.com/wookay/DataStreams.jl/pull/1
-  - julia -e 'using Pkg; Pkg.clone("https://github.com/wookay/DataStreams.jl.git"); Pkg.checkout("DataStreams", "fix_07"); using DataStreams'
-  - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("Octo"); Pkg.test("Octo"; coverage=true)'
+  - julia -e 'using Pkg; Pkg.add("DataStreams"); Pkg.checkout("DataStreams", "master"); using DataStreams' # for MySQL.jl
+  - julia --depwarn=no -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("Octo"); Pkg.test("Octo"; coverage=true)'
 
 after_script:
   - export LD_LIBRARY_PATH=$OLD_PATH

@@ -5,16 +5,16 @@ using Octo.Adapters.PostgreSQL # Repo Schema Raw
 
 Repo.debug_sql()
 
-Repo.connect(
-    adapter = Octo.Adapters.PostgreSQL,
-    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-    user = "postgres",
-)
-
+#Repo.connect(
+#    adapter = Octo.Adapters.PostgreSQL,
+#    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
+#    user = "postgres",
+#)
+#
 # using Octo.Adapters.PostgreSQL # DROP DATABASE IF EXISTS CREATE TABLE
-Repo.execute([DROP DATABASE IF EXISTS :postgresqltest])
-Repo.execute([CREATE DATABASE :postgresqltest])
-Repo.disconnect()
+#Repo.execute([DROP DATABASE IF EXISTS :postgresqltest])
+#Repo.execute([CREATE DATABASE :postgresqltest])
+#Repo.disconnect()
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
