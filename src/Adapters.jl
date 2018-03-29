@@ -1,10 +1,9 @@
 module Adapters # Octo
 
-include("Adapters/SQLite.jl")
-include("Adapters/MySQL.jl")
-include("Adapters/PostgreSQL.jl")
-include("Adapters/JDBC.jl")
-
-include("Adapters/SQL.jl")
+include(joinpath("Adapters", "SQLite.jl"))
+include(joinpath("Adapters", "MySQL.jl"))
+include(joinpath("Adapters", "PostgreSQL.jl"))
+include(joinpath("Adapters", "JDBC.jl"))
+include(joinpath("Adapters", "SQL.jl"))
 
 end # module Octo.Adapters
