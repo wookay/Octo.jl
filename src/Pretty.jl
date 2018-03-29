@@ -64,19 +64,19 @@ function _regularize_text(str::String, padding::Int)::String
 end
 
 function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple})
+    limit_nrows = settings[:nrows]
+    limit_colsize = settings[:colsize]
     real_nrows = length(nts)
     function fetched_info()
-        printstyled(io, "\nFetched ")
+        printstyled(io, "\n")
         printstyled(io, real_nrows, color=:cyan)
-        printstyled(io, " rows.", real_nrows > 1 ? ".." : "")
+        printstyled(io, " rows.", real_nrows > limit_nrows ? ".." :  "")
     end
     if isempty(nts)
         fetched_info()
         return
     end
     uno = first(nts)
-    limit_nrows = settings[:nrows]
-    limit_colsize = settings[:colsize]
     nrows = min(limit_nrows, real_nrows)
     ncols = length(uno)
     A = vcat(map(v -> vcat(v...), nts[1:nrows])...)
