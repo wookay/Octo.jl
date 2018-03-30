@@ -1,4 +1,9 @@
-using Documenter
+if haskey(ENV, "PRIVATE_DOCUMENTER")
+    include("../../PrivateDocumenter/src/Documenter.jl")
+    using .Documenter
+else
+    using Documenter
+end
 using Octo
 import Octo: Repo, Schema
 

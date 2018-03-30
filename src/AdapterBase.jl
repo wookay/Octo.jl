@@ -206,6 +206,27 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, f::RankingFunction)::SqlPart
         SqlPartElement(style_normal, ')')], "")
 end
 
+function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
+    nth = 1
+    els = []
+    prev = nothing
+    for el in query
+        if el isa Type{PlaceHolder}
+            push!(els, _placeholder(db, nth))
+            nth += 1
+        elseif el isa Predicate && el.right isa Type{PlaceHolder}
+            push!(els, Predicate(el.func, el.left, _placeholder(db, nth)))
+            nth += 1
+        elseif el isa Tuple && prev === IN
+            push!(els, Enclosed(collect(el)))
+        else
+            push!(els, el)
+        end
+        prev = el
+    end
+    SqlPart(sqlrepr.(Ref(db), els), " ")
+end
+
 function joinpart(part::SqlPart)::String
     join(map(part.elements) do el
         if el isa SqlPart
@@ -229,30 +250,8 @@ end
 
 # _to_sql
 
-function _to_sql(db::DB where DB<:AbstractDatabase, query::Structured)::String
-    nth = 1
-    els = []
-    for el in query
-        if el isa Type{PlaceHolder}
-            push!(els, _placeholder(db, nth))
-            nth += 1
-        elseif el isa Predicate && el.right isa Type{PlaceHolder}
-            push!(els, Predicate(el.func, el.left, _placeholder(db, nth)))
-            nth += 1
-        else
-            push!(els, el)
-        end
-    end
-    part = SqlPart(sqlrepr.(Ref(db), els), " ")
-    joinpart(part)
-end
-
-function _to_sql(db::DB where DB<:AbstractDatabase, subquery::SubQuery)::String
-    joinpart(sqlrepr(db, subquery))
-end
-
-function _to_sql(db::DB where DB<:AbstractDatabase, clause::OverClause)::String
-    joinpart(sqlrepr(db, clause))
+function _to_sql(db::DB where DB<:AbstractDatabase, element::Union{E,Structured} where E<:SQLElement)::String
+    joinpart(sqlrepr(db, element))
 end
 
 # _placeholder, _placeholders
@@ -267,16 +266,18 @@ end
 
 # _show
 
-function Base.show(io::IO, mime::MIME"text/plain", query::Structured)
+function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
     db = current[:database]    # to be changed by Repo.connect
-    _show(io, mime, db, query)
+    _show(io, mime, db, element)
+end
+
+function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
+    printpart(io, sqlrepr(db, element))
 end
 
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, query::Structured)
     if any(x -> x isa SQLElement, query)
-        els = vcat(query...)
-        part = SqlPart(sqlrepr.(Ref(db), els), " ")
-        printpart(io, part)
+        printpart(io, sqlrepr(db, query))
     else
         Base.show(io, query)
     end
@@ -284,7 +285,7 @@ end
 
 
 @keywords AND AS ASC BETWEEN BY CREATE DATABASE DELETE DESC DISTINCT DROP EXISTS FROM FULL GROUP
-@keywords HAVING IF INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER OVER
+@keywords HAVING IF IN INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER OVER
 @keywords PARTITION RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
 
 @aggregates AVG COUNT MAX MIN SUM
