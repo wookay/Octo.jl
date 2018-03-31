@@ -9,11 +9,10 @@ struct PostgreSQLDatabase <: AbstractDatabase end
 struct JDBCDatabase <: AbstractDatabase end
 end # module Octo.AdapterBase.Database
 
-import ...Schema
-import ...Queryable: Structured, FromClause, SubQuery, OverClause, OverClauseError
-import ...Octo: SQLElement, Field, SQLAlias, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
-import ...Octo: AggregateFunction, RankingFunction
-import ...Octo: @keywords, @aggregates, @rankings
+import ...Octo
+import .Octo.Queryable: Structured, FromClause, SubQuery, OverClause, OverClauseError
+import .Octo: Schema, Field, SQLElement, SQLAlias, SQLFunction, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
+import .Octo: @sql_keywords, @sql_functions
 import .Database: AbstractDatabase
 
 const current = Dict{Symbol,AbstractDatabase}(
@@ -36,17 +35,28 @@ struct SqlPart
     sep::String
 end
 
-const style_normal       = ElementStyle(:normal)
-const style_subquery     = ElementStyle(:light_green, true)
-const style_overclause   = ElementStyle(:light_blue, true)
-const style_placeholders = ElementStyle(:green, true)
-const style_keyword      = ElementStyle(:cyan)
-const style_string       = ElementStyle(:light_magenta)
-const style_functions    = ElementStyle(:yellow)
+const style_normal                 = ElementStyle(:normal)
+const style_subquery               = ElementStyle(:light_green, true)
+const style_overclause             = ElementStyle(:light_blue, true)
+const style_placeholders           = ElementStyle(:green, true)
+const style_keywords               = ElementStyle(:cyan)
+const style_functions              = ElementStyle(:yellow)
+const style_string                 = ElementStyle(:light_magenta)
+const style_table_name             = ElementStyle(:normal, false)
+const style_table_alias            = ElementStyle(:normal, true)
+const style_field_fromclause_alias = ElementStyle(:normal)
+const style_field_fromclause_dot   = ElementStyle(:normal)
+const style_field_fromclause_name  = ElementStyle(:normal)
+const style_field_subquery_alias   = ElementStyle(:light_green)
+const style_field_subquery_dot     = ElementStyle(:normal)
+const style_field_subquery_name    = ElementStyle(:normal)
+const style_field_overclause_alias = ElementStyle(:light_blue)
+const style_field_overclause_dot   = ElementStyle(:normal)
+const style_field_overclause_name  = ElementStyle(:normal)
 
 # sqlrepr -> SqlPartElement
 
-sqlrepr(::DB where DB<:AbstractDatabase, el::Keyword)::SqlPartElement = SqlPartElement(style_keyword, el.name)
+sqlrepr(::DB where DB<:AbstractDatabase, el::Keyword)::SqlPartElement = SqlPartElement(style_keywords, el.name)
 sqlrepr(::DB where DB<:AbstractDatabase, sym::Symbol)::SqlPartElement = SqlPartElement(style_normal, sym)
 sqlrepr(::DB where DB<:AbstractDatabase, num::Number)::SqlPartElement = SqlPartElement(style_normal, num)
 sqlrepr(::DB where DB<:AbstractDatabase, f::Function)::SqlPartElement = SqlPartElement(style_normal, f)
@@ -59,18 +69,6 @@ end
 
 # sqlrepr -> SqlPart
 
-function sqlrepr(::DB where DB<:AbstractDatabase, M::Type)::SqlPart # throw Schema.TableNameError
-    Tname = Base.typename(M)
-    if haskey(Schema.tables, Tname)
-        table = Schema.tables[Tname]
-        el = SqlPartElement(style_normal, table[:table_name])
-        SqlPart([el], "")
-    else
-        name = nameof(M)
-        throw(Schema.TableNameError("""Provide schema table_name by `Schema.model($name, table_name="tbl")`"""))
-    end
-end
-
 function sqlrepr(::DB where DB<:AbstractDatabase, str::String)::SqlPart
     quot = SqlPartElement(style_string, "'")
     SqlPart([quot, SqlPartElement(style_string, str), quot], "")
@@ -80,10 +78,17 @@ function sqlrepr(::DB where DB<:AbstractDatabase, field::Field)::SqlPart
     if field.clause.__octo_as isa Nothing
         SqlPart([SqlPartElement(style_normal, field.name)], "")
     else
+        if field.clause isa SubQuery
+            (style_field_alias, style_field_dot, style_field_name) = (style_field_subquery_alias, style_field_subquery_dot, style_field_subquery_name)
+        elseif field.clause isa OverClause
+            (style_field_alias, style_field_dot, style_field_name) = (style_field_overclause_alias, style_field_overclause_dot, style_field_overclause_name)
+        else # FromClause
+            (style_field_alias, style_field_dot, style_field_name) = (style_field_fromclause_alias, style_field_fromclause_dot, style_field_fromclause_name)
+        end
         SqlPart([
-            SqlPartElement(style_normal, field.clause.__octo_as),
-            SqlPartElement(style_normal, '.'),
-            SqlPartElement(style_normal, field.name)], "")
+            SqlPartElement(style_field_alias, field.clause.__octo_as),
+            SqlPartElement(style_field_dot, '.'),
+            SqlPartElement(style_field_name, field.name)], "")
     end
 end
 
@@ -112,13 +117,34 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, pred::Predicate)::SqlPart
     SqlPart(parts, " ")
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, clause::FromClause)::SqlPart
-    if clause.__octo_as isa Nothing
-        els = [clause.__octo_model]
+function _table_name_of(M::Type)::String # throw Schema.TableNameError
+    Tname = Base.typename(M)
+    if haskey(Schema.tables, Tname)
+        table = Schema.tables[Tname]
+        table[:table_name]
     else
-        els = [clause.__octo_model, AS, clause.__octo_as]
+        name = nameof(M)
+        throw(Schema.TableNameError("""Provide schema table_name by `Schema.model($name, table_name="tbl")`"""))
     end
-    SqlPart(sqlrepr.(Ref(db), els), " ")
+end
+
+function _sqlrepr(db::DB where DB<:AbstractDatabase, clause::FromClause; with_as::Bool)::SqlPart
+    table_name = _table_name_of(clause.__octo_model)
+    part = SqlPartElement(style_table_name, table_name)
+    if clause.__octo_as isa Nothing
+        parts = [part]
+    else
+        if table_name == String(clause.__octo_as)
+            parts = [part]
+        else
+            parts = [part, (with_as ? [sqlrepr(db, AS)] : [])..., SqlPartElement(style_table_alias, clause.__octo_as)]
+        end
+    end
+    SqlPart(parts, " ")
+end
+
+function sqlrepr(db::DB where DB<:AbstractDatabase, clause::FromClause)::SqlPart
+    _sqlrepr(db, clause; with_as=true)
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, subquery::SubQuery)::SqlPart
@@ -191,18 +217,11 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, a::SQLAlias)::SqlPart
     SqlPart(sqlrepr.(Ref(db), els), " ")
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, f::AggregateFunction)::SqlPart
+function sqlrepr(db::DB where DB<:AbstractDatabase, f::SQLFunction)::SqlPart
     SqlPart([
         SqlPartElement(style_functions, f.name),
         SqlPartElement(style_normal, '('),
-        sqlrepr(db, f.field),
-        SqlPartElement(style_normal, ')')], "")
-end
-
-function sqlrepr(db::DB where DB<:AbstractDatabase, f::RankingFunction)::SqlPart
-    SqlPart([
-        SqlPartElement(style_functions, f.name),
-        SqlPartElement(style_normal, '('),
+        sqlrepr.(Ref(db), f.fields)...,
         SqlPartElement(style_normal, ')')], "")
 end
 
@@ -284,12 +303,14 @@ function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, qu
 end
 
 
-@keywords AND AS ASC BETWEEN BY CREATE DATABASE DELETE DESC DISTINCT DROP EXISTS FROM FULL GROUP
-@keywords HAVING IF IN INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER OVER
-@keywords PARTITION RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
+@sql_keywords  AND AS ASC BETWEEN BY CREATE DATABASE DELETE DESC DISTINCT DROP EXISTS FROM FULL GROUP
+@sql_keywords  HAVING IF IN INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER OVER
+@sql_keywords  PARTITION RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
 
-@aggregates AVG COUNT MAX MIN SUM
+# aggregates
+@sql_functions AVG COUNT MAX MIN SUM
 
-@rankings DENSE_RANK RANK ROW_NUMBER
+# rankings
+@sql_functions DENSE_RANK RANK ROW_NUMBER
 
 end # module Octo.AdapterBase

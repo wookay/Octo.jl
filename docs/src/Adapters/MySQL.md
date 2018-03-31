@@ -4,6 +4,6 @@
 Octo.Adapters.MySQL.to_sql
 ```
 
-### additional [@keywords](@ref keywords)
+### additional [@sql_keywords](@ref sql_keywords)
 
 USE

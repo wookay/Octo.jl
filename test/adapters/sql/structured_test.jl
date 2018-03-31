@@ -31,6 +31,6 @@ u = from(User, :u)
 Repo.connect(adapter=Octo.Adapters.SQL)
 buf = IOBuffer()
 show(IOContext(buf, :color=>true), MIME"text/plain"(), [FROM u])
-@test String(take!(buf)) == "\e[36mFROM\e[39m \e[0musers \e[36mAS\e[39m \e[0mu"
+@test String(take!(buf)) == "\e[36mFROM\e[39m \e[0musers \e[36mAS\e[39m \e[0m\e[1mu\e[22m"
 
 end # module adapters_sql_structured_test

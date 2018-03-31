@@ -1,12 +1,19 @@
 # module Octo
 
-import Base: ==, <, >, <=, >=
+import Base: ==, <, >, <=, >=, -, +
+const PlainTypes = Union{Number, String, Symbol, Dates.Day}
 
-for op in (:(==), :(<), :(>), :(<=), :(>=))
+for op in (:(==), :(<), :(>), :(<=), :(>=), :(-), :(+))
     @eval begin
         ($op)(left::SQLElement, right::SQLElement) = Predicate(($op), left, right)
-        ($op)(left::SQLElement, right::Union{Number, String}) = Predicate(($op), left, right)
-        ($op)(left::Union{Number, String}, right::SQLElement) = Predicate(($op), left, right)
+        ($op)(left::SQLElement, right::PlainTypes) = Predicate(($op), left, right)
+        ($op)(left::PlainTypes, right::SQLElement) = Predicate(($op), left, right)
         ($op)(left::SQLElement, right::Type{PlaceHolder}) = Predicate(($op), left, right)
     end
 end
+
+function Base.:*(left::Keyword, right::Keyword)
+    KeywordAllKeyword(left, right)
+end
+
+# module Octo

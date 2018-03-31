@@ -1,0 +1,36 @@
+module adapters_postgresql_boolean_test
+
+using Test # @test
+using Octo.Adapters.PostgreSQL # Repo Raw Schema.model DROP TABLE IF EXISTS SELECT TRUE FALSE
+
+@test to_sql([SELECT (TRUE, FALSE)]) == "SELECT TRUE, FALSE"
+
+Repo.debug_sql()
+
+Repo.connect(
+    adapter = Octo.Adapters.PostgreSQL,
+    dbname = "postgresqltest",
+    user = "postgres",
+)
+
+Repo.execute([DROP TABLE IF EXISTS :test1])
+Repo.execute(Raw("""
+CREATE TABLE IF NOT EXISTS test1 (a boolean, b text)
+"""))
+
+struct Test1
+end
+Schema.model(Test1, table_name="test1")
+
+Repo.insert!(Test1, (a=true, b="sic est"))
+Repo.insert!(Test1, (a=false, b="non est"))
+
+df = Repo.all(Test1)
+@test Pretty.table(df) == """
+|       a | b         |
+| ------- | --------- |
+|    true | sic est   |
+|   false | non est   |
+2 rows."""
+
+end # module adapters_postgresql_boolean_test

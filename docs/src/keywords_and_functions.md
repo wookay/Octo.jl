@@ -1,17 +1,18 @@
-# SQL keywords, aggregate & ranking functions
+# SQL keywords and functions
 
-### [@keywords](@id keywords)
+## [@sql_keywords](@id sql_keywords)
 
 AND AS ASC BETWEEN BY CREATE DATABASE DELETE DESC DISTINCT DROP EXISTS FROM FULL GROUP
 HAVING IF IN INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER OVER
 PARTITION RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
 
 
-### [@aggregates](@id aggregates)
+## [@sql_functions](@id sql_functions)
+
+### aggregate functions
 
 AVG COUNT MAX MIN SUM
 
-
-### [@rankings](@id rankings)
+### ranking functions
 
 `DENSE_RANK`  `RANK`  `ROW_NUMBER`

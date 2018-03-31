@@ -32,6 +32,15 @@ function set(pretty::Bool=true; kwargs...)
     settings
 end
 
+"""
+    Pretty.table(nts::Vector{<:NamedTuple})::String
+"""
+function table(nts::Vector{<:NamedTuple})::String
+    buf = IOBuffer()
+    show(buf, MIME"text/plain"(), nts)
+    String(take!(buf))
+end
+
 function _regularize_text(str::String, padding::Int)::String
     s = escape_string(str)
     if textwidth(s) < padding

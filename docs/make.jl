@@ -19,7 +19,7 @@ makedocs(
         "Repo" => "Repo.md",
         "Schema" => "Schema.md",
         "Queryable" => "Queryable.md",
-        "SQL keywords, aggregate & ranking functions" => "keywords_aggregates_rankings.md",
+        "SQL keywords & functions" => "keywords_and_functions.md",
         "SQL elements" => "elements.md",
         "Adapters" => [
             "Adapters/SQL.md",

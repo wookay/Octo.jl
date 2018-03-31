@@ -1,6 +1,6 @@
 module Queryable # Octo
 
-import ..Octo: FromClause, SubQuery, OverClause, OverClauseError, Field, SQLAlias, AggregateFunction, Structured
+import ..Octo: FromClause, SubQuery, OverClause, OverClauseError, Field, SQLAlias, Structured, SQLFunction
 
 """
     from(M::Type, as=nothing)::FromClause
@@ -39,10 +39,18 @@ function window(query::Structured, as=nothing)::OverClause
     OverClause(query, as)
 end
 
+function Base.getproperty(clause::OverClause, field::Symbol)
+     if field in (:__octo_query, :__octo_as)
+         getfield(clause, field)
+     else
+         Field(clause, field)
+     end
+end
+
 """
-    as(field::Union{Field, AggregateFunction}, alias::Symbol)::SQLAlias
+    as(field::Union{Field, SQLFunction}, alias::Symbol)::SQLAlias
 """
-function as(field::Union{Field, AggregateFunction}, alias::Symbol)::SQLAlias
+function as(field::Union{Field, SQLFunction}, alias::Symbol)::SQLAlias
     SQLAlias(field, alias)
 end
 

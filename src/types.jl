@@ -25,7 +25,7 @@ struct OverClauseError <: Exception
 end
 
 struct Field <: SQLElement
-    clause::Union{FromClause, SubQuery}
+    clause::Union{FromClause, SubQuery, OverClause}
     name::Symbol
 end
 
@@ -41,10 +41,12 @@ struct PlaceHolder <: SQLElement
     body::String
 end
 
+const PredicateValueTypes = Union{Bool, Number, String, Symbol, Dates.Day, <: SQLElement}
+
 struct Predicate <: SQLElement
     func::Function
-    left::Union{Bool, Number, String, Symbol, <: SQLElement}
-    right::Union{Bool, Number, String, Symbol, <: SQLElement, Type{PlaceHolder}}
+    left::PredicateValueTypes
+    right::Union{PredicateValueTypes, Type{PlaceHolder}}
 end
 
 struct Raw <: SQLElement
@@ -64,42 +66,10 @@ struct KeywordAllKeyword <: SQLElement
     right::Keyword
 end
 
-struct Aggregate
+struct SQLFunction <: SQLElement
     name::Symbol
+    fields::Tuple
 end
-(a::Aggregate)(field) = AggregateFunction(a.name, field)
+(f::SQLFunction)(args...) = SQLFunction(f.name, args)
 
-struct AggregateFunction <: SQLElement
-    name::Symbol
-    field
-end
-
-struct RankingFunction <: SQLElement
-    name::Symbol
-end
-(a::RankingFunction)() = RankingFunction(a.name)
-
-# @keywords
-
-macro keywords(args...)
-    esc(keywords(args))
-end
-keywords(s) = :(($(s...),) = $(map(Keyword, s)))
-
-# @aggregates
-
-macro aggregates(args...)
-    esc(aggregates(args))
-end
-aggregates(s) = :(($(s...),) = $(map(Aggregate, s)))
-
-function Base.:*(left::Keyword, right::Keyword)
-    KeywordAllKeyword(left, right)
-end
-
-# @rankings
-
-macro rankings(args...)
-    esc(rankings(args))
-end
-rankings(s) = :(($(s...),) = $(map(RankingFunction, s)))
+# module Octo

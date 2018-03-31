@@ -158,3 +158,7 @@ julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
 |    2 | Cloris   |   85000.0 |
 1 row.
 ```
+
+
+### Colored SQL statements
+ * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/builds/359976228#L602](https://travis-ci.org/wookay/Octo.jl/builds/359976228#L602).
