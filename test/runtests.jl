@@ -1,6 +1,10 @@
 using Test
 
 ignores = [joinpath("adapters", "jdbc")]
+if Sys.iswindows()
+    push!(ignores, joinpath("adapters", "mysql"))
+    push!(ignores, joinpath("adapters", "sqlite"))
+end
 
 all_tests = []
 for (root, dirs, files) in walkdir(".")
