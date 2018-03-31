@@ -1,8 +1,8 @@
 # Octo.jl
 
-|  **Documentation**                        |  **Build Status**                                                 |
-|:-----------------------------------------:|:-----------------------------------------------------------------:|
-|  [![][docs-latest-img]][docs-latest-url]  |  [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url]  |
+|  **Documentation**                        |  **Build Status**                                                                                 |
+|:-----------------------------------------:|:-------------------------------------------------------------------------------------------------:|
+|  [![][docs-latest-img]][docs-latest-url]  |  [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url]  |
 
 
 Octo.jl 🐙 is an SQL Query DSL in Julia (https://julialang.org).
@@ -188,3 +188,6 @@ Pkg.clone("https://github.com/wookay/Octo.jl.git")
 
 [appveyor-img]: https://ci.appveyor.com/api/projects/status/fkup126yxtfb62f1/branch/master?svg=true
 [appveyor-url]: https://ci.appveyor.com/project/wookay/octo-jl/branch/master
+
+[codecov-img]: https://codecov.io/gh/wookay/Octo.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/wookay/Octo.jl

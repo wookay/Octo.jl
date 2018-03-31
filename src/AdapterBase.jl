@@ -11,7 +11,8 @@ end # module Octo.AdapterBase.Database
 
 import ...Octo
 import .Octo.Queryable: Structured, FromClause, SubQuery, OverClause, OverClauseError
-import .Octo: Schema, Field, SQLElement, SQLAlias, SQLFunction, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
+import .Octo: Schema
+import .Octo: SQLElement, SQLAlias, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
 import .Octo: @sql_keywords, @sql_functions
 import .Database: AbstractDatabase
 
@@ -19,21 +20,34 @@ const current = Dict{Symbol,AbstractDatabase}(
     :database => Database.SQLDatabase()
 )
 
+"""
+    Beuatiful
+
+Colored SQL statements
+"""
+module Beuatiful # Octo.AdapterBase
+
 struct ElementStyle
     color::Symbol
     bold::Bool
     ElementStyle(color::Symbol, bold::Bool=false) = new(color, bold)
 end
 
-struct SqlPartElement
+struct Element
     style::ElementStyle
     body
 end
 
-struct SqlPart
-    elements::Vector{Union{SqlPartElement,SqlPart}}
+struct Container
+    elements::Vector{Union{Element,Container}}
     sep::String
 end
+
+end # Octo.AdapterBase.Beuatiful
+
+const SqlPartElement = Beuatiful.Element
+const SqlPart        = Beuatiful.Container
+import .Beuatiful: ElementStyle
 
 const style_normal                 = ElementStyle(:normal)
 const style_subquery               = ElementStyle(:light_green, true)

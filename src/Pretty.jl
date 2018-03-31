@@ -1,3 +1,8 @@
+"""
+    Pretty
+
+Tablize Vector{<:NamedTuple}
+"""
 module Pretty # Octo
 
 settings = Dict{Symbol, Any}(
