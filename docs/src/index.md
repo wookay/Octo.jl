@@ -5,7 +5,7 @@ Octo.jl 🐙  is an SQL Query DSL in [Julia](https://julialang.org).
 It's influenced by [Ecto](https://github.com/elixir-ecto/ecto).
 
 
-### SQL Query DSL
+## SQL Query DSL
 
 ```julia-repl
 julia> using Octo.Adapters.SQL
@@ -30,7 +30,7 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 ```
 
 
-### Repo
+## Repo
 
 Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
 
@@ -157,6 +157,21 @@ julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
 | ---- | -------- | --------- |
 |    2 | Cloris   |   85000.0 |
 1 row.
+```
+
+### Subqueries
+```julia-repl
+julia> sub = from([SELECT * FROM em WHERE em.Salary > 30000], :sub)
+(SELECT * FROM Employee WHERE Salary > 30000) AS sub
+
+julia> Repo.query([SELECT sub.Name FROM sub])
+[ Info: SELECT sub.Name FROM (SELECT * FROM Employee WHERE Salary > 30000) AS sub
+| name      |
+| --------- |
+| Tom       |
+| Jessica   |
+| Cloris    |
+3 rows.
 ```
 
 

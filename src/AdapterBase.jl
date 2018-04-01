@@ -244,9 +244,8 @@ end
 function sqlrepr(db::DB where DB<:AbstractDatabase, f::SQLFunction)::SqlPart
     SqlPart([
         SqlPartElement(style_functions, f.name),
-        SqlPartElement(style_normal, '('),
-        sqlrepr.(Ref(db), f.fields)...,
-        SqlPartElement(style_normal, ')')], "")
+        sqlrepr(db, Enclosed(collect(f.fields))),
+        ], "")
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
@@ -326,10 +325,9 @@ function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} 
 end
 
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
-    if element isa Keyword
-        print(io, nameof(Keyword), ' ')
-    elseif element isa SQLFunction
-        print(io, nameof(SQLFunction), ' ')
+    if element isa Keyword ||
+       element isa SQLFunction
+        print(io, nameof(typeof(element)), ' ')
     end
     printpart(io, sqlrepr(db, element))
 end
