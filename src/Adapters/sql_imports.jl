@@ -15,8 +15,8 @@ import .Octo.AdapterBase: DENSE_RANK, RANK, ROW_NUMBER
 
 # import:                      ()        ?
 import .Octo.AdapterBase: Raw, Enclosed, PlaceHolder, Field
-import .Octo.AdapterBase: Database, Structured, SubQuery, OverClause, OverClauseError, _to_sql, _placeholder, _placeholders
+import .Octo.AdapterBase: Database, Structured, SubQuery, WindowFrame, _to_sql, _placeholder, _placeholders
 
-# import: Repo, Schema, Pretty, from, as
+# import: Repo, Schema, Pretty, from, as, over
 import .Octo: Repo, Schema, Pretty
-import .Octo.Queryable: from, as
+import .Octo.Queryable: from, as, over

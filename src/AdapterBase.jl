@@ -10,9 +10,9 @@ struct JDBCDatabase <: AbstractDatabase end
 end # module Octo.AdapterBase.Database
 
 import ...Octo
-import .Octo.Queryable: Structured, FromClause, SubQuery, OverClause, OverClauseError
+import .Octo.Queryable: Structured, FromClause, SubQuery, WindowFrame
 import .Octo: Schema
-import .Octo: SQLElement, SQLAlias, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
+import .Octo: SQLElement, SQLAlias, SQLOver, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
 import .Octo: @sql_keywords, @sql_functions
 import .Database: AbstractDatabase
 
@@ -49,24 +49,24 @@ const SqlPartElement = Beuatiful.Element
 const SqlPart        = Beuatiful.Container
 import .Beuatiful: ElementStyle
 
-const style_normal                 = ElementStyle(:normal)
-const style_subquery               = ElementStyle(:light_green, true)
-const style_overclause             = ElementStyle(:light_blue, true)
-const style_placeholders           = ElementStyle(:green, true)
-const style_keywords               = ElementStyle(:cyan)
-const style_functions              = ElementStyle(:yellow)
-const style_string                 = ElementStyle(:light_magenta)
-const style_table_name             = ElementStyle(:normal, false)
-const style_table_alias            = ElementStyle(:normal, true)
-const style_field_fromclause_alias = ElementStyle(:normal)
-const style_field_fromclause_dot   = ElementStyle(:normal)
-const style_field_fromclause_name  = ElementStyle(:normal)
-const style_field_subquery_alias   = ElementStyle(:light_green)
-const style_field_subquery_dot     = ElementStyle(:normal)
-const style_field_subquery_name    = ElementStyle(:normal)
-const style_field_overclause_alias = ElementStyle(:light_blue)
-const style_field_overclause_dot   = ElementStyle(:normal)
-const style_field_overclause_name  = ElementStyle(:normal)
+const style_normal                  = ElementStyle(:normal)
+const style_subquery                = ElementStyle(:light_green, true)
+const style_windowframe              = ElementStyle(:light_blue, true)
+const style_placeholders            = ElementStyle(:green, true)
+const style_keywords                = ElementStyle(:cyan)
+const style_functions               = ElementStyle(:yellow)
+const style_string                  = ElementStyle(:light_magenta)
+const style_table_name              = ElementStyle(:normal, false)
+const style_table_alias             = ElementStyle(:normal, true)
+const style_field_fromclause_alias  = ElementStyle(:normal)
+const style_field_fromclause_dot    = ElementStyle(:normal)
+const style_field_fromclause_name   = ElementStyle(:normal)
+const style_field_subquery_alias    = ElementStyle(:light_green)
+const style_field_subquery_dot      = ElementStyle(:normal)
+const style_field_subquery_name     = ElementStyle(:normal)
+const style_field_windowframe_alias = ElementStyle(:light_blue)
+const style_field_windowframe_dot   = ElementStyle(:normal)
+const style_field_windowframe_name  = ElementStyle(:normal)
 
 # sqlrepr -> SqlPartElement
 
@@ -94,8 +94,8 @@ function sqlrepr(::DB where DB<:AbstractDatabase, field::Field)::SqlPart
     else
         if field.clause isa SubQuery
             (style_field_alias, style_field_dot, style_field_name) = (style_field_subquery_alias, style_field_subquery_dot, style_field_subquery_name)
-        elseif field.clause isa OverClause
-            (style_field_alias, style_field_dot, style_field_name) = (style_field_overclause_alias, style_field_overclause_dot, style_field_overclause_name)
+        elseif field.clause isa WindowFrame
+            (style_field_alias, style_field_dot, style_field_name) = (style_field_windowframe_alias, style_field_windowframe_dot, style_field_windowframe_name)
         else # FromClause
             (style_field_alias, style_field_dot, style_field_name) = (style_field_fromclause_alias, style_field_fromclause_dot, style_field_fromclause_name)
         end
@@ -111,17 +111,17 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, el::KeywordAllKeyword)::SqlP
     SqlPart(sqlrepr.(Ref(db), els), " ")
 end
 
-function _over_clause_predicate_side(db::DB where DB<:AbstractDatabase, side)
-    if side isa OverClause && side.__octo_as isa Symbol
-        SqlPartElement(style_overclause, side.__octo_as)
+function _window_frame_predicate_side(db::DB where DB<:AbstractDatabase, side)
+    if side isa WindowFrame && side.__octo_as isa Symbol
+        SqlPartElement(style_windowframe, side.__octo_as)
     else
         sqlrepr(db, side)
     end
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, pred::Predicate)::SqlPart
-    left  = _over_clause_predicate_side(db, pred.left)
-    right = _over_clause_predicate_side(db, pred.right)
+    left  = _window_frame_predicate_side(db, pred.left)
+    right = _window_frame_predicate_side(db, pred.right)
     if ==(pred.func, ==)
         op = :(=)
     else
@@ -179,28 +179,21 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, subquery::SubQuery)::SqlPart
     end
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, clause::OverClause)::SqlPart # throw OverClauseError
-    if length(clause.__octo_query) >= 3 && clause.__octo_query[2] isa Keyword && clause.__octo_query[2].name == :OVER
-        bodypart = SqlPart([
-            SqlPartElement(style_overclause, '('),
-            SqlPart(sqlrepr.(Ref(db), clause.__octo_query[3:end]), " "),
-            SqlPartElement(style_overclause, ')')], "")
-        part = SqlPart([
-            sqlrepr(db, clause.__octo_query[1]),
-            sqlrepr(db, OVER),
-            bodypart
-        ], " ")
-        if clause.__octo_as isa Nothing
-             part
-        else
-            SqlPart([
-                part,
-                sqlrepr(db, AS),
-                SqlPartElement(style_overclause, clause.__octo_as),
-            ], " ")
-        end
+function sqlrepr(db::DB where DB<:AbstractDatabase, frame::WindowFrame)::SqlPart
+    query = frame.__octo_query
+    body = SqlPart(vcat(sqlrepr.(Ref(db), query)...), " ")
+    part = SqlPart([
+        SqlPartElement(style_windowframe, '('),
+        body,
+        SqlPartElement(style_windowframe, ')')], "")
+    if frame.__octo_as isa Nothing
+         part
     else
-        throw(OverClauseError("OVER clause error"))
+        SqlPart([
+            part,
+            sqlrepr(db, AS),
+            SqlPartElement(style_windowframe, frame.__octo_as),
+        ], " ")
     end
 end
 
@@ -220,7 +213,7 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, enclosed::Enclosed)::SqlPart
     if enclosed.values isa Vector{PlaceHolder}
         length(enclosed.values) == 1 && return part
     end
-    return SqlPart([
+    SqlPart([
         SqlPartElement(style_normal, '('),
         part,
         SqlPartElement(style_normal, ')')], "")
@@ -229,6 +222,23 @@ end
 function sqlrepr(db::DB where DB<:AbstractDatabase, a::SQLAlias)::SqlPart
     els = [a.field, AS, a.alias]
     SqlPart(sqlrepr.(Ref(db), els), " ")
+end
+
+function sqlrepr(db::DB where DB<:AbstractDatabase, o::SQLOver)::SqlPart
+    if o.query isa WindowFrame
+        els = [o.field, OVER, o.query]
+        SqlPart(sqlrepr.(Ref(db), els), " ")
+    else # Vector
+        part = SqlPart(sqlrepr.(Ref(db), o.query), " ")
+        enclosed = SqlPart([
+            SqlPartElement(style_normal, '('),
+            part,
+            SqlPartElement(style_normal, ')')], "")
+        SqlPart([
+            sqlrepr.(Ref(db), [o.field, OVER])...,
+            enclosed,
+        ], " ")
+    end
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, f::SQLFunction)::SqlPart
@@ -250,8 +260,19 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
         elseif el isa Predicate && el.right isa Type{PlaceHolder}
             push!(els, Predicate(el.func, el.left, _placeholder(db, nth)))
             nth += 1
-        elseif el isa Tuple && prev === IN
-            push!(els, Enclosed(collect(el)))
+        elseif el isa WindowFrame
+            if prev === AS
+                push!(els, WindowFrame(el.__octo_query, nothing))
+            else
+                push!(els, el)
+            end
+        elseif el isa Tuple
+            if prev === IN ||
+               prev === OVER
+                push!(els, Enclosed(collect(el)))
+            else
+                push!(els, el)
+            end
         else
             push!(els, el)
         end
@@ -270,13 +291,13 @@ function joinpart(part::SqlPart)::String
     end, part.sep)
 end
 
+function printpart(io::IO, el::SqlPartElement)
+    printstyled(io, el.body; color=el.style.color, bold=el.style.bold)
+end
+
 function printpart(io::IO, part::SqlPart)
     for (idx, el) in enumerate(part.elements)
-        if el isa SqlPart
-            printpart(io, el)
-        elseif el isa SqlPartElement
-            printstyled(io, el.body; color=el.style.color, bold=el.style.bold)
-        end
+        printpart(io, el)
         length(part.elements) == idx || print(io, part.sep)
     end
 end
@@ -305,6 +326,11 @@ function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} 
 end
 
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
+    if element isa Keyword
+        print(io, nameof(Keyword), ' ')
+    elseif element isa SQLFunction
+        print(io, nameof(SQLFunction), ' ')
+    end
     printpart(io, sqlrepr(db, element))
 end
 

@@ -1,6 +1,6 @@
 module Queryable # Octo
 
-import ..Octo: FromClause, SubQuery, OverClause, OverClauseError, Field, SQLAlias, Structured, SQLFunction
+import ..Octo: FromClause, SubQuery, WindowFrame, Field, SQLAlias, SQLOver, Structured, SQLFunction, Enclosed
 
 """
     from(M::Type, as=nothing)::FromClause
@@ -24,7 +24,14 @@ function from(query::Structured, as=nothing)::SubQuery
     SubQuery(query, as)
 end
 
-function Base.getproperty(clause::SubQuery, field::Symbol)
+"""
+    window(query::Structured, as=nothing):WindowFrame
+"""
+function window(query::Structured, as=nothing)::WindowFrame
+    WindowFrame(query, as)
+end
+
+function Base.getproperty(clause::Union{SubQuery,WindowFrame}, field::Symbol)
      if field in (:__octo_query, :__octo_as)
          getfield(clause, field)
      else
@@ -32,26 +39,24 @@ function Base.getproperty(clause::SubQuery, field::Symbol)
      end
 end
 
-"""
-    window(query::Structured, as=nothing):OverClause
-"""
-function window(query::Structured, as=nothing)::OverClause
-    OverClause(query, as)
-end
-
-function Base.getproperty(clause::OverClause, field::Symbol)
-     if field in (:__octo_query, :__octo_as)
-         getfield(clause, field)
-     else
-         Field(clause, field)
-     end
-end
 
 """
     as(field::Union{Field, SQLFunction}, alias::Symbol)::SQLAlias
 """
 function as(field::Union{Field, SQLFunction}, alias::Symbol)::SQLAlias
     SQLAlias(field, alias)
+end
+
+
+"""
+    over(field::SQLFunction, query::Union{WindowFrame,Structured})::SQLOver
+"""
+function over(field::SQLFunction, query::Union{WindowFrame,Structured})::SQLOver
+    if query isa WindowFrame
+        SQLOver(field, query)
+    else
+        SQLOver(field, vcat(query...))
+    end
 end
 
 end # module Octo.Queryable

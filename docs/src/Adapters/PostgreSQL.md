@@ -7,7 +7,7 @@ Octo.Adapters.PostgreSQL.to_sql
 
 ### additional [@sql_keywords](@ref sql_keywords)
 
-FALSE  INTERVAL  LATERAL  TRUE  WITH
+FALSE INTERVAL LATERAL TRUE WINDOW WITH
 
 
 ### additional [@sql_functions](@ref sql_functions)

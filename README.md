@@ -10,7 +10,7 @@ Octo.jl 🐙 is an SQL Query DSL in Julia (https://julialang.org).
 It's influenced by Ecto (https://github.com/elixir-ecto/ecto).
 
 
-### SQL Query DSL
+## SQL Query DSL
 
 ```julia-repl
 julia> using Octo.Adapters.SQL
@@ -35,7 +35,7 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 ````
 
 
-### Repo
+## Repo
 
 Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
 
@@ -164,12 +164,27 @@ julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
 1 row.
 ```
 
+### Subqueries
+```julia-repl
+julia> sub = from([SELECT * FROM em WHERE em.Salary > 30000], :sub)
+(SELECT * FROM Employee WHERE Salary > 30000) AS sub
 
-### Colored SQL statements
+julia> Repo.query([SELECT sub.Name FROM sub])
+[ Info: SELECT sub.Name FROM (SELECT * FROM Employee WHERE Salary > 30000) AS sub
+| name      |
+| --------- |
+| Tom       |
+| Jessica   |
+| Cloris    |
+3 rows.
+```
+
+
+## Colored SQL statements
  * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/builds/359976228#L602](https://travis-ci.org/wookay/Octo.jl/builds/359976228#L602).
 
 
-### Requirements
+## Requirements
 
 You need latest [Julia 0.7 DEV](https://julialang.org/downloads/nightlies.html).
 

@@ -15,23 +15,30 @@ struct SubQuery <: SQLElement
     __octo_as::Union{Symbol, Nothing}
 end
 
-struct OverClause <: SQLElement
+struct WindowFrame <: SQLElement
     __octo_query::Structured
     __octo_as::Union{Symbol, Nothing}
 end
 
-struct OverClauseError <: Exception
-    msg
+struct SQLFunction <: SQLElement
+    name::Symbol
+    fields::Tuple
 end
+(f::SQLFunction)(args...) = SQLFunction(f.name, args)
 
 struct Field <: SQLElement
-    clause::Union{FromClause, SubQuery, OverClause}
+    clause::Union{FromClause, SubQuery, WindowFrame}
     name::Symbol
 end
 
 struct SQLAlias <: SQLElement
-    field
+    field::Union{Field, SQLFunction}
     alias::Symbol
+end
+
+struct SQLOver <: SQLElement
+    field::SQLFunction
+    query::Union{WindowFrame,Vector}
 end
 
 """
@@ -65,11 +72,5 @@ struct KeywordAllKeyword <: SQLElement
     left::Keyword
     right::Keyword
 end
-
-struct SQLFunction <: SQLElement
-    name::Symbol
-    fields::Tuple
-end
-(f::SQLFunction)(args...) = SQLFunction(f.name, args)
 
 # module Octo
