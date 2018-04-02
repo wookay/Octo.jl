@@ -31,16 +31,6 @@ struct Field <: SQLElement
     name::Symbol
 end
 
-struct SQLAlias <: SQLElement
-    field::Union{Field, SQLFunction}
-    alias::Symbol
-end
-
-struct SQLOver <: SQLElement
-    field::SQLFunction
-    query::Union{WindowFrame,Vector}
-end
-
 """
     Octo.PlaceHolder
 """
@@ -54,6 +44,16 @@ struct Predicate <: SQLElement
     func::Function
     left::PredicateValueTypes
     right::Union{PredicateValueTypes, Type{PlaceHolder}}
+end
+
+struct SQLAlias <: SQLElement
+    field::Union{Field, SQLFunction, Predicate}
+    alias::Symbol
+end
+
+struct SQLOver <: SQLElement
+    field::SQLFunction
+    query::Union{WindowFrame,Vector}
 end
 
 struct Raw <: SQLElement

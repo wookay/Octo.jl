@@ -51,11 +51,12 @@ import .Beuatiful: ElementStyle
 
 const style_normal                  = ElementStyle(:normal)
 const style_subquery                = ElementStyle(:light_green, true)
-const style_windowframe              = ElementStyle(:light_blue, true)
+const style_windowframe             = ElementStyle(:light_blue, true)
 const style_placeholders            = ElementStyle(:green, true)
 const style_keywords                = ElementStyle(:cyan)
 const style_functions               = ElementStyle(:yellow)
 const style_string                  = ElementStyle(:light_magenta)
+const style_predicate_enclosed      = ElementStyle(:normal)
 const style_table_name              = ElementStyle(:normal, false)
 const style_table_alias             = ElementStyle(:normal, true)
 const style_field_fromclause_alias  = ElementStyle(:normal)
@@ -70,12 +71,12 @@ const style_field_windowframe_name  = ElementStyle(:normal)
 
 # sqlrepr -> SqlPartElement
 
-sqlrepr(::DB where DB<:AbstractDatabase, el::Keyword)::SqlPartElement = SqlPartElement(style_keywords, el.name)
-sqlrepr(::DB where DB<:AbstractDatabase, sym::Symbol)::SqlPartElement = SqlPartElement(style_normal, sym)
-sqlrepr(::DB where DB<:AbstractDatabase, num::Number)::SqlPartElement = SqlPartElement(style_normal, num)
-sqlrepr(::DB where DB<:AbstractDatabase, f::Function)::SqlPartElement = SqlPartElement(style_normal, f)
+sqlrepr(::DB where DB<:AbstractDatabase, el::Keyword)::SqlPartElement    = SqlPartElement(style_keywords, el.name)
+sqlrepr(::DB where DB<:AbstractDatabase, sym::Symbol)::SqlPartElement    = SqlPartElement(style_normal, sym)
+sqlrepr(::DB where DB<:AbstractDatabase, num::Number)::SqlPartElement    = SqlPartElement(style_normal, num)
+sqlrepr(::DB where DB<:AbstractDatabase, f::Function)::SqlPartElement    = SqlPartElement(style_normal, f)
 sqlrepr(::DB where DB<:AbstractDatabase, h::PlaceHolder)::SqlPartElement = SqlPartElement(style_placeholders, h.body)
-sqlrepr(::DB where DB<:AbstractDatabase, raw::Raw)::SqlPartElement = SqlPartElement(style_normal, raw.string)
+sqlrepr(::DB where DB<:AbstractDatabase, raw::Raw)::SqlPartElement       = SqlPartElement(style_normal, raw.string)
 
 function sqlrepr(::DB where DB<:AbstractDatabase, M::Type{PlaceHolder})::SqlPartElement
     SqlPartElement(style_placeholders, '?')
@@ -119,16 +120,28 @@ function _window_frame_predicate_side(db::DB where DB<:AbstractDatabase, side)
     end
 end
 
+function both_isa((a,b), T::Type)::Bool
+    a isa T && b isa T
+end
+
 function sqlrepr(db::DB where DB<:AbstractDatabase, pred::Predicate)::SqlPart
-    left  = _window_frame_predicate_side(db, pred.left)
-    right = _window_frame_predicate_side(db, pred.right)
     if ==(pred.func, ==)
         op = :(=)
     else
         op = pred.func
     end
+    (left, right) = _window_frame_predicate_side.(Ref(db), (pred.left, pred.right))
     parts = [left, sqlrepr(db, op), right]
-    SqlPart(parts, " ")
+    predpart = SqlPart(parts, " ")
+    if op in (+, -) && both_isa((pred.left, pred.right), Union{Field, SQLFunction})
+        enclosed = [
+            SqlPartElement(style_predicate_enclosed, '('),
+            predpart,
+            SqlPartElement(style_predicate_enclosed, ')')]
+        SqlPart(enclosed, "")
+    else
+        predpart
+    end
 end
 
 function _table_name_of(M::Type)::String # throw Schema.TableNameError

@@ -1,6 +1,6 @@
 module Queryable # Octo
 
-import ..Octo: FromClause, SubQuery, WindowFrame, Field, SQLAlias, SQLOver, Structured, SQLFunction
+import ..Octo: FromClause, SubQuery, WindowFrame, Field, SQLAlias, SQLOver, Structured, SQLFunction, Predicate
 
 """
     from(M::Type, as=nothing)::FromClause
@@ -41,9 +41,9 @@ end
 
 
 """
-    as(field::Union{Field, SQLFunction}, alias::Symbol)::SQLAlias
+    as(field::Union{Field, SQLFunction, Predicate}, alias::Symbol)::SQLAlias
 """
-function as(field::Union{Field, SQLFunction}, alias::Symbol)::SQLAlias
+function as(field::Union{Field, SQLFunction, Predicate}, alias::Symbol)::SQLAlias
     SQLAlias(field, alias)
 end
 
