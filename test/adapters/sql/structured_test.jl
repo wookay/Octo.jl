@@ -28,9 +28,12 @@ u = from(User, :u)
 @test to_sql([SUM(u.age)]) == "SUM(u.age)"
 @test to_sql([AVG(u.age)]) == "AVG(u.age)"
 
+
 Repo.connect(adapter=Octo.Adapters.SQL)
 buf = IOBuffer()
 show(IOContext(buf, :color=>true), MIME"text/plain"(), [FROM u])
 @test String(take!(buf)) == "\e[36mFROM\e[39m \e[0musers \e[36mAS\e[39m \e[0m\e[1mu\e[22m"
+show(IOContext(buf, :color=>true), MIME"text/plain"(), [1,2,3])
+@test String(take!(buf)) == "[1, 2, 3]"
 
 end # module adapters_sql_structured_test

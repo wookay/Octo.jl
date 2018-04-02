@@ -17,5 +17,7 @@ customers = from(Customer)
 @test to_sql([customers.Country NOT IN ("Germany", "France", "UK")]) == "Country NOT IN ('Germany', 'France', 'UK')"
 
 @test to_sql([WHERE true]) == "WHERE true"
+@test to_sql([1,2,3]) == "1 2 3"
+@test to_sql([(1,2,3)]) == "1, 2, 3"
 
 end # module test_octo_structured

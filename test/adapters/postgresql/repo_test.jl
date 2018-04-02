@@ -92,6 +92,7 @@ df = Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
 # coverage up
 Schema.tables[Base.typename(Employee)] = Dict(:table_name => "Employee")
 @test_throws Schema.PrimaryKeyError Repo.get(Employee, 2)
+@test_throws Schema.PrimaryKeyError Repo.update!(Employee, (ID=2,))
 Repo.insert!(Employee, Vector{NamedTuple}())
 
 Repo.disconnect()

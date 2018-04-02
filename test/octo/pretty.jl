@@ -23,4 +23,20 @@ nts = [(id=1,case="글씨가 넘흐 길어서 짤릴 때"),
 |    3 | 안짤리는 넘       |
 3 rows."""
 
+nts = Vector{NamedTuple{(:a,),Tuple{Int}}}()
+@test Pretty.table(nts) == """
+| a   |
+| --- |
+
+0 rows."""
+
+Pretty.set(false)
+buf = IOBuffer()
+Base.show(buf, MIME"text/plain"(), nts)
+@test String(take!(buf)) == """
+NamedTuple{(:a,),Tuple{Int64}}[]"""
+Pretty.set(true)
+
+@test Pretty._regularize_text("가1", 1) == "가"
+
 end # module test_octo_pretty
