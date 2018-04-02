@@ -4,7 +4,7 @@ struct UnsupportedError <: Exception
     msg
 end
 
-function backend(adapter::Module)
+function backend(adapter::Module) # UnsupportedError
     sym = nameof(adapter)
     L = Symbol(sym, :Loader)
     mod = Main
@@ -15,7 +15,7 @@ function backend(adapter::Module)
             path = normpath(@__DIR__, "Backends", string(sym, ".jl"))
             mod.include(path)
         catch err
-            error(err)
+            throw(UnsupportedError(string("error on ", adapter)))
         end
     end
 end

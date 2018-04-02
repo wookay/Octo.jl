@@ -59,21 +59,21 @@ function _regularize_text(str::String, padding::Int)::String
     a = []
     for (idx, x) in enumerate(s)
         n += textwidth(x)
-        if n > padding - 2
+        push!(a, x)
+        if n > padding - 1
             break
         end
-        push!(a, x)
     end
     newstr = join(a)
-    newpad = padding - textwidth(newstr)
+    newdiff = textwidth(s) - textwidth(newstr)
     if length(s) == length(a)
         news = newstr
-        npad = newpad
+        npad = padding - textwidth(newstr)
     else
-        if newpad >= 2
-            news = string(newstr, "..")
-        elseif newpad == 1
-            news = string(newstr, ".")
+        if newdiff > 0 && length(a) >= 2
+            newstr = join(a[1:end-2])
+            newpad = padding - textwidth(newstr)
+            news = string(newstr, fill('.', newpad)...)
         else
             news = newstr
         end

@@ -19,8 +19,8 @@ end
 end
 
 const current = Dict{Symbol, Union{Nothing, Module, RepoLogLevel}}(
-    :loader => nothing,
     :adapter => nothing,
+    :loader => nothing,
     :log_level => LogLevelInfo
 )
 
@@ -91,7 +91,10 @@ end
 """
 function disconnect()
     loader = current_loader()
-    loader.disconnect()
+    disconnected = loader.disconnect()
+    current[:adapter] = nothing
+    current[:loader] = nothing
+    disconnected
 end
 
 # Repo.query

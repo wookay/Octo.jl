@@ -12,6 +12,7 @@ w = window([PARTITION BY :depname ORDER BY :salary DESC], :w)
 @test to_sql([SELECT (:depname, :empno, :salary, over(RANK(), w)) FROM :empsalary]) ==
              "SELECT depname, empno, salary, RANK() OVER (PARTITION BY depname ORDER BY salary DESC) AS w FROM empsalary"
 @test to_sql([WINDOW :w AS w]) == "WINDOW w AS (PARTITION BY depname ORDER BY salary DESC)"
+@test to_sql([w.salary]) == "w.salary"
 
 
 Repo.debug_sql()

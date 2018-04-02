@@ -34,6 +34,8 @@ userName = """ ' OR '1'='1 """ # Incorrectly filtered escape characters
 df = Repo.query([SELECT * FROM u WHERE u.name == ❔ AND u.salary > ❔], [userName, 2000])
 @test size(df) == (0,)
 
+@test to_sql([Octo.PlaceHolder]) == "\$1"
+
 Repo.disconnect()
 
 end # module adapters_postgresql_placeholder_test

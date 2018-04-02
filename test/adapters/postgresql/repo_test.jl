@@ -3,7 +3,16 @@ module adapters_postgresql_repo_test
 using Test # @test
 using Octo.Adapters.PostgreSQL # Repo Schema Raw
 
+struct Employee
+end
+Schema.model(Employee,
+    table_name = "Employee",
+    primary_key = "ID"
+)
+
 Repo.debug_sql()
+
+@test_throws Repo.NeedsConnectError Repo.get(Employee, 2)
 
 #Repo.connect(
 #    adapter = Octo.Adapters.PostgreSQL,
@@ -31,13 +40,6 @@ Repo.execute(Raw("""
         Salary FLOAT(8),
         PRIMARY KEY (ID)
     )"""))
-
-struct Employee
-end
-Schema.model(Employee,
-    table_name = "Employee",
-    primary_key = "ID"
-)
 
 changes = (Name="John", Salary=10000.50)
 Repo.insert!(Employee, changes)
@@ -86,6 +88,11 @@ em = from(Employee)
 df = Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
 @test size(df) == (1,)
 @test df[1].name == "Tim"
+
+# coverage up
+Schema.tables[Base.typename(Employee)] = Dict(:table_name => "Employee")
+@test_throws Schema.PrimaryKeyError Repo.get(Employee, 2)
+Repo.insert!(Employee, Vector{NamedTuple}())
 
 Repo.disconnect()
 
