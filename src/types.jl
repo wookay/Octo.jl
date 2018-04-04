@@ -42,7 +42,7 @@ struct PlaceHolder <: SQLElement
     body::String
 end
 
-const PredicateValueTypes = Union{Bool, Number, String, Symbol, Dates.Day, <:SQLElement}
+const PredicateValueTypes = Union{Bool, Number, String, Symbol, Day, <:SQLElement}
 
 struct Predicate <: SQLElement
     func::Function
@@ -60,12 +60,9 @@ struct SQLOver <: SQLElement
     query::Union{WindowFrame,Vector}
 end
 
-# DatePeriod     - Year Month Day
-# TimePeriod     - Hour Minute Second
-# CompoundPeriod
 struct SQLExtract <: SQLElement
-    field::Union{Keyword, Type{DP}, Type{TP}}                 where DP <: Dates.DatePeriod where TP <: Dates.TimePeriod
-    from::Union{Dates.DateTime, DP, TP, Dates.CompoundPeriod} where DP <: Dates.DatePeriod where TP <: Dates.TimePeriod
+    field::Union{Keyword, Type{DP}, Type{TP}}     where DP <: DatePeriod where TP <: TimePeriod
+    from::Union{DateTime, DP, TP, CompoundPeriod} where DP <: DatePeriod where TP <: TimePeriod
 end
 
 struct Raw <: SQLElement

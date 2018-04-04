@@ -14,8 +14,8 @@ import ..Octo
 import .Octo.Queryable: Structured, FromClause, SubQuery, WindowFrame
 import .Octo: SQLElement, SQLAlias, SQLOver, SQLExtract, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
 import .Octo: Schema
+import .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
 import .Octo: @sql_keywords, @sql_functions
-import ..Deps: Dates
 
 const current = Dict{Symbol,AbstractDatabase}(
     :database => Database.SQLDatabase()
@@ -256,7 +256,7 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, o::SQLOver)::SqlPart
     end
 end
 
-@sql_keywords EXTRACT MONTH TIMESTAMP INTERVAL
+@sql_keywords EXTRACT YEAR MONTH DAY HOUR MINUTE SECOND TIMESTAMP INTERVAL
 function sqlrepr(db::DB where DB<:AbstractDatabase, extract::SQLExtract)::SqlPart
     part = SqlPart(sqlrepr.(Ref(db), [extract.field, FROM, extract.from]), " ")
     SqlPart([
@@ -266,12 +266,15 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, extract::SQLExtract)::SqlPar
         SqlPartElement(style_normal, ')')], "")
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, month::Type{Dates.Month})::SqlPartElement
-    sqlrepr(db, MONTH)
-end
+sqlrepr(db::DB where DB<:AbstractDatabase, ::Type{Year})::SqlPartElement   = sqlrepr(db, YEAR)
+sqlrepr(db::DB where DB<:AbstractDatabase, ::Type{Month})::SqlPartElement  = sqlrepr(db, MONTH)
+sqlrepr(db::DB where DB<:AbstractDatabase, ::Type{Day})::SqlPartElement    = sqlrepr(db, DAY)
+sqlrepr(db::DB where DB<:AbstractDatabase, ::Type{Hour})::SqlPartElement   = sqlrepr(db, HOUR)
+sqlrepr(db::DB where DB<:AbstractDatabase, ::Type{Minute})::SqlPartElement = sqlrepr(db, MINUTE)
+sqlrepr(db::DB where DB<:AbstractDatabase, ::Type{Second})::SqlPartElement = sqlrepr(db, SECOND)
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, dt::Dates.DateTime)::SqlPart
-    str = Dates.format(dt, "yyyy-mm-dd HH:MM:SS")
+function sqlrepr(db::DB where DB<:AbstractDatabase, dt::DateTime)::SqlPart
+    str = format(dt, "yyyy-mm-dd HH:MM:SS")
     quot = SqlPartElement(style_dates, "'")
     SqlPart([
         sqlrepr(db, TIMESTAMP),
@@ -279,7 +282,7 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, dt::Dates.DateTime)::SqlPart
     ], " ")
 end
 
-function compound_period_string(x::Dates.CompoundPeriod)
+function compound_period_string(x::CompoundPeriod)
     if isempty(x.periods)
         return "empty period"
     else
@@ -291,7 +294,7 @@ function compound_period_string(x::Dates.CompoundPeriod)
     end
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, period::Union{Dates.DatePeriod, Dates.TimePeriod})::SqlPart
+function sqlrepr(db::DB where DB<:AbstractDatabase, period::Union{DatePeriod, TimePeriod})::SqlPart
     str = string(period)
     quot = SqlPartElement(style_dates, "'")
     SqlPart([
@@ -300,7 +303,7 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, period::Union{Dates.DatePeri
     ], " ")
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, period::Dates.CompoundPeriod)::SqlPart
+function sqlrepr(db::DB where DB<:AbstractDatabase, period::CompoundPeriod)::SqlPart
     str = compound_period_string(period)
     quot = SqlPartElement(style_dates, "'")
     SqlPart([
