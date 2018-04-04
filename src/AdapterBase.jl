@@ -9,12 +9,13 @@ struct PostgreSQLDatabase <: AbstractDatabase end
 struct JDBCDatabase <: AbstractDatabase end
 end # module Octo.AdapterBase.Database
 
-import ...Octo
+import .Database: AbstractDatabase
+import ..Octo
 import .Octo.Queryable: Structured, FromClause, SubQuery, WindowFrame
 import .Octo: SQLElement, SQLAlias, SQLOver, SQLExtract, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
-import .Octo: Schema, Deps
+import .Octo: Schema
 import .Octo: @sql_keywords, @sql_functions
-import .Database: AbstractDatabase
+import ..Deps: Dates
 
 const current = Dict{Symbol,AbstractDatabase}(
     :database => Database.SQLDatabase()
@@ -265,12 +266,12 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, extract::SQLExtract)::SqlPar
         SqlPartElement(style_normal, ')')], "")
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, month::Type{Deps.Month})::SqlPartElement
+function sqlrepr(db::DB where DB<:AbstractDatabase, month::Type{Dates.Month})::SqlPartElement
     sqlrepr(db, MONTH)
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, dt::Deps.DateTime)::SqlPart
-    str = Deps.Dates.format(dt, "yyyy-mm-dd HH:MM:SS")
+function sqlrepr(db::DB where DB<:AbstractDatabase, dt::Dates.DateTime)::SqlPart
+    str = Dates.format(dt, "yyyy-mm-dd HH:MM:SS")
     quot = SqlPartElement(style_dates, "'")
     SqlPart([
         sqlrepr(db, TIMESTAMP),
@@ -278,7 +279,7 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, dt::Deps.DateTime)::SqlPart
     ], " ")
 end
 
-function compound_period_string(x::Deps.CompoundPeriod)
+function compound_period_string(x::Dates.CompoundPeriod)
     if isempty(x.periods)
         return "empty period"
     else
@@ -290,7 +291,7 @@ function compound_period_string(x::Deps.CompoundPeriod)
     end
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, period::Union{Deps.DatePeriod, Deps.TimePeriod})::SqlPart
+function sqlrepr(db::DB where DB<:AbstractDatabase, period::Union{Dates.DatePeriod, Dates.TimePeriod})::SqlPart
     str = string(period)
     quot = SqlPartElement(style_dates, "'")
     SqlPart([
@@ -299,7 +300,7 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, period::Union{Deps.DatePerio
     ], " ")
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, period::Deps.CompoundPeriod)::SqlPart
+function sqlrepr(db::DB where DB<:AbstractDatabase, period::Dates.CompoundPeriod)::SqlPart
     str = compound_period_string(period)
     quot = SqlPartElement(style_dates, "'")
     SqlPart([

@@ -5,7 +5,6 @@ export extract
 include("sql_exports.jl")
 include("sql_imports.jl") # Database Structured SubQuery WindowFrame _to_sql _placeholder _placeholders
 import .Octo.Queryable: window, extract #
-import .Octo: Deps
 import .Octo: @sql_keywords, @sql_functions
 
 const DatabaseID = Database.PostgreSQLDatabase
