@@ -11,8 +11,8 @@ end # module Octo.AdapterBase.Database
 
 import ...Octo
 import .Octo.Queryable: Structured, FromClause, SubQuery, WindowFrame
-import .Octo: Schema
-import .Octo: SQLElement, SQLAlias, SQLOver, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
+import .Octo: SQLElement, SQLAlias, SQLOver, SQLExtract, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
+import .Octo: Schema, Deps
 import .Octo: @sql_keywords, @sql_functions
 import .Database: AbstractDatabase
 
@@ -56,6 +56,7 @@ const style_placeholders            = ElementStyle(:green, true)
 const style_keywords                = ElementStyle(:cyan)
 const style_functions               = ElementStyle(:yellow)
 const style_string                  = ElementStyle(:light_magenta)
+const style_dates                   = ElementStyle(:light_green)
 const style_predicate_enclosed      = ElementStyle(:normal)
 const style_table_name              = ElementStyle(:normal, false)
 const style_table_alias             = ElementStyle(:normal, true)
@@ -252,6 +253,59 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, o::SQLOver)::SqlPart
             enclosed,
         ], " ")
     end
+end
+
+@sql_keywords EXTRACT MONTH TIMESTAMP INTERVAL
+function sqlrepr(db::DB where DB<:AbstractDatabase, extract::SQLExtract)::SqlPart
+    part = SqlPart(sqlrepr.(Ref(db), [extract.field, FROM, extract.from]), " ")
+    SqlPart([
+        sqlrepr(db, EXTRACT),
+        SqlPartElement(style_normal, '('),
+        part,
+        SqlPartElement(style_normal, ')')], "")
+end
+
+function sqlrepr(db::DB where DB<:AbstractDatabase, month::Type{Deps.Month})::SqlPartElement
+    sqlrepr(db, MONTH)
+end
+
+function sqlrepr(db::DB where DB<:AbstractDatabase, dt::Deps.DateTime)::SqlPart
+    str = Deps.Dates.format(dt, "yyyy-mm-dd HH:MM:SS")
+    quot = SqlPartElement(style_dates, "'")
+    SqlPart([
+        sqlrepr(db, TIMESTAMP),
+        SqlPart([quot, SqlPartElement(style_dates, str), quot], "")
+    ], " ")
+end
+
+function compound_period_string(x::Deps.CompoundPeriod)
+    if isempty(x.periods)
+        return "empty period"
+    else
+        s = ""
+        for p in x.periods
+            s *= string(' ', p)
+        end
+        return s[2:end]
+    end
+end
+
+function sqlrepr(db::DB where DB<:AbstractDatabase, period::Union{Deps.DatePeriod, Deps.TimePeriod})::SqlPart
+    str = string(period)
+    quot = SqlPartElement(style_dates, "'")
+    SqlPart([
+        sqlrepr(db, INTERVAL),
+        SqlPart([quot, SqlPartElement(style_dates, str), quot], "")
+    ], " ")
+end
+
+function sqlrepr(db::DB where DB<:AbstractDatabase, period::Deps.CompoundPeriod)::SqlPart
+    str = compound_period_string(period)
+    quot = SqlPartElement(style_dates, "'")
+    SqlPart([
+        sqlrepr(db, INTERVAL),
+        SqlPart([quot, SqlPartElement(style_dates, str), quot], "")
+    ], " ")
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, f::SQLFunction)::SqlPart

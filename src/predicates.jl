@@ -1,7 +1,7 @@
 # module Octo
 
 import Base: ==, <, >, <=, >=, -, +, *, /
-const PlainTypes = Union{Number, String, Symbol, Dates.Day}
+const PlainTypes = Union{Number, String, Symbol, <:Deps.DatePeriod, <:Deps.TimePeriod}
 
 for op in (:(==), :(<), :(>), :(<=), :(>=), :(-), :(+), :(*), :(/))
     @eval begin

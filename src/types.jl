@@ -31,6 +31,10 @@ struct Field <: SQLElement
     name::Symbol
 end
 
+struct Keyword <: SQLElement
+    name::Symbol
+end
+
 """
     Octo.PlaceHolder
 """
@@ -38,7 +42,7 @@ struct PlaceHolder <: SQLElement
     body::String
 end
 
-const PredicateValueTypes = Union{Bool, Number, String, Symbol, Dates.Day, <: SQLElement}
+const PredicateValueTypes = Union{Bool, Number, String, Symbol, Deps.Dates.Day, <: SQLElement}
 
 struct Predicate <: SQLElement
     func::Function
@@ -56,16 +60,20 @@ struct SQLOver <: SQLElement
     query::Union{WindowFrame,Vector}
 end
 
+# DatePeriod     - Year Month Day
+# TimePeriod     - Hour Minute Second
+# CompoundPeriod
+struct SQLExtract <: SQLElement
+    field::Union{Keyword, Type{DP}, Type{TP}}               where DP <: Deps.DatePeriod where TP <: Deps.TimePeriod
+    from::Union{Deps.DateTime, DP, TP, Deps.CompoundPeriod} where DP <: Deps.DatePeriod where TP <: Deps.TimePeriod
+end
+
 struct Raw <: SQLElement
     string::String
 end
 
 struct Enclosed <: SQLElement
     values::Vector
-end
-
-struct Keyword <: SQLElement
-    name::Symbol
 end
 
 struct KeywordAllKeyword <: SQLElement
