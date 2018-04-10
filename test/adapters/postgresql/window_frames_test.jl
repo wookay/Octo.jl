@@ -14,7 +14,6 @@ w = window([PARTITION BY :depname ORDER BY :salary DESC], :w)
 @test to_sql([WINDOW :w AS w]) == "WINDOW w AS (PARTITION BY depname ORDER BY salary DESC)"
 @test to_sql([w.salary]) == "w.salary"
 
-
 Repo.debug_sql()
 
 Repo.connect(
@@ -23,7 +22,15 @@ Repo.connect(
     user = "postgres",
 )
 
+
 # https://robots.thoughtbot.com/postgres-window-functions
+struct Post
+end
+Schema.model(Post, table_name="posts")
+
+struct Comment
+end
+Schema.model(Comment, table_name="comments")
 
 Repo.execute([DROP TABLE IF EXISTS :posts])
 Repo.execute([DROP TABLE IF EXISTS :comments])
@@ -59,15 +66,6 @@ INSERT INTO comments VALUES (7, 2, 'bar newer');
 INSERT INTO comments VALUES (8, 2, 'bar newest');
 """))
 
-
-struct Post
-end
-Schema.model(Post, table_name="posts")
-
-struct Comment
-end
-Schema.model(Comment, table_name="comments")
-
 posts = from(Post, :posts)
 comments = from(Comment, :comments)
 
@@ -101,6 +99,54 @@ q = [with... SELECT (:post_id, :comment_id, :body) FROM :ranked_comments WHERE c
 @test to_sql(q) == string(to_sql(with), ' ', "SELECT post_id, comment_id, body FROM ranked_comments WHERE comment_rank < 4")
 df = Repo.query(q)
 @test size(df) == (8,)
+
+
+# https://stackoverflow.com/questions/12410791/difficult-for-me-postgres-sql-query
+struct C
+end
+Schema.model(C, table_name="c")
+
+struct D
+end
+Schema.model(D, table_name="d")
+
+Repo.execute([DROP TABLE IF EXISTS :c])
+Repo.execute([DROP TABLE IF EXISTS :d])
+Repo.execute(Raw("""
+CREATE TABLE c
+  (
+    id int NOT NULL PRIMARY KEY,
+    aid int NOT NULL,
+    bid int NOT NULL,
+    units int NOT NULL
+  );
+CREATE TABLE d
+  (
+    id int NOT NULL PRIMARY KEY,
+    open boolean NOT NULL,
+    cid int NOT NULL
+  );
+"""))
+Repo.insert!(C, [(2,3,5,4),(3,3,5,6),(4,4,6,8),(5,4,6,10),(6,7,8,9)])
+Repo.insert!(D, [(1,true,2),(2,true,3),(3,true,3),(4,true,4)])
+
+c = from(C, :c)
+d = from(D, :d)
+n = from([SELECT (:aid, as(COUNT(*), :cnt)) FROM c JOIN d ON (d.cid == c.id) GROUP BY :aid], :n)
+@test to_sql(n)              ==           "(SELECT aid, COUNT(*) AS cnt FROM c JOIN d ON d.cid = c.id GROUP BY aid) AS n"
+@test to_sql([WITH :n AS n]) == "WITH n AS (SELECT aid, COUNT(*) AS cnt FROM c JOIN d ON d.cid = c.id GROUP BY aid)"
+@test to_sql([JOIN n])       == "JOIN n"
+q = [WITH :n AS n SELECT (:aid, as(SUM(c.units) - COALESCE(n.cnt, 0), :difference)) FROM c LEFT JOIN n USING (:aid,) GROUP BY (:aid, n.cnt) ORDER BY :aid]
+@test to_sql(q)              == "WITH n AS (SELECT aid, COUNT(*) AS cnt FROM c JOIN d ON d.cid = c.id GROUP BY aid) SELECT aid, (SUM(c.units) - COALESCE(n.cnt, 0)) AS difference FROM c LEFT JOIN n USING (aid) GROUP BY aid, n.cnt ORDER BY aid"
+
+df = Repo.query(q)
+@test Pretty.table(df) == """
+|   aid |   difference |
+| ----- | ------------ |
+|     3 |            7 |
+|     4 |           17 |
+|     7 |            9 |
+3 rows."""
 
 Repo.disconnect()
 

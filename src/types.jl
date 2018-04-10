@@ -73,6 +73,10 @@ struct Enclosed <: SQLElement
     values::Vector
 end
 
+struct VectorOfTuples <: SQLElement
+    values::Vector{<:Tuple}
+end
+
 struct KeywordAllKeyword <: SQLElement
     left::Keyword
     right::Keyword

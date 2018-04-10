@@ -55,7 +55,7 @@ result = Repo.insert!(Employee, multiple_changes)
 
 Repo.execute(Raw("""INSERT INTO Employee (Name, Salary) VALUES (\$1, \$2)"""), multiple_changes)
 
-df = Repo.all(Employee)
+df = Repo.query(Employee)
 @test size(df,) == (6,)
 
 df = Repo.get(Employee, 2)
@@ -68,7 +68,7 @@ df = Repo.get(Employee, (Name="Tom",))
 
 changes = (Name="Tim", Salary=15000.50)
 Repo.insert!(Employee, changes)
-df = Repo.all(Employee)
+df = Repo.query(Employee)
 @test size(df) == (7,)
 df = Repo.get(Employee, (Name="Tim",))
 @test size(df) == (1,)

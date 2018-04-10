@@ -33,8 +33,8 @@ _placeholders(db::DatabaseID, dims::Int) = Enclosed([PlaceHolder("\$$x") for x i
 export         CURRENT_DATE, FALSE, LATERAL, TRUE, WINDOW, WITH
 @sql_keywords  CURRENT_DATE  FALSE  LATERAL  TRUE  WINDOW  WITH
 
-export         NOW
-@sql_functions NOW
+export         COALESCE, NOW
+@sql_functions COALESCE  NOW
 
 import .Octo.AdapterBase: FromClause, SqlPart, sqlrepr, _sqlrepr
 function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart

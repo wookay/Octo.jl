@@ -12,7 +12,7 @@ end # module Octo.AdapterBase.Database
 import .Database: AbstractDatabase
 import ..Octo
 import .Octo.Queryable: Structured, FromClause, SubQuery, WindowFrame
-import .Octo: SQLElement, SQLAlias, SQLOver, SQLExtract, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword
+import .Octo: SQLElement, SQLAlias, SQLOver, SQLExtract, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword, VectorOfTuples
 import .Octo: Schema
 import .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
 import .Octo: @sql_keywords, @sql_functions
@@ -21,12 +21,9 @@ const current = Dict{Symbol,AbstractDatabase}(
     :database => Database.SQLDatabase()
 )
 
-"""
-    Beuatiful
 
-Colored SQL statements
-"""
-module Beuatiful # Octo.AdapterBase
+# Colored SQL statements
+module Beautiful # Octo.AdapterBase
 
 struct ElementStyle
     color::Symbol
@@ -44,11 +41,11 @@ struct Container
     sep::String
 end
 
-end # Octo.AdapterBase.Beuatiful
+end # Octo.AdapterBase.Beautiful
 
-const SqlPartElement = Beuatiful.Element
-const SqlPart        = Beuatiful.Container
-import .Beuatiful: ElementStyle
+const SqlPartElement = Beautiful.Element
+const SqlPart        = Beautiful.Container
+import .Beautiful: ElementStyle
 
 const style_normal                  = ElementStyle(:normal)
 const style_subquery                = ElementStyle(:light_green, true)
@@ -70,6 +67,7 @@ const style_field_subquery_name     = ElementStyle(:normal)
 const style_field_windowframe_alias = ElementStyle(:light_blue)
 const style_field_windowframe_dot   = ElementStyle(:normal)
 const style_field_windowframe_name  = ElementStyle(:normal)
+const style_vector_of_tuples        = ElementStyle(:yellow)
 
 # sqlrepr -> SqlPartElement
 
@@ -85,6 +83,13 @@ function sqlrepr(::DB where DB<:AbstractDatabase, M::Type{PlaceHolder})::SqlPart
 end
 
 # sqlrepr -> SqlPart
+
+function enclosed_part(style, body::SqlPart)::SqlPart
+    SqlPart([
+        SqlPartElement(style, '('),
+        body,
+        SqlPartElement(style, ')')], "")
+end
 
 function sqlrepr(::DB where DB<:AbstractDatabase, str::String)::SqlPart
     quot = SqlPartElement(style_string, "'")
@@ -134,15 +139,11 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, pred::Predicate)::SqlPart
     end
     (left, right) = _window_frame_predicate_side.(Ref(db), (pred.left, pred.right))
     parts = [left, sqlrepr(db, op), right]
-    predpart = SqlPart(parts, " ")
+    body = SqlPart(parts, " ")
     if op in (+, -) && both_isa((pred.left, pred.right), Union{Field, SQLFunction})
-        enclosed = [
-            SqlPartElement(style_predicate_enclosed, '('),
-            predpart,
-            SqlPartElement(style_predicate_enclosed, ')')]
-        SqlPart(enclosed, "")
+        enclosed_part(style_predicate_enclosed, body)
     else
-        predpart
+        body
     end
 end
 
@@ -179,10 +180,7 @@ end
 function sqlrepr(db::DB where DB<:AbstractDatabase, subquery::SubQuery)::SqlPart
     query = subquery.__octo_query
     body = SqlPart(vcat(sqlrepr.(Ref(db), query)...), " ")
-    part = SqlPart([
-        SqlPartElement(style_subquery, '('),
-        body,
-        SqlPartElement(style_subquery, ')')], "")
+    part = enclosed_part(style_subquery, body)
     if subquery.__octo_as isa Nothing
         part
     else
@@ -197,10 +195,7 @@ end
 function sqlrepr(db::DB where DB<:AbstractDatabase, frame::WindowFrame)::SqlPart
     query = frame.__octo_query
     body = SqlPart(vcat(sqlrepr.(Ref(db), query)...), " ")
-    part = SqlPart([
-        SqlPartElement(style_windowframe, '('),
-        body,
-        SqlPartElement(style_windowframe, ')')], "")
+    part = enclosed_part(style_windowframe, body)
     if frame.__octo_as isa Nothing
          part
     else
@@ -223,15 +218,17 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, tup::NamedTuple)::SqlPart
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, enclosed::Enclosed)::SqlPart
-    els = [enclosed.values...]
-    part = SqlPart(sqlrepr.(Ref(db), els), ", ")
-    if enclosed.values isa Vector{PlaceHolder}
-        length(enclosed.values) == 1 && return part
+    body = SqlPart(sqlrepr.(Ref(db), enclosed.values), ", ")
+    if enclosed.values isa Vector{PlaceHolder} && length(enclosed.values) == 1
+        body
+    else
+        enclosed_part(style_normal, body)
     end
-    SqlPart([
-        SqlPartElement(style_normal, '('),
-        part,
-        SqlPartElement(style_normal, ')')], "")
+end
+
+function sqlrepr(db::DB where DB<:AbstractDatabase, vec_of_tuples::VectorOfTuples)::SqlPart
+    parts = map(x -> enclosed_part(style_vector_of_tuples, SqlPart(sqlrepr.(Ref(db), collect(x)), ", ")), vec_of_tuples.values)
+    SqlPart(parts, ", ")
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, a::SQLAlias)::SqlPart
@@ -244,26 +241,21 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, o::SQLOver)::SqlPart
         els = [o.field, OVER, o.query]
         SqlPart(sqlrepr.(Ref(db), els), " ")
     else # Vector
-        part = SqlPart(sqlrepr.(Ref(db), o.query), " ")
-        enclosed = SqlPart([
-            SqlPartElement(style_normal, '('),
-            part,
-            SqlPartElement(style_normal, ')')], "")
+        body = SqlPart(sqlrepr.(Ref(db), o.query), " ")
         SqlPart([
             sqlrepr.(Ref(db), [o.field, OVER])...,
-            enclosed,
+            enclosed_part(style_normal, body),
         ], " ")
     end
 end
 
 @sql_keywords EXTRACT YEAR MONTH DAY HOUR MINUTE SECOND TIMESTAMP INTERVAL
 function sqlrepr(db::DB where DB<:AbstractDatabase, extract::SQLExtract)::SqlPart
-    part = SqlPart(sqlrepr.(Ref(db), [extract.field, FROM, extract.from]), " ")
+    body = SqlPart(sqlrepr.(Ref(db), [extract.field, FROM, extract.from]), " ")
     SqlPart([
         sqlrepr(db, EXTRACT),
-        SqlPartElement(style_normal, '('),
-        part,
-        SqlPartElement(style_normal, ')')], "")
+        enclosed_part(style_normal, body)
+    ], "")
 end
 
 sqlrepr(db::DB where DB<:AbstractDatabase, ::Type{Year})::SqlPartElement   = sqlrepr(db, YEAR)
@@ -330,15 +322,19 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
         elseif el isa Predicate && el.right isa Type{PlaceHolder}
             push!(els, Predicate(el.func, el.left, _placeholder(db, nth)))
             nth += 1
-        elseif el isa WindowFrame
+        elseif el isa WindowFrame ||
+               el isa SubQuery
             if prev === AS
-                push!(els, WindowFrame(el.__octo_query, nothing))
+                push!(els, typeof(el)(el.__octo_query, nothing))
+            elseif prev === JOIN
+                push!(els, el.__octo_as)
             else
                 push!(els, el)
             end
         elseif el isa Tuple
             if prev === IN ||
-               prev === OVER
+               prev === OVER ||
+               prev === USING
                 push!(els, Enclosed(collect(el)))
             else
                 push!(els, el)
@@ -397,7 +393,8 @@ end
 
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
     if element isa Keyword ||
-       element isa SQLFunction
+       element isa SQLFunction ||
+       element isa FromClause
         print(io, nameof(typeof(element)), ' ')
     end
     printpart(io, sqlrepr(db, element))

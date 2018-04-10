@@ -17,7 +17,7 @@ julia> Schema.model(User, table_name="users")
 User => Dict(:primary_key=>"id",:table_name=>"users")
 
 julia> u = from(User)
-Octo.FromClause(User, nothing)
+FromClause users
 
 julia> [SELECT * FROM u]
 SELECT * FROM users
@@ -90,7 +90,7 @@ julia> Repo.insert!(Employee, [
        ])
 [ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jeremy", Salary = 10000.5), (Name = "Cloris", Salary = 20000.5), (Name = "John", Salary = 30000.5), (Name = "Hyunden", Salary = 40000.5), (Name = "Justin", Salary = 50000.5), (Name = "Tom", Salary = 60000.5)
 
-julia> Repo.all(Employee)
+julia> Repo.query(Employee)
 [ Info: SELECT * FROM Employee
 |   id | name      |    salary |
 | ---- | --------- | --------- |
@@ -139,7 +139,7 @@ julia> Repo.delete!(Employee, 3:5)
 [ Info: DELETE FROM Employee WHERE ID BETWEEN 3 AND 5
 
 julia> em = from(Employee)
-Octo.FromClause(Employee, nothing)
+FromClause Employee
 
 julia> Repo.query([SELECT * FROM em WHERE em.Name == "Cloris"])
 [ Info: SELECT * FROM Employee WHERE Name = 'Cloris'
@@ -171,6 +171,15 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 | Tom       |
 | Jessica   |
 | Cloris    |
+3 rows.
+
+julia> Repo.query(sub)
+[ Info: SELECT * FROM Employee WHERE Salary > 30000
+|   id | name      |    salary |
+| ---- | --------- | --------- |
+|    6 | Tom       |   60000.5 |
+|    7 | Jessica   |   70000.5 |
+|    2 | Cloris    |   85000.0 |
 3 rows.
 ```
 

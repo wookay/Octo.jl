@@ -2,7 +2,6 @@
 
 ```@docs
 Repo.connect
-Repo.all
 Repo.get
 Repo.insert!
 Repo.update!

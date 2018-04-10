@@ -4,12 +4,14 @@ using Test
 using Octo.Adapters.SQL # from to_sql
 using Octo: Enclosed
 
+@test to_sql([Enclosed(Any[1, true])]) == "(1, true)"
+
 struct User
 end
 
 u = from(User)
 enc = Enclosed([])
-@test to_sql([u.name == enc]) == "name = ()"
+@test to_sql([u.val == enc]) == "val = ()"
 
 @test to_sql([u.name IS NOT NULL]) == "name IS NOT NULL"
 @test to_sql([30 >= u.age AND u.age >= 20]) == "30 >= age AND age >= 20"

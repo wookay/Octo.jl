@@ -23,7 +23,7 @@ Schema.model(Employee,
     primary_key = "EmployeeId"
 )
 
-df = Repo.all(Employee)
+df = Repo.query(Employee)
 @test df isa Vector{<:NamedTuple}
 @test size(df) == (8,)
 
@@ -41,12 +41,12 @@ struct Temp
 end
 Schema.model(Temp, table_name="temp", primary_key="AlbumId")
 
-df = Repo.all(Temp)
+df = Repo.query(Temp)
 @test size(df) == (347,)
 
 changes = (AlbumId=0, Title="Test Album", ArtistId=0)
 Repo.insert!(Temp, changes)
-df = Repo.all(Temp)
+df = Repo.query(Temp)
 @test size(df) == (348,)
 
 df = Repo.get(Temp, 6)

@@ -25,7 +25,7 @@ Schema.model(Test1, table_name="test1")
 Repo.insert!(Test1, (a=true, b="sic est"))
 Repo.insert!(Test1, (a=false, b="non est"))
 
-df = Repo.all(Test1)
+df = Repo.query(Test1)
 @test Pretty.table(df) == """
 |       a | b         |
 | ------- | --------- |

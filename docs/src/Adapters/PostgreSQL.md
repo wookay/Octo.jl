@@ -12,4 +12,4 @@ CURRENT_DATE FALSE LATERAL TRUE WINDOW WITH
 
 ### additional [@sql_functions](@ref sql_functions)
 
-NOW
+COALESCE NOW

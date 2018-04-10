@@ -43,7 +43,7 @@ Schema.model(Employee,
     table_name = "Employee",
     primary_key = "ID"
 )
-df = Repo.all(Employee)
+df = Repo.query(Employee)
 @test size(df) == (3,)
 
 df = Repo.get(Employee, 2)

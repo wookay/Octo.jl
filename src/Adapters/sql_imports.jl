@@ -13,8 +13,8 @@ import .Octo.AdapterBase: AVG, COUNT, MAX, MIN, SUM
 # import: ranking functions
 import .Octo.AdapterBase: DENSE_RANK, RANK, ROW_NUMBER
 
-# import:                      ()        ?
-import .Octo.AdapterBase: Raw, Enclosed, PlaceHolder, Field
+#                                     ()        ?
+import .Octo.AdapterBase: Field, Raw, Enclosed, PlaceHolder, VectorOfTuples
 import .Octo.AdapterBase: Database, Structured, SubQuery, WindowFrame, _to_sql, _placeholder, _placeholders
 
 # import: Repo, Schema, Pretty, from, as, over

@@ -2,7 +2,8 @@ module Repo # Octo
 
 import ..Backends
 import ..AdapterBase
-import ..Queryable: Structured
+import ..Queryable: Structured, SubQuery, FromClause
+import ..Raw
 import ..Schema # Schema.validates
 import ..Pretty: show
 
@@ -99,6 +100,15 @@ end
 
 # Repo.query
 """
+    Repo.query(M::Type)
+"""
+function query(M::Type)
+    a = current_adapter()
+    table = a.from(M)
+    query([a.SELECT * a.FROM table])
+end
+
+"""
     Repo.query(stmt::Structured)
 """
 function query(stmt::Structured)
@@ -118,6 +128,27 @@ function query(stmt::Structured, vals::Vector) # throw Backends.UnsupportedError
     print_debug_sql(stmt, vals)
     loader = current_loader()
     loader.query(prepared, vals)
+end
+
+"""
+    Repo.query(subquery::SubQuery)
+"""
+function query(subquery::SubQuery)
+    query(subquery.__octo_query)
+end
+
+"""
+    Repo.query(from::FromClause)
+"""
+function query(from::FromClause)
+    query(from.__octo_model)
+end
+
+"""
+    Repo.query(rawquery::Octo.Raw)
+"""
+function query(rawquery::Raw)
+    query([rawquery])
 end
 
 # Repo.execute
@@ -158,16 +189,6 @@ execute(raw::AdapterBase.Raw)::ExecuteResult                            = execut
 execute(raw::AdapterBase.Raw, nt::NamedTuple)::ExecuteResult            = execute([raw], [nt])
 execute(raw::AdapterBase.Raw, nts::Vector{<:NamedTuple})::ExecuteResult = execute([raw], nts)
 execute(raw::AdapterBase.Raw, vals::Vector)::ExecuteResult              = execute([raw], vals)
-
-# Repo.all
-"""
-    Repo.all(M::Type)
-"""
-function all(M::Type)
-    a = current_adapter()
-    table = a.from(M)
-    query([a.SELECT * a.FROM table])
-end
 
 function _get_primary_key(M) # throw Schema.PrimaryKeyError
     Tname = Base.typename(M)
@@ -253,6 +274,19 @@ end
 """
 function insert!(M, nt::NamedTuple)::ExecuteResult
     insert!(M, [nt])
+end
+
+"""
+    Repo.insert!(M::Type, vals::Vector{<:Tuple})::ExecuteResult
+"""
+function insert!(M::Type, vals::Vector{<:Tuple})::ExecuteResult
+    if isempty(vals)
+        ExecuteResult()
+   else
+        a = current_adapter()
+        table = a.from(M)
+        execute([a.INSERT a.INTO table a.VALUES a.VectorOfTuples(vals)])
+   end
 end
 
 # Repo.update!
