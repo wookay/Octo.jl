@@ -95,18 +95,6 @@ julia> Repo.insert!(Employee, [
        ])
 [ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jeremy", Salary = 10000.5), (Name = "Cloris", Salary = 20000.5), (Name = "John", Salary = 30000.5), (Name = "Hyunden", Salary = 40000.5), (Name = "Justin", Salary = 50000.5), (Name = "Tom", Salary = 60000.5)
 
-julia> Repo.query(Employee)
-[ Info: SELECT * FROM Employee
-|   id | name      |    salary |
-| ---- | --------- | --------- |
-|    1 | Jeremy    |   10000.5 |
-|    2 | Cloris    |   20000.5 |
-|    3 | John      |   30000.5 |
-|    4 | Hyunden   |   40000.5 |
-|    5 | Justin    |   50000.5 |
-|    6 | Tom       |   60000.5 |
-6 rows.
-
 julia> Repo.get(Employee, 2)
 [ Info: SELECT * FROM Employee WHERE ID = 2
 |   id | name     |    salary |
@@ -131,6 +119,18 @@ julia> Repo.get(Employee, (Name="Jeremy",))
 |    1 | Jeremy   |   10000.5 |
 1 row.
 
+julia> Repo.query(Employee)
+[ Info: SELECT * FROM Employee
+|   id | name      |    salary |
+| ---- | --------- | --------- |
+|    1 | Jeremy    |   10000.5 |
+|    2 | Cloris    |   20000.5 |
+|    3 | John      |   30000.5 |
+|    4 | Hyunden   |   40000.5 |
+|    5 | Justin    |   50000.5 |
+|    6 | Tom       |   60000.5 |
+6 rows.
+
 julia> Repo.insert!(Employee, (Name="Jessica", Salary=70000.50))
 [ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jessica", Salary = 70000.5)
 
@@ -146,7 +146,24 @@ julia> Repo.delete!(Employee, 3:5)
 julia> em = from(Employee)
 FromClause Employee
 
+julia> Repo.query(em)
+[ Info: SELECT * FROM Employee
+|   id | name      |    salary |
+| ---- | --------- | --------- |
+|    1 | Jeremy    |   10000.5 |
+|    6 | Tom       |   60000.5 |
+|    7 | Jessica   |   70000.5 |
+|    2 | Cloris    |   85000.0 |
+4 rows.
+
 julia> Repo.query([SELECT * FROM em WHERE em.Name == "Cloris"])
+[ Info: SELECT * FROM Employee WHERE Name = 'Cloris'
+|   id | name     |    salary |
+| ---- | -------- | --------- |
+|    2 | Cloris   |   85000.0 |
+1 row.
+
+julia> Repo.query(em, (Name="Cloris",))
 [ Info: SELECT * FROM Employee WHERE Name = 'Cloris'
 |   id | name     |    salary |
 | ---- | -------- | --------- |
@@ -157,7 +174,7 @@ julia> ❓ = Octo.PlaceHolder
 PlaceHolder
 
 julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
-[ Info: SELECT * FROM Employee WHERE Name = ?   "Cloris"
+[ Info: SELECT * FROM Employee WHERE Name = $1   "Cloris"
 |   id | name     |    salary |
 | ---- | -------- | --------- |
 |    2 | Cloris   |   85000.0 |
@@ -169,15 +186,6 @@ julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
 julia> sub = from([SELECT * FROM em WHERE em.Salary > 30000], :sub)
 (SELECT * FROM Employee WHERE Salary > 30000) AS sub
 
-julia> Repo.query([SELECT sub.Name FROM sub])
-[ Info: SELECT sub.Name FROM (SELECT * FROM Employee WHERE Salary > 30000) AS sub
-| name      |
-| --------- |
-| Tom       |
-| Jessica   |
-| Cloris    |
-3 rows.
-
 julia> Repo.query(sub)
 [ Info: SELECT * FROM Employee WHERE Salary > 30000
 |   id | name      |    salary |
@@ -185,6 +193,15 @@ julia> Repo.query(sub)
 |    6 | Tom       |   60000.5 |
 |    7 | Jessica   |   70000.5 |
 |    2 | Cloris    |   85000.0 |
+3 rows.
+
+julia> Repo.query([SELECT sub.Name FROM sub])
+[ Info: SELECT sub.Name FROM (SELECT * FROM Employee WHERE Salary > 30000) AS sub
+| name      |
+| --------- |
+| Tom       |
+| Jessica   |
+| Cloris    |
 3 rows.
 ```
 

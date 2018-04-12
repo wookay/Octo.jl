@@ -97,7 +97,8 @@ function sqlrepr(::DB where DB<:AbstractDatabase, str::String)::SqlPart
 end
 
 function sqlrepr(::DB where DB<:AbstractDatabase, field::Field)::SqlPart
-    if field.clause.__octo_as isa Nothing
+    if field.clause isa Nothing ||
+       field.clause.__octo_as isa Nothing
         SqlPart([SqlPartElement(style_normal, field.name)], "")
     else
         if field.clause isa SubQuery

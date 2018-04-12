@@ -98,15 +98,35 @@ function disconnect()
     disconnected
 end
 
-# Repo.query
-"""
-    Repo.query(M::Type)
-"""
-function query(M::Type)
-    a = current_adapter()
-    table = a.from(M)
-    query([a.SELECT * a.FROM table])
+
+function _get_primary_key(M) # throw Schema.PrimaryKeyError
+    Tname = Base.typename(M)
+    info = Schema.tables[Tname]
+    if haskey(info, :primary_key)
+        a = current_adapter()
+        table = a.from(M)
+        primary_key = Symbol(info[:primary_key])
+        a.Field(table, primary_key)
+    else
+        throw(Schema.PrimaryKeyError(""))
+    end
 end
+
+function _get_primary_key_with(M, nt::NamedTuple) # throw Schema.PrimaryKeyError
+    Tname = Base.typename(M)
+    info = Schema.tables[Tname]
+    if haskey(info, :primary_key)
+        key = _get_primary_key(M)
+        primary_key = Symbol(info[:primary_key])
+        pk = getfield(nt, primary_key)
+        (key, pk)
+     else
+        throw(Schema.PrimaryKeyError(""))
+    end
+end
+
+
+# Repo.query
 
 """
     Repo.query(stmt::Structured)
@@ -120,21 +140,12 @@ function query(stmt::Structured)
 end
 
 """
-    Repo.query(stmt::Structured, vasl::Vector)
+    Repo.query(M::Type)
 """
-function query(stmt::Structured, vals::Vector) # throw Backends.UnsupportedError
+function query(M::Type)
     a = current_adapter()
-    prepared = a.to_sql(stmt)
-    print_debug_sql(stmt, vals)
-    loader = current_loader()
-    loader.query(prepared, vals)
-end
-
-"""
-    Repo.query(subquery::SubQuery)
-"""
-function query(subquery::SubQuery)
-    query(subquery.__octo_query)
+    table = a.from(M)
+    query([a.SELECT * a.FROM table])
 end
 
 """
@@ -145,11 +156,141 @@ function query(from::FromClause)
 end
 
 """
+    Repo.query(subquery::SubQuery)
+"""
+function query(subquery::SubQuery)
+    query(subquery.__octo_query)
+end
+
+"""
     Repo.query(rawquery::Octo.Raw)
 """
 function query(rawquery::Raw)
     query([rawquery])
 end
+
+### Repo.query - vals::Vector
+"""
+    Repo.query(stmt::Structured, vals::Vector)
+"""
+function query(stmt::Structured, vals::Vector) # throw Backends.UnsupportedError
+    a = current_adapter()
+    prepared = a.to_sql(stmt)
+    print_debug_sql(stmt, vals)
+    loader = current_loader()
+    loader.query(prepared, vals)
+end
+
+### Repo.query - pk
+"""
+    Repo.query(M::Type, pk::Union{Int, String})
+"""
+function query(M::Type, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
+    a = current_adapter()
+    table = a.from(M)
+    key = _get_primary_key(M)
+    query([a.SELECT * a.FROM table a.WHERE key == pk])
+end
+
+"""
+    Repo.query(from::FromClause, pk::Union{Int, String})
+"""
+function query(from::FromClause, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
+    query(from.__octo_model, pk)
+end
+
+### Repo.query - pk_range
+"""
+    Repo.query(M::Type, pk_range::UnitRange{Int64})
+"""
+function query(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
+    a = current_adapter()
+    table = a.from(M)
+    key = _get_primary_key(M)
+    query([a.SELECT * a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop])
+end
+
+"""
+    Repo.query(from::FromClause, pk_range::UnitRange{Int64}
+"""
+function query(from::FromClause, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
+    query(from.__octo_model, pk_range)
+end
+
+### Repo.query - nt::NamedTuple
+"""
+    Repo.query(stmt::Structured, nt::NamedTuple)
+"""
+function query(stmt::Structured, nt::NamedTuple)
+    a = current_adapter()
+    v = vec(stmt)
+    for (idx, kv) in enumerate(pairs(nt))
+        key = a.Field(nothing, kv.first)
+        push!(v, key == kv.second)
+        idx != length(nt) && push!(v, a.AND)
+    end
+    query(v)
+end
+
+"""
+    Repo.query(M::Type, nt::NamedTuple)
+"""
+function query(M::Type, nt::NamedTuple)
+    a = current_adapter()
+    table = a.from(M)
+    v = [a.SELECT, *, a.FROM, table, a.WHERE]
+    for (idx, kv) in enumerate(pairs(nt))
+        key = Base.getproperty(table, kv.first)
+        push!(v, key == kv.second)
+        idx != length(nt) && push!(v, a.AND)
+    end
+    query(v)
+end
+
+"""
+    Repo.query(from::FromClause, nt::NamedTuple)
+"""
+function query(from::FromClause, nt::NamedTuple)
+    query(from.__octo_model, nt)
+end
+
+"""
+    Repo.query(subquery::SubQuery, nt::NamedTuple)
+"""
+function query(subquery::SubQuery, nt::NamedTuple)
+    query(subquery.__octo_query, nt)
+end
+
+"""
+    Repo.query(rawquery::Octo.Raw, nt::NamedTuple)
+"""
+function query(rawquery::Raw, nt::NamedTuple)
+    query([rawquery], nt)
+end
+
+
+# Repo.get
+"""
+    Repo.get(M::Type, pk::Union{Int, String})
+"""
+function get(M::Type, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
+    query(M, pk)
+end
+
+"""
+    Repo.get(M::Type, pk_range::UnitRange{Int64})
+"""
+function get(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
+    query(M, pk_range)
+end
+
+"""
+    Repo.get(M::Type, nt::NamedTuple)
+"""
+function get(M::Type, nt::NamedTuple)
+    query(M, nt)
+end
+
 
 # Repo.execute
 """
@@ -190,67 +331,6 @@ execute(raw::AdapterBase.Raw, nt::NamedTuple)::ExecuteResult            = execut
 execute(raw::AdapterBase.Raw, nts::Vector{<:NamedTuple})::ExecuteResult = execute([raw], nts)
 execute(raw::AdapterBase.Raw, vals::Vector)::ExecuteResult              = execute([raw], vals)
 
-function _get_primary_key(M) # throw Schema.PrimaryKeyError
-    Tname = Base.typename(M)
-    info = Schema.tables[Tname]
-    if haskey(info, :primary_key)
-        a = current_adapter()
-        table = a.from(M)
-        primary_key = Symbol(info[:primary_key])
-        a.Field(table, primary_key)
-    else
-        throw(Schema.PrimaryKeyError(""))
-    end
-end
-
-function _get_primary_key_with(M, nt::NamedTuple) # throw Schema.PrimaryKeyError
-    Tname = Base.typename(M)
-    info = Schema.tables[Tname]
-    if haskey(info, :primary_key)
-        key = _get_primary_key(M)
-        primary_key = Symbol(info[:primary_key])
-        pk = getfield(nt, primary_key)
-        (key, pk)
-     else
-        throw(Schema.PrimaryKeyError(""))
-    end
-end
-
-# Repo.get
-"""
-    Repo.get(M::Type, pk::Union{Int, String})
-"""
-function get(M::Type, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
-    a = current_adapter()
-    table = a.from(M)
-    key = _get_primary_key(M)
-    query([a.SELECT * a.FROM table a.WHERE key == pk])
-end
-
-"""
-    Repo.get(M::Type, pk_range::UnitRange{Int64})
-"""
-function get(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
-    a = current_adapter()
-    table = a.from(M)
-    key = _get_primary_key(M)
-    query([a.SELECT * a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop])
-end
-
-"""
-    Repo.get(M::Type, nt::NamedTuple)
-"""
-function get(M::Type, nt::NamedTuple)
-    a = current_adapter()
-    table = a.from(M)
-    v = [a.SELECT, *, a.FROM, table, a.WHERE]
-    for (idx, kv) in enumerate(pairs(nt))
-        key = Base.getproperty(table, kv.first)
-        push!(v, key == kv.second)
-        idx != length(nt) && push!(v, a.AND)
-    end
-    query(v)
-end
 
 # Repo.insert!
 """
@@ -289,6 +369,7 @@ function insert!(M::Type, vals::Vector{<:Tuple})::ExecuteResult
    end
 end
 
+
 # Repo.update!
 """
     Repo.update!(M::Type, nt::NamedTuple)::ExecuteResult
@@ -309,6 +390,7 @@ function update!(M::Type, nt::NamedTuple)::ExecuteResult # throw Schema.PrimaryK
     push!(v, key == pk)
     execute(v, collect(values(rest)))
 end
+
 
 # Repo.delete!
 """

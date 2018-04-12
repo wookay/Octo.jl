@@ -27,7 +27,7 @@ end
 (f::SQLFunction)(args...) = SQLFunction(f.name, args)
 
 struct Field <: SQLElement
-    clause::Union{FromClause, SubQuery, WindowFrame}
+    clause::Union{FromClause, SubQuery, WindowFrame, Nothing}
     name::Symbol
 end
 
