@@ -11,8 +11,8 @@ end # module Octo.AdapterBase.Database
 
 import .Database: AbstractDatabase
 import ..Octo
-import .Octo.Queryable: Structured, FromClause, SubQuery, WindowFrame
-import .Octo: SQLElement, SQLAlias, SQLOver, SQLExtract, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword, VectorOfTuples
+import .Octo.Queryable: Structured, FromItem, SubQuery
+import .Octo: SQLElement, SQLAlias, SQLExtract, SQLFunctionName, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword, VectorOfTuples
 import .Octo: Schema
 import .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
 import .Octo: @sql_keywords, @sql_functions
@@ -20,6 +20,17 @@ import .Octo: @sql_keywords, @sql_functions
 const current = Dict{Symbol,AbstractDatabase}(
     :database => Database.SQLDatabase()
 )
+
+@sql_keywords  ALL ALTER AND AS ASC BETWEEN BY CREATE DATABASE DELETE DESC DISTINCT DROP EXCEPT EXECUTE EXISTS FOREIGN FROM FULL GROUP
+@sql_keywords  HAVING IF IN INDEX INNER INSERT INTERSECT INTO IS JOIN KEY LEFT LIKE LIMIT NULL OFFSET ON OR ORDER OUTER OVER
+@sql_keywords  PARTITION PREPARE PRIMARY RECURSIVE REFERENCES RIGHT SELECT SET TABLE UNION UPDATE USING VALUES WHERE WITH
+# @sql_keywords ANY (Julia TypeVar)
+
+# aggregates
+@sql_functions AVG COUNT EVERY MAX MIN NOT SOME SUM
+
+# rankings
+@sql_functions DENSE_RANK RANK ROW_NUMBER
 
 
 # Colored SQL statements
@@ -49,10 +60,10 @@ import .Beautiful: ElementStyle
 
 const style_normal                  = ElementStyle(:normal)
 const style_subquery                = ElementStyle(:light_green, true)
-const style_windowframe             = ElementStyle(:light_blue, true)
-const style_placeholders            = ElementStyle(:green, true)
-const style_keywords                = ElementStyle(:cyan)
-const style_functions               = ElementStyle(:yellow)
+const style_placeholder             = ElementStyle(:green, true)
+const style_keyword                 = ElementStyle(:cyan)
+const style_functionname            = ElementStyle(:cyan)
+const style_function                = ElementStyle(:yellow)
 const style_string                  = ElementStyle(:light_magenta)
 const style_dates                   = ElementStyle(:light_green)
 const style_predicate_enclosed      = ElementStyle(:normal)
@@ -64,22 +75,21 @@ const style_field_fromclause_name   = ElementStyle(:normal)
 const style_field_subquery_alias    = ElementStyle(:light_green)
 const style_field_subquery_dot      = ElementStyle(:normal)
 const style_field_subquery_name     = ElementStyle(:normal)
-const style_field_windowframe_alias = ElementStyle(:light_blue)
-const style_field_windowframe_dot   = ElementStyle(:normal)
-const style_field_windowframe_name  = ElementStyle(:normal)
 const style_vector_of_tuples        = ElementStyle(:yellow)
 
 # sqlrepr -> SqlPartElement
 
-sqlrepr(::DB where DB<:AbstractDatabase, el::Keyword)::SqlPartElement    = SqlPartElement(style_keywords, el.name)
-sqlrepr(::DB where DB<:AbstractDatabase, sym::Symbol)::SqlPartElement    = SqlPartElement(style_normal, sym)
-sqlrepr(::DB where DB<:AbstractDatabase, num::Number)::SqlPartElement    = SqlPartElement(style_normal, num)
-sqlrepr(::DB where DB<:AbstractDatabase, f::Function)::SqlPartElement    = SqlPartElement(style_normal, f)
-sqlrepr(::DB where DB<:AbstractDatabase, h::PlaceHolder)::SqlPartElement = SqlPartElement(style_placeholders, h.body)
-sqlrepr(::DB where DB<:AbstractDatabase, raw::Raw)::SqlPartElement       = SqlPartElement(style_normal, raw.string)
+sqlrepr(::DB where DB<:AbstractDatabase, sym::Symbol)::SqlPartElement        = SqlPartElement(style_normal, sym)
+sqlrepr(::DB where DB<:AbstractDatabase, num::Number)::SqlPartElement        = SqlPartElement(style_normal, num)
+sqlrepr(::DB where DB<:AbstractDatabase, f::Function)::SqlPartElement        = SqlPartElement(style_normal, f)
+sqlrepr(::DB where DB<:AbstractDatabase, h::PlaceHolder)::SqlPartElement     = SqlPartElement(style_placeholder, h.body)
+sqlrepr(::DB where DB<:AbstractDatabase, raw::Raw)::SqlPartElement           = SqlPartElement(style_normal, raw.string)
+sqlrepr(::DB where DB<:AbstractDatabase, el::Keyword)::SqlPartElement        = SqlPartElement(style_keyword, el.name)
+sqlrepr(::DB where DB<:AbstractDatabase, var::TypeVar)::SqlPartElement       = SqlPartElement(style_keyword, string(var)) # ANY
+sqlrepr(::DB where DB<:AbstractDatabase, f::SQLFunctionName)::SqlPartElement = SqlPartElement(style_functionname, f.name)
 
 function sqlrepr(::DB where DB<:AbstractDatabase, M::Type{PlaceHolder})::SqlPartElement
-    SqlPartElement(style_placeholders, '?')
+    SqlPartElement(style_placeholder, '?')
 end
 
 # sqlrepr -> SqlPart
@@ -98,18 +108,16 @@ end
 
 function sqlrepr(::DB where DB<:AbstractDatabase, field::Field)::SqlPart
     if field.clause isa Nothing ||
-       field.clause.__octo_as isa Nothing
+       field.clause.__octo_alias isa Nothing
         SqlPart([SqlPartElement(style_normal, field.name)], "")
     else
         if field.clause isa SubQuery
             (style_field_alias, style_field_dot, style_field_name) = (style_field_subquery_alias, style_field_subquery_dot, style_field_subquery_name)
-        elseif field.clause isa WindowFrame
-            (style_field_alias, style_field_dot, style_field_name) = (style_field_windowframe_alias, style_field_windowframe_dot, style_field_windowframe_name)
-        else # FromClause
+        else # FromItem
             (style_field_alias, style_field_dot, style_field_name) = (style_field_fromclause_alias, style_field_fromclause_dot, style_field_fromclause_name)
         end
         SqlPart([
-            SqlPartElement(style_field_alias, field.clause.__octo_as),
+            SqlPartElement(style_field_alias, field.clause.__octo_alias),
             SqlPartElement(style_field_dot, '.'),
             SqlPartElement(style_field_name, field.name)], "")
     end
@@ -120,16 +128,20 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, el::KeywordAllKeyword)::SqlP
     SqlPart(sqlrepr.(Ref(db), els), " ")
 end
 
-function _window_frame_predicate_side(db::DB where DB<:AbstractDatabase, side)
-    if side isa WindowFrame && side.__octo_as isa Symbol
-        SqlPartElement(style_windowframe, side.__octo_as)
+function both_isa((a,b), T::Type)::Bool
+    a isa T && b isa T
+end
+
+function _subquery_predicate_side(db::DB where DB<:AbstractDatabase, side)
+    if side isa SubQuery && side.__octo_alias isa Symbol
+        if first(side.__octo_query) === SELECT
+            sqlrepr(db, side)
+        else
+            SqlPartElement(style_subquery, side.__octo_alias)
+        end
     else
         sqlrepr(db, side)
     end
-end
-
-function both_isa((a,b), T::Type)::Bool
-    a isa T && b isa T
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, pred::Predicate)::SqlPart
@@ -138,7 +150,7 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, pred::Predicate)::SqlPart
     else
         op = pred.func
     end
-    (left, right) = _window_frame_predicate_side.(Ref(db), (pred.left, pred.right))
+    (left, right) = _subquery_predicate_side.(Ref(db), (pred.left, pred.right))
     parts = [left, sqlrepr(db, op), right]
     body = SqlPart(parts, " ")
     if op in (+, -) && both_isa((pred.left, pred.right), Union{Field, SQLFunction})
@@ -159,22 +171,22 @@ function _table_name_of(M::Type)::String # throw Schema.TableNameError
     end
 end
 
-function _sqlrepr(db::DB where DB<:AbstractDatabase, clause::FromClause; with_as::Bool)::SqlPart
+function _sqlrepr(db::DB where DB<:AbstractDatabase, clause::FromItem; with_as::Bool)::SqlPart
     table_name = _table_name_of(clause.__octo_model)
     part = SqlPartElement(style_table_name, table_name)
-    if clause.__octo_as isa Nothing
+    if clause.__octo_alias isa Nothing
         parts = [part]
     else
-        if table_name == String(clause.__octo_as)
+        if table_name == String(clause.__octo_alias)
             parts = [part]
         else
-            parts = [part, (with_as ? [sqlrepr(db, AS)] : [])..., SqlPartElement(style_table_alias, clause.__octo_as)]
+            parts = [part, (with_as ? [sqlrepr(db, AS)] : [])..., SqlPartElement(style_table_alias, clause.__octo_alias)]
         end
     end
     SqlPart(parts, " ")
 end
 
-function sqlrepr(db::DB where DB<:AbstractDatabase, clause::FromClause)::SqlPart
+function sqlrepr(db::DB where DB<:AbstractDatabase, clause::FromItem)::SqlPart
     _sqlrepr(db, clause; with_as=true)
 end
 
@@ -182,35 +194,15 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, subquery::SubQuery)::SqlPart
     query = subquery.__octo_query
     body = SqlPart(vcat(sqlrepr.(Ref(db), query)...), " ")
     part = enclosed_part(style_subquery, body)
-    if subquery.__octo_as isa Nothing
+    if subquery.__octo_alias isa Nothing
         part
     else
         SqlPart([
             part,
             sqlrepr(db, AS),
-            SqlPartElement(style_subquery, subquery.__octo_as),
+            SqlPartElement(style_subquery, subquery.__octo_alias),
         ], " ")
     end
-end
-
-function sqlrepr(db::DB where DB<:AbstractDatabase, frame::WindowFrame)::SqlPart
-    query = frame.__octo_query
-    body = SqlPart(vcat(sqlrepr.(Ref(db), query)...), " ")
-    part = enclosed_part(style_windowframe, body)
-    if frame.__octo_as isa Nothing
-         part
-    else
-        SqlPart([
-            part,
-            sqlrepr(db, AS),
-            SqlPartElement(style_windowframe, frame.__octo_as),
-        ], " ")
-    end
-end
-
-function sqlrepr(db::DB where DB<:AbstractDatabase, tup::Tuple)::SqlPart
-    els = collect(tup)
-    SqlPart(sqlrepr.(Ref(db), els), ", ")
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, tup::NamedTuple)::SqlPart
@@ -235,19 +227,6 @@ end
 function sqlrepr(db::DB where DB<:AbstractDatabase, a::SQLAlias)::SqlPart
     els = [a.field, AS, a.alias]
     SqlPart(sqlrepr.(Ref(db), els), " ")
-end
-
-function sqlrepr(db::DB where DB<:AbstractDatabase, o::SQLOver)::SqlPart
-    if o.query isa WindowFrame
-        els = [o.field, OVER, o.query]
-        SqlPart(sqlrepr.(Ref(db), els), " ")
-    else # Vector
-        body = SqlPart(sqlrepr.(Ref(db), o.query), " ")
-        SqlPart([
-            sqlrepr.(Ref(db), [o.field, OVER])...,
-            enclosed_part(style_normal, body),
-        ], " ")
-    end
 end
 
 @sql_keywords EXTRACT YEAR MONTH DAY HOUR MINUTE SECOND TIMESTAMP INTERVAL
@@ -307,9 +286,17 @@ end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, f::SQLFunction)::SqlPart
     SqlPart([
-        SqlPartElement(style_functions, f.name),
+        SqlPartElement(style_function, f.name),
         sqlrepr(db, Enclosed(collect(f.fields))),
         ], "")
+end
+
+function sqlrepr(db::DB where DB<:AbstractDatabase, tup::Tuple)::SqlPart
+    parts = []
+    for el in tup
+        push!(parts, sqlrepr(db, el))
+    end
+    SqlPart(parts, ", ")
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
@@ -323,12 +310,11 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
         elseif el isa Predicate && el.right isa Type{PlaceHolder}
             push!(els, Predicate(el.func, el.left, _placeholder(db, nth)))
             nth += 1
-        elseif el isa WindowFrame ||
-               el isa SubQuery
+        elseif el isa SubQuery
             if prev === AS
                 push!(els, typeof(el)(el.__octo_query, nothing))
             elseif prev === JOIN
-                push!(els, el.__octo_as)
+                push!(els, el.__octo_alias)
             else
                 push!(els, el)
             end
@@ -394,8 +380,9 @@ end
 
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
     if element isa Keyword ||
+       element isa SQLFunctionName ||
        element isa SQLFunction ||
-       element isa FromClause
+       element isa FromItem
         print(io, nameof(typeof(element)), ' ')
     end
     printpart(io, sqlrepr(db, element))
@@ -408,16 +395,5 @@ function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, qu
         Base.show(io, query)
     end
 end
-
-
-@sql_keywords  ALTER AND AS ASC BETWEEN BY CREATE DATABASE DELETE DESC DISTINCT DROP EXISTS FROM FULL GROUP
-@sql_keywords  HAVING IF IN INNER INSERT INTO IS JOIN LEFT LIKE LIMIT NOT NULL OFFSET ON OR ORDER OUTER OVER
-@sql_keywords  PARTITION RIGHT SELECT SET TABLE UPDATE USING VALUES WHERE
-
-# aggregates
-@sql_functions AVG COUNT MAX MIN SUM
-
-# rankings
-@sql_functions DENSE_RANK RANK ROW_NUMBER
 
 end # module Octo.AdapterBase

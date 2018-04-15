@@ -22,7 +22,7 @@ julia> Schema.model(User, table_name="users")
 User => Dict(:primary_key=>"id",:table_name=>"users")
 
 julia> u = from(User)
-FromClause users
+FromItem users
 
 julia> [SELECT * FROM u]
 SELECT * FROM users
@@ -144,7 +144,7 @@ julia> Repo.delete!(Employee, 3:5)
 [ Info: DELETE FROM Employee WHERE ID BETWEEN 3 AND 5
 
 julia> em = from(Employee)
-FromClause Employee
+FromItem Employee
 
 julia> Repo.query(em)
 [ Info: SELECT * FROM Employee

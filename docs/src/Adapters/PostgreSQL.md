@@ -7,7 +7,7 @@ Octo.Adapters.PostgreSQL.to_sql
 
 ### additional [@sql_keywords](@ref sql_keywords)
 
-CURRENT_DATE FALSE LATERAL TRUE WINDOW WITH
+CURRENT_DATE EXPLAIN FALSE LATERAL TRUE WINDOW
 
 
 ### additional [@sql_functions](@ref sql_functions)

@@ -1,23 +1,17 @@
 # export: keywords
 export
-    ALTER, AND, AS, ASC, BETWEEN, BY, CREATE, DATABASE, DELETE, DESC, DISTINCT, DROP, EXISTS, FROM, FULL, GROUP,
-    HAVING, IN, IF, INNER, INSERT, INTO, IS, JOIN, LEFT, LIKE, LIMIT, NOT, NULL, OFFSET, ON, OR, ORDER, OUTER, OVER,
-    PARTITION, RIGHT, SELECT, SET, TABLE, UPDATE, USING, VALUES, WHERE
+    ALL, ALTER, AND, AS, ASC, BETWEEN, BY, CREATE, DATABASE, DELETE, DESC, DISTINCT, DROP, EXCEPT, EXECUTE, EXISTS, FOREIGN, FROM, FULL, GROUP,
+    HAVING, IN, INDEX, IF, INNER, INSERT, INTERSECT, INTO, IS, JOIN, KEY, LEFT, LIKE, LIMIT, NULL, OFFSET, ON, OR, ORDER, OUTER, OVER,
+    PARTITION, PREPARE, PRIMARY, RECURSIVE, REFERENCES, RIGHT, SELECT, SET, TABLE, UNION, UPDATE, USING, VALUES, WHERE, WITH
 
 # export: aggregate functions
-export AVG, COUNT, MAX, MIN, SUM
+export AVG, COUNT, EVERY, MAX, MIN, NOT, SOME, SUM
 
 # export: ranking functions
 export DENSE_RANK, RANK, ROW_NUMBER
 
-# export: PlaceHolder, Raw, Enclosed
-export PlaceHolder, Raw, Enclosed
-
-# export: Octo, Repo, Schema, Pretty
 export Octo, Repo, Schema, Pretty
-
-# export: from, as, over, window
-export from, as, over, window
-
-# export: to_sql
+export PlaceHolder, Raw, Enclosed
+export @sql_keywords, @sql_functions
+export from, as
 export to_sql

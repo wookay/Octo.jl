@@ -18,8 +18,8 @@ to_sql(subquery::SubQuery)::String = _to_sql(DatabaseID(), subquery)
 placeholder(nth::Int) = _placeholder(DatabaseID(), nth)
 placeholders(dims::Int) = _placeholders(DatabaseID(), dims)
 
-import .Octo.AdapterBase: FromClause, SqlPart, sqlrepr, _sqlrepr
-function sqlrepr(db::DatabaseID, clause::FromClause)::SqlPart
+import .Octo.AdapterBase: FromItem, SqlPart, sqlrepr, _sqlrepr
+function sqlrepr(db::DatabaseID, clause::FromItem)::SqlPart
     _sqlrepr(db, clause; with_as=false)
 end
 

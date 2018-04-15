@@ -2,7 +2,7 @@ module Repo # Octo
 
 import ..Backends
 import ..AdapterBase
-import ..Queryable: Structured, SubQuery, FromClause
+import ..Queryable: Structured, SubQuery, FromItem
 import ..Raw
 import ..Schema # Schema.validates
 import ..Pretty: show
@@ -149,9 +149,9 @@ function query(M::Type)
 end
 
 """
-    Repo.query(from::FromClause)
+    Repo.query(from::FromItem)
 """
-function query(from::FromClause)
+function query(from::FromItem)
     query(from.__octo_model)
 end
 
@@ -193,9 +193,9 @@ function query(M::Type, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
 end
 
 """
-    Repo.query(from::FromClause, pk::Union{Int, String})
+    Repo.query(from::FromItem, pk::Union{Int, String})
 """
-function query(from::FromClause, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
+function query(from::FromItem, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
     query(from.__octo_model, pk)
 end
 
@@ -211,9 +211,9 @@ function query(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyErr
 end
 
 """
-    Repo.query(from::FromClause, pk_range::UnitRange{Int64}
+    Repo.query(from::FromItem, pk_range::UnitRange{Int64}
 """
-function query(from::FromClause, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
+function query(from::FromItem, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
     query(from.__octo_model, pk_range)
 end
 
@@ -248,9 +248,9 @@ function query(M::Type, nt::NamedTuple)
 end
 
 """
-    Repo.query(from::FromClause, nt::NamedTuple)
+    Repo.query(from::FromItem, nt::NamedTuple)
 """
-function query(from::FromClause, nt::NamedTuple)
+function query(from::FromItem, nt::NamedTuple)
     query(from.__octo_model, nt)
 end
 

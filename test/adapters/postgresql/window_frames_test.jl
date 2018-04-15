@@ -3,13 +3,13 @@ module adapters_postgresql_window_frames_test
 using Test # @test
 using Octo.Adapters.PostgreSQL # to_sql window SELECT FROM RANK OVER PARTITION BY ORDER DESC
 
-u = window([PARTITION BY :depname ORDER BY :salary DESC])
-@test to_sql([SELECT (:depname, :empno, :salary, over(RANK(), u)) FROM :empsalary]) ==
+u = from([PARTITION BY :depname ORDER BY :salary DESC])
+@test to_sql([SELECT (:depname, :empno, :salary, [RANK() OVER u]) FROM :empsalary]) ==
              "SELECT depname, empno, salary, RANK() OVER (PARTITION BY depname ORDER BY salary DESC) FROM empsalary"
 @test to_sql([WINDOW :w AS u]) == "WINDOW w AS (PARTITION BY depname ORDER BY salary DESC)"
 
-w = window([PARTITION BY :depname ORDER BY :salary DESC], :w)
-@test to_sql([SELECT (:depname, :empno, :salary, over(RANK(), w)) FROM :empsalary]) ==
+w = from([PARTITION BY :depname ORDER BY :salary DESC], :w)
+@test to_sql([SELECT (:depname, :empno, :salary, [RANK() OVER w]) FROM :empsalary]) ==
              "SELECT depname, empno, salary, RANK() OVER (PARTITION BY depname ORDER BY salary DESC) AS w FROM empsalary"
 @test to_sql([WINDOW :w AS w]) == "WINDOW w AS (PARTITION BY depname ORDER BY salary DESC)"
 @test to_sql([w.salary]) == "w.salary"
@@ -74,9 +74,9 @@ q = [SELECT (as(posts.id, :post_id), as(comments.id, :comment_ids), as(comments.
 df = Repo.query(q)
 @test size(df) == (8,)
 
-comment_rank = window([PARTITION BY :post_id ORDER BY comments.created_at DESC], :comment_rank)
+comment_rank = from([PARTITION BY :post_id ORDER BY comments.created_at DESC], :comment_rank)
 @test to_sql([DENSE_RANK() OVER comment_rank]) == "DENSE_RANK() OVER (PARTITION BY post_id ORDER BY comments.created_at DESC) AS comment_rank"
-q = [SELECT (as(posts.id, :post_id), as(comments.id, :comment_id), as(comments.body, :body), over(DENSE_RANK(), comment_rank)) FROM posts LEFT OUTER JOIN comments ON posts.id == comments.post_id]
+q = [SELECT (as(posts.id, :post_id), as(comments.id, :comment_id), as(comments.body, :body), [DENSE_RANK() OVER comment_rank]) FROM posts LEFT OUTER JOIN comments ON posts.id == comments.post_id]
 @test to_sql(q) == "SELECT posts.id AS post_id, comments.id AS comment_id, comments.body AS body, DENSE_RANK() OVER (PARTITION BY post_id ORDER BY comments.created_at DESC) AS comment_rank FROM posts LEFT OUTER JOIN comments ON posts.id = comments.post_id"
 df = Repo.query(q)
 @test size(df) == (8,)
@@ -84,14 +84,14 @@ df = Repo.query(q)
 comment_id = as(comments.id, :comment_id)
 post_id = as(posts.id, :post_id)
 body = as(comments.body, :body)
-ranked_comments = from([SELECT (post_id, comment_id, body, over(DENSE_RANK(), comment_rank)) FROM posts LEFT OUTER JOIN comments ON posts.id == comments.post_id], :ranked_comments)
+ranked_comments = from([SELECT (post_id, comment_id, body, [DENSE_RANK() OVER comment_rank]) FROM posts LEFT OUTER JOIN comments ON posts.id == comments.post_id], :ranked_comments)
 @test to_sql(ranked_comments) == "(SELECT posts.id AS post_id, comments.id AS comment_id, comments.body AS body, DENSE_RANK() OVER (PARTITION BY post_id ORDER BY comments.created_at DESC) AS comment_rank FROM posts LEFT OUTER JOIN comments ON posts.id = comments.post_id) AS ranked_comments"
 q = [SELECT (:comment_id, :post_id, :body) FROM ranked_comments WHERE comment_rank < 4]
 @test to_sql(q) == "SELECT comment_id, post_id, body FROM (SELECT posts.id AS post_id, comments.id AS comment_id, comments.body AS body, DENSE_RANK() OVER (PARTITION BY post_id ORDER BY comments.created_at DESC) AS comment_rank FROM posts LEFT OUTER JOIN comments ON posts.id = comments.post_id) AS ranked_comments WHERE comment_rank < 4"
 df = Repo.query(q)
 @test size(df) == (8,)
 
-ranked_comments = from([SELECT (post_id, comment_id, body, over(DENSE_RANK(), comment_rank)) FROM posts LEFT OUTER JOIN comments ON posts.id == comments.post_id])
+ranked_comments = from([SELECT (post_id, comment_id, body, [DENSE_RANK() OVER comment_rank]) FROM posts LEFT OUTER JOIN comments ON posts.id == comments.post_id])
 with = [WITH :ranked_comments AS ranked_comments]
 @test to_sql(with) == "WITH ranked_comments AS (SELECT posts.id AS post_id, comments.id AS comment_id, comments.body AS body, DENSE_RANK() OVER (PARTITION BY post_id ORDER BY comments.created_at DESC) AS comment_rank FROM posts LEFT OUTER JOIN comments ON posts.id = comments.post_id)"
 

@@ -1,4 +1,4 @@
-module test_octo_aggregates
+module test_octo_functions
 
 using Test
 using Octo.Adapters.SQL
@@ -19,4 +19,8 @@ import Octo: @sql_functions
 
 @test to_sql([A(2,3)]) == "A(2, 3)"
 
-end # module test_octo_aggregates
+@test to_sql([NOT(t.salary > 100)]) == "NOT(salary > 100)"
+@test to_sql([SOME(t.salary > 100)]) == "SOME(salary > 100)"
+@test to_sql([EVERY(t.salary > 100)]) == "EVERY(salary > 100)"
+
+end # module test_octo_functions

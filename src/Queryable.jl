@@ -1,18 +1,18 @@
 module Queryable # Octo
 
-import ..Octo: Structured, FromClause, SubQuery, WindowFrame, Field, SQLAlias, SQLOver, SQLExtract, SQLFunction, Predicate, Keyword
+import ..Octo: Structured, FromItem, SubQuery, Field, SQLAlias, SQLExtract, SQLFunction, Predicate, Keyword
 import Dates: CompoundPeriod
 using Dates # DatePeriod, TimePeriod, TimeType
 
 """
-    from(M::Type, as=nothing)::FromClause
+    from(M::Type, alias=nothing)::FromItem
 """
-function from(M::Type, as=nothing)::FromClause
-    FromClause(M, as)
+function from(M::Type, alias=nothing)::FromItem
+    FromItem(M, alias)
 end
 
-function Base.getproperty(clause::FromClause, field::Symbol)
-     if field in (:__octo_model, :__octo_as)
+function Base.getproperty(clause::FromItem, field::Symbol)
+     if field in (:__octo_model, :__octo_alias)
          getfield(clause, field)
      else
          Field(clause, field)
@@ -20,10 +20,18 @@ function Base.getproperty(clause::FromClause, field::Symbol)
 end
 
 """
-    from(query::Structured, as=nothing)::SubQuery
+    from(query::Structured, alias=nothing)::SubQuery
 """
-function from(query::Structured, as=nothing)::SubQuery
-    SubQuery(query, as)
+function from(query::Structured, alias=nothing)::SubQuery
+    SubQuery(query, alias)
+end
+
+function Base.getproperty(clause::SubQuery, field::Symbol)
+     if field in (:__octo_query, :__octo_alias)
+         getfield(clause, field)
+     else
+         Field(clause, field)
+     end
 end
 
 
@@ -34,33 +42,6 @@ function as(field::Union{Field, SQLFunction, Predicate}, alias::Symbol)::SQLAlia
     SQLAlias(field, alias)
 end
 
-
-"""
-    window(query::Structured, as=nothing):WindowFrame
-"""
-function window(query::Structured, as=nothing)::WindowFrame
-    WindowFrame(query, as)
-end
-
-function Base.getproperty(clause::Union{SubQuery,WindowFrame}, field::Symbol)
-     if field in (:__octo_query, :__octo_as)
-         getfield(clause, field)
-     else
-         Field(clause, field)
-     end
-end
-
-
-"""
-    over(field::SQLFunction, query::Union{WindowFrame,Structured})::SQLOver
-"""
-function over(field::SQLFunction, query::Union{WindowFrame,Structured})::SQLOver
-    if query isa WindowFrame
-        SQLOver(field, query)
-    else
-        SQLOver(field, vcat(query...))
-    end
-end
 
 """
     extract(field::Union{Keyword, Type{DP}, Type{TP}}, from::Union{Dates.DateTime, DP, TP, Dates.CompoundPeriod})::SQLExtract where DP <: Dates.DatePeriod where TP <: Dates.TimePeriod

@@ -14,6 +14,6 @@ sql_keywords(s) = :(($(s...),) = $(map(Keyword, s)))
 macro sql_functions(args...)
     esc(sql_functions(args))
 end
-sql_functions(s) = :(($(s...),) = $(map(x->SQLFunction(x,tuple()), s)))
+sql_functions(s) = :(($(s...),) = $(map(x->SQLFunctionName(x), s)))
 
 # module Octo
