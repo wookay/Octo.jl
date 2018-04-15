@@ -59,7 +59,8 @@ const SqlPart        = Beautiful.Container
 import .Beautiful: ElementStyle
 
 const style_normal                  = ElementStyle(:normal)
-const style_subquery                = ElementStyle(:light_green, true)
+const style_subquery_select         = ElementStyle(:light_green, true)
+const style_subquery_non_select     = ElementStyle(:light_blue, true)
 const style_placeholder             = ElementStyle(:green, true)
 const style_keyword                 = ElementStyle(:cyan)
 const style_functionname            = ElementStyle(:cyan)
@@ -132,12 +133,16 @@ function both_isa((a,b), T::Type)::Bool
     a isa T && b isa T
 end
 
+function subquery_startswith_select(subquery::SubQuery)::Bool
+    first(subquery.__octo_query) === SELECT
+end
+
 function _subquery_predicate_side(db::DB where DB<:AbstractDatabase, side)
     if side isa SubQuery && side.__octo_alias isa Symbol
-        if first(side.__octo_query) === SELECT
+        if subquery_startswith_select(side)
             sqlrepr(db, side)
         else
-            SqlPartElement(style_subquery, side.__octo_alias)
+            SqlPartElement(style_subquery_non_select, side.__octo_alias)
         end
     else
         sqlrepr(db, side)
@@ -193,14 +198,15 @@ end
 function sqlrepr(db::DB where DB<:AbstractDatabase, subquery::SubQuery)::SqlPart
     query = subquery.__octo_query
     body = SqlPart(vcat(sqlrepr.(Ref(db), query)...), " ")
-    part = enclosed_part(style_subquery, body)
+    style = subquery_startswith_select(subquery) ? style_subquery_select : style_subquery_non_select
+    part = enclosed_part(style, body)
     if subquery.__octo_alias isa Nothing
         part
     else
         SqlPart([
             part,
             sqlrepr(db, AS),
-            SqlPartElement(style_subquery, subquery.__octo_alias),
+            SqlPartElement(style, subquery.__octo_alias),
         ], " ")
     end
 end
