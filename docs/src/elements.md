@@ -2,4 +2,5 @@
 
 ```@docs
 Octo.PlaceHolder
+Octo.Raw
 ```

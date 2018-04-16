@@ -1,6 +1,6 @@
 module Queryable # Octo
 
-import ..Octo: Structured, FromItem, SubQuery, Field, SQLAlias, SQLExtract, SQLFunction, Predicate, Keyword
+import ..Octo: Structured, FromItem, SubQuery, Field, SQLAlias, SQLExtract, SQLFunction, Predicate, SQLKeyword
 import Dates: CompoundPeriod
 using Dates # DatePeriod, TimePeriod, TimeType
 
@@ -44,9 +44,9 @@ end
 
 
 """
-    extract(field::Union{Keyword, Type{DP}, Type{TP}}, from::Union{Dates.DateTime, DP, TP, Dates.CompoundPeriod})::SQLExtract where DP <: Dates.DatePeriod where TP <: Dates.TimePeriod
+    extract(field::Union{SQLKeyword, Type{DP}, Type{TP}}, from::Union{Dates.DateTime, DP, TP, Dates.CompoundPeriod})::SQLExtract where DP <: Dates.DatePeriod where TP <: Dates.TimePeriod
 """
-function extract(field::Union{Keyword, Type{DP}, Type{TP}}, from::Union{DateTime, <:TimeType, DP, TP, CompoundPeriod})::SQLExtract where DP <: DatePeriod where TP <: TimePeriod
+function extract(field::Union{SQLKeyword, Type{DP}, Type{TP}}, from::Union{DateTime, <:TimeType, DP, TP, CompoundPeriod})::SQLExtract where DP <: DatePeriod where TP <: TimePeriod
     SQLExtract(field, from)
 end
 

@@ -136,7 +136,7 @@ n = from([SELECT (:aid, as(COUNT(*), :cnt)) FROM c JOIN d ON (d.cid == c.id) GRO
 @test to_sql(n)              ==           "(SELECT aid, COUNT(*) AS cnt FROM c JOIN d ON d.cid = c.id GROUP BY aid) AS n"
 @test to_sql([WITH :n AS n]) == "WITH n AS (SELECT aid, COUNT(*) AS cnt FROM c JOIN d ON d.cid = c.id GROUP BY aid)"
 @test to_sql([JOIN n])       == "JOIN n"
-q = [WITH :n AS n SELECT (:aid, as(SUM(c.units) - COALESCE(n.cnt, 0), :difference)) FROM c LEFT JOIN n USING (:aid,) GROUP BY (:aid, n.cnt) ORDER BY :aid]
+q = [WITH :n AS n SELECT (:aid, as(SUM(c.units) - COALESCE(n.cnt, 0), :difference)) FROM c LEFT JOIN n USING (:aid) GROUP BY (:aid, n.cnt) ORDER BY :aid]
 @test to_sql(q)              == "WITH n AS (SELECT aid, COUNT(*) AS cnt FROM c JOIN d ON d.cid = c.id GROUP BY aid) SELECT aid, (SUM(c.units) - COALESCE(n.cnt, 0)) AS difference FROM c LEFT JOIN n USING (aid) GROUP BY aid, n.cnt ORDER BY aid"
 
 df = Repo.query(q)

@@ -12,7 +12,7 @@ for op in (:(==), :(<), :(>), :(<=), :(>=), :(-), :(+), :(*), :(/))
     end
 end
 
-function Base.:*(left::Keyword, right::Keyword)
+function Base.:*(left::SQLKeyword, right::SQLKeyword)
     KeywordAllKeyword(left, right)
 end
 

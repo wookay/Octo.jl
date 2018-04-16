@@ -12,16 +12,16 @@ end # module Octo.AdapterBase.Database
 import .Database: AbstractDatabase
 import ..Octo
 import .Octo.Queryable: Structured, FromItem, SubQuery
-import .Octo: SQLElement, SQLAlias, SQLExtract, SQLFunctionName, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, Keyword, KeywordAllKeyword, VectorOfTuples
+import .Octo: SQLElement, SQLAlias, SQLExtract, SQLFunctionName, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, SQLKeyword, KeywordAllKeyword, VectorOfTuples
 import .Octo: Schema
 import .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
-import .Octo: @sql_keywords, @sql_functions
+import .Octo: @sql_keywords, @sql_functions, db_keywords, db_functionnames
 
 const current = Dict{Symbol,AbstractDatabase}(
     :database => Database.SQLDatabase()
 )
 
-@sql_keywords  ALL ALTER AND AS ASC BETWEEN BY CREATE DATABASE DELETE DESC DISTINCT DROP EXCEPT EXECUTE EXISTS FOREIGN FROM FULL GROUP
+@sql_keywords  ALL ALTER AND AS ASC BETWEEN BY CREATE DATABASE DEFAULT DELETE DESC DISTINCT DROP EXCEPT EXECUTE EXISTS FOREIGN FROM FULL GROUP
 @sql_keywords  HAVING IF IN INDEX INNER INSERT INTERSECT INTO IS JOIN KEY LEFT LIKE LIMIT NULL OFFSET ON OR ORDER OUTER OVER
 @sql_keywords  PARTITION PREPARE PRIMARY RECURSIVE REFERENCES RIGHT SELECT SET TABLE UNION UPDATE USING VALUES WHERE WITH
 # @sql_keywords ANY (Julia TypeVar)
@@ -84,8 +84,7 @@ sqlrepr(::DB where DB<:AbstractDatabase, sym::Symbol)::SqlPartElement        = S
 sqlrepr(::DB where DB<:AbstractDatabase, num::Number)::SqlPartElement        = SqlPartElement(style_normal, num)
 sqlrepr(::DB where DB<:AbstractDatabase, f::Function)::SqlPartElement        = SqlPartElement(style_normal, f)
 sqlrepr(::DB where DB<:AbstractDatabase, h::PlaceHolder)::SqlPartElement     = SqlPartElement(style_placeholder, h.body)
-sqlrepr(::DB where DB<:AbstractDatabase, raw::Raw)::SqlPartElement           = SqlPartElement(style_normal, raw.string)
-sqlrepr(::DB where DB<:AbstractDatabase, el::Keyword)::SqlPartElement        = SqlPartElement(style_keyword, el.name)
+sqlrepr(::DB where DB<:AbstractDatabase, el::SQLKeyword)::SqlPartElement     = SqlPartElement(style_keyword, el.name)
 sqlrepr(::DB where DB<:AbstractDatabase, var::TypeVar)::SqlPartElement       = SqlPartElement(style_keyword, string(var)) # ANY
 sqlrepr(::DB where DB<:AbstractDatabase, f::SQLFunctionName)::SqlPartElement = SqlPartElement(style_functionname, f.name)
 
@@ -122,6 +121,41 @@ function sqlrepr(::DB where DB<:AbstractDatabase, field::Field)::SqlPart
             SqlPartElement(style_field_dot, '.'),
             SqlPartElement(style_field_name, field.name)], "")
     end
+end
+
+function sqlrepr(::DB where DB<:AbstractDatabase, raw::Raw)::SqlPart
+    lines = split(raw.string, '\n'; keepempty=true)
+    parts = []
+    for (line_idx, line) in enumerate(lines)
+        words = split(line, ' '; keepempty=true)
+        for (word_idx, word) in enumerate(words)
+            chars = collect(word)
+            if all(isuppercase, chars)
+                if word in db_keywords
+                    push!(parts, SqlPartElement(style_keyword, word))
+                elseif word in db_functionnames
+                    push!(parts, SqlPartElement(style_functionname, word))
+                else
+                    push!(parts, SqlPartElement(style_normal, word))
+                end
+            elseif all(x -> isuppercase(x) || ',' == x, chars)
+                if word[1:end-1] in db_keywords
+                    push!(parts, SqlPartElement(style_keyword, word[1:end-1]))
+                    push!(parts, SqlPartElement(style_normal, ","))
+                elseif word[1:end-1] in db_functionnames
+                    push!(parts, SqlPartElement(style_functionname, word[1:end-1]))
+                    push!(parts, SqlPartElement(style_normal, ","))
+                else
+                    push!(parts, SqlPartElement(style_normal, word))
+                end
+            else
+                push!(parts, SqlPartElement(style_normal, word))
+            end
+            word_idx != length(words) && push!(parts, SqlPartElement(style_normal, ' '))
+        end
+        line_idx != length(lines) && push!(parts, SqlPartElement(style_normal, '\n'))
+    end
+    SqlPart(parts, "")
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, el::KeywordAllKeyword)::SqlPart
@@ -332,6 +366,8 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
             else
                 push!(els, el)
             end
+        elseif prev === USING
+            push!(els, Enclosed([el]))
         else
             push!(els, el)
         end
@@ -385,12 +421,7 @@ function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} 
 end
 
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
-    if element isa Keyword ||
-       element isa SQLFunctionName ||
-       element isa SQLFunction ||
-       element isa FromItem
-        print(io, nameof(typeof(element)), ' ')
-    end
+    print(io, nameof(typeof(element)), ' ')
     printpart(io, sqlrepr(db, element))
 end
 

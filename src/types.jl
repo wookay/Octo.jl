@@ -30,7 +30,7 @@ struct Field <: SQLElement
     name::Symbol
 end
 
-struct Keyword <: SQLElement
+struct SQLKeyword <: SQLElement
     name::Symbol
 end
 
@@ -55,10 +55,13 @@ struct SQLAlias <: SQLElement
 end
 
 struct SQLExtract <: SQLElement
-    field::Union{Keyword, Type{DP}, Type{TP}}     where DP <: DatePeriod where TP <: TimePeriod
+    field::Union{SQLKeyword, Type{DP}, Type{TP}}     where DP <: DatePeriod where TP <: TimePeriod
     from::Union{DateTime, DP, TP, CompoundPeriod} where DP <: DatePeriod where TP <: TimePeriod
 end
 
+"""
+    Octo.Raw
+"""
 struct Raw <: SQLElement
     string::String
 end
@@ -72,8 +75,8 @@ struct VectorOfTuples <: SQLElement
 end
 
 struct KeywordAllKeyword <: SQLElement
-    left::Keyword
-    right::Keyword
+    left::SQLKeyword
+    right::SQLKeyword
 end
 
 # module Octo
