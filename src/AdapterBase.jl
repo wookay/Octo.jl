@@ -6,7 +6,8 @@ struct SQLDatabase <: AbstractDatabase end
 struct SQLiteDatabase <: AbstractDatabase end
 struct MySQLDatabase <: AbstractDatabase end
 struct PostgreSQLDatabase <: AbstractDatabase end
-struct JDBCDatabase <: AbstractDatabase end
+struct ODBCDatabase <: AbstractDatabase end
+# struct JDBCDatabase <: AbstractDatabase end
 end # module Octo.AdapterBase.Database
 
 import .Database: AbstractDatabase

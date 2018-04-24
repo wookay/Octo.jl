@@ -6,6 +6,15 @@ services:
  - postgresql
  - mysql
 
+addons:
+  apt:
+    packages:
+      - unixodbc
+      - unixodbc-dev
+      - libmyodbc
+      - libsqliteodbc
+      - odbc-postgresql
+
 os:
   - linux
   - osx

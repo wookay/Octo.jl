@@ -2,3 +2,4 @@ julia 0.7.0-DEV
 LibPQ
 MySQL
 SQLite
+ODBC
