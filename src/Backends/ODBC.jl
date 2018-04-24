@@ -42,9 +42,7 @@ end
 function query(sql::String)
     dsn = current_dsn()
     sink = current_sink()
-    source = ODBC.Source(dsn, sql)
-    df = ODBC.Data.stream!(source, sink)
-    df
+    ODBC.query(dsn, sql, sink)
 end
 
 function query(prepared::String, vals::Vector)

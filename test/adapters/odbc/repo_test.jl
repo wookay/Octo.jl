@@ -33,6 +33,12 @@ Repo.execute(Raw("""
 
 changes = (Name="John", Salary=10000.50)
 Repo.insert!(Employee, changes)
+changes = (Name="Cloris", Salary=20000.50)
+Repo.insert!(Employee, changes)
+df = Repo.query(Employee)
+@test size(df,) == (2,)
+@test df == [(id=1, name="John", salary=10000.50),
+             (id=2, name="Cloris", salary=20000.50)]
 
 Repo.disconnect()
 

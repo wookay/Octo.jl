@@ -1,6 +1,7 @@
 using Test
 
-ignores = [joinpath("adapters", "jdbc")]
+ignores = [joinpath("adapters", "jdbc"),
+           joinpath("adapters", "odbc"),]
 if Sys.iswindows()
     push!(ignores, joinpath("adapters", "mysql"))
     push!(ignores, joinpath("adapters", "sqlite"))
