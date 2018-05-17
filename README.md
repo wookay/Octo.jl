@@ -217,6 +217,9 @@ You need latest [Julia 0.7 DEV](https://julialang.org/downloads/nightlies.html).
 ```julia
 using Pkg
 Pkg.clone("https://github.com/wookay/Octo.jl.git")
+
+# requires master
+Pkg.checkout("DataStreams", "master")
 ```
 
 

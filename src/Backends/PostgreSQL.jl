@@ -17,8 +17,8 @@ function sink(T::Type)
    current[:sink] = T
 end
 
-# connect
-function connect(; kwargs...)
+# db_connect
+function db_connect(; kwargs...)
     if !isempty(kwargs)
         str = join(map(kv->join(kv, '='), collect(kwargs)), ' ')
         conn = LibPQ.Connection(str)
@@ -26,8 +26,8 @@ function connect(; kwargs...)
     end
 end
 
-# disconnect
-function disconnect()
+# db_disconnect
+function db_disconnect()
     conn = current_conn()
     close(conn)
     current[:conn] = nothing

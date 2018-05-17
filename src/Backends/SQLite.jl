@@ -16,15 +16,15 @@ function sink(T::Type)
    current[:sink] = T
 end
 
-# connect
-function connect(; kwargs...)
+# db_connect
+function db_connect(; kwargs...)
     database = getindex(kwargs, :database)
     db = SQLite.DB(database)
     current[:db] = db
 end
 
-# disconnect
-function disconnect()
+# db_disconnect
+function db_disconnect()
     current[:db] = nothing
 end
 
