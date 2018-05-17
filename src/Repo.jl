@@ -83,7 +83,7 @@ function connect(; adapter::Module, kwargs...)
     args = (:sink,)
     options = filter(kv -> !(kv.first in args), kwargs)
 
-    Base.invokelatest(loader.connect; options...)
+    Base.invokelatest(loader.db_connect; options...)
 end
 
 # Repo.disconnect
@@ -92,7 +92,7 @@ end
 """
 function disconnect()
     loader = current_loader()
-    disconnected = loader.disconnect()
+    disconnected = loader.db_disconnect()
     current[:adapter] = nothing
     current[:loader] = nothing
     disconnected

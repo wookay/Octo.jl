@@ -18,8 +18,8 @@ function sink(T::Type)
    current[:sink] = T
 end
 
-# connect
-function connect(; kwargs...)
+# db_connect
+function db_connect(; kwargs...)
     args = (:hostname, :username, :password)
     (hostname, username, password) = getindex.(Ref(kwargs), args)
     options = filter(kv -> !(kv.first in args), kwargs)
@@ -27,8 +27,8 @@ function connect(; kwargs...)
     current[:conn] = conn
 end
 
-# disconnect
-function disconnect()
+# db_disconnect
+function db_disconnect()
     conn = current_conn()
     MySQL.disconnect(conn)
     current[:conn] = nothing

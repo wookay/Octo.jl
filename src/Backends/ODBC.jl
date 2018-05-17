@@ -18,8 +18,8 @@ function sink(::Type)
     current[:sink] = T
 end
 
-# connect
-function connect(; kwargs...)
+# db_connect
+function db_connect(; kwargs...)
     if !isempty(kwargs)
         args = (:username, :password)
         username = get(kwargs, :username, "")
@@ -31,8 +31,8 @@ function connect(; kwargs...)
     end 
 end
 
-# disconnect
-function disconnect()
+# db_disconnect
+function db_disconnect()
     dsn = current_dsn()
     ODBC.disconnect!(dsn)
     current[:dsn] = nothing

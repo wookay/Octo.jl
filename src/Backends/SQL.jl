@@ -6,12 +6,12 @@ import Octo.Repo: ExecuteResult
 function sink(::Type)
 end
 
-# connect
-function connect(; kwargs...)
+# db_connect
+function db_connect(; kwargs...)
 end
 
-# disconnect
-function disconnect()
+# db_disconnect
+function db_disconnect()
 end
 
 # query
