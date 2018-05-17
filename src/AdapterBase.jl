@@ -22,9 +22,9 @@ const current = Dict{Symbol,AbstractDatabase}(
     :database => Database.SQLDatabase()
 )
 
-@sql_keywords  ALL ALTER AND AS ASC BETWEEN BY CREATE DATABASE DEFAULT DELETE DESC DISTINCT DROP EXCEPT EXECUTE EXISTS FOREIGN FROM FULL GROUP
-@sql_keywords  HAVING IF IN INDEX INNER INSERT INTERSECT INTO IS JOIN KEY LEFT LIKE LIMIT NULL OFFSET ON OR ORDER OUTER OVER
-@sql_keywords  PARTITION PREPARE PRIMARY RECURSIVE REFERENCES RIGHT SELECT SET TABLE UNION UPDATE USING VALUES WHERE WITH
+@sql_keywords  ADD ALL ALTER AND AS ASC BEGIN BETWEEN BY COMMIT COLUMN CONSTRAINT CREATE DATABASE DEFAULT DELETE DESC DISTINCT DROP EXCEPT EXECUTE EXISTS FOREIGN FROM FULL GROUP
+@sql_keywords  HAVING IF IN INDEX INNER INSERT INTERSECT INTO IS JOIN KEY LEFT LIKE LIMIT NULL OFF OFFSET ON OR ORDER OUTER OVER
+@sql_keywords  PARTITION PREPARE PRIMARY RECURSIVE REFERENCES RELEASE RIGHT ROLLBACK SAVEPOINT SELECT SET TABLE TO TRANSACTION TRIGGER UNION UPDATE USING VALUES WHERE WITH
 # @sql_keywords ANY (Julia TypeVar)
 
 # aggregates
@@ -139,7 +139,7 @@ function sqlrepr(::DB where DB<:AbstractDatabase, raw::Raw)::SqlPart
                 else
                     push!(parts, SqlPartElement(style_normal, word))
                 end
-            elseif all(x -> isuppercase(x) || ',' == x, chars)
+            elseif all(x -> isuppercase(x) || x in ('(', ','), chars)
                 if word[1:end-1] in db_keywords
                     push!(parts, SqlPartElement(style_keyword, word[1:end-1]))
                     push!(parts, SqlPartElement(style_normal, ","))
