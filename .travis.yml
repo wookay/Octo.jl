@@ -58,9 +58,16 @@ before_script:
   - mysql --version
 
 script:
-  - julia -e 'using Pkg; Pkg.add("DataStreams"); Pkg.checkout("DataStreams", "master"); using DataStreams' # for MySQL.jl
-  - julia --depwarn=no -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("Octo"); Pkg.test("Octo"; coverage=true)'
+  - pwd
+  - julia -e 'using Octo'
+  - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add DataStreams#master")' # for MySQL.jl
+  - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add LibPQ#master")'
+  - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add MySQL#master")'
+  # - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add SQLite#master")'
+  - cd test
+  - julia --depwarn=no runtests.jl
+  # TODO: coverage
 
 after_success:
   # push coverage results to Codecov
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia -e 'using Pkg; cd(Pkg.dir("Octo")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'   ; fi
+  #- if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add Coverage#master"); using Coverage; Codecov.submit(Codecov.process_folder())'   ; fi

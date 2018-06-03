@@ -27,6 +27,9 @@ FromItem users
 julia> [SELECT * FROM u]
 SELECT * FROM users
 
+julia> [SELECT (u.name, u.salary) FROM u]
+SELECT name, salary FROM users
+
 julia> [SELECT * FROM u WHERE u.id == 2]
 SELECT * FROM users WHERE id = 2
 
@@ -212,14 +215,17 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 
 ## Requirements
 
-You need latest [Julia 0.7 DEV](https://julialang.org/downloads/nightlies.html).
+You need latest [Julia 0.7 alpha](https://julialang.org/downloads/nightlies.html).
+
+`julia>` type `]` key
 
 ```julia
-using Pkg
-Pkg.clone("https://github.com/wookay/Octo.jl.git")
+(v0.7) pkg> add https://github.com/wookay/Octo.jl.git#master
 
-# requires master
-Pkg.checkout("DataStreams", "master")
+(v0.7) pkg> add DataStreams#master
+(v0.7) pkg> add LibPQ#master
+(v0.7) pkg> add MySQL#master
+(v0.7) pkg> add SQLite#master
 ```
 
 

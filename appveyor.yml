@@ -211,15 +211,18 @@ install:
 build_script:
     # Add PostgreSQL binaries to the path
     - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
-    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; f(x) = (Pkg.add(x); Pkg.checkout(x, \"master\")); [f(x) for x in [\"BinDeps\", \"LibExpat\", \"LightXML\", \"WinRPM\", \"CodecZlib\", \"TimeZones\", \"DecFP\", \"LibPQ\"]]"
-    # - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.clone(\"https://github.com/wookay/Octo.jl.git\"); rm(Pkg.dir(\"Octo\",\"test\",\"REQUIRE\")); Pkg.build(\"Octo\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add DataStreams#master\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add LibPQ#master\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add MySQL#master\")"
+    #- C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add SQLite#master\")"
     - CD c:\projects\octo_jl
     - IF EXIST .git\shallow (git fetch --unshallow)
-    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.clone(pwd(), \"Octo\"); rm(Pkg.dir(\"Octo\",\"test\",\"REQUIRE\")); Pkg.build(\"Octo\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Octo"
 
 before_test:
     # Create and setup PostgreSQL database for the tests
     - createdb %OCTO_TESTDB%
 
 test_script:
-  - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.test(\"Octo\")"
+  - CD test
+  - C:\projects\julia\bin\julia --color=yes --depwarn=no runtests.jl
