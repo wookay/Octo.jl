@@ -13,7 +13,7 @@ function backend(adapter::Module) # UnsupportedError
     else
         try
             path = normpath(@__DIR__, "Backends", string(sym, ".jl"))
-            mod.include(path)
+            Base.include(mod, path)
         catch err
             throw(UnsupportedError(string("error on ", adapter)))
         end

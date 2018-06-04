@@ -15,14 +15,14 @@ addons:
       - libsqliteodbc
       - odbc-postgresql
 
-os:
-  - linux
-  - osx
-
 julia:
   - nightly
 
 matrix:
+  include:
+    - os: linux
+      env: POSTGRESQL_VERSION=9.6 PGHOST="/var/run/postgresql"
+    - os: osx
   allow_failures:
     - julia: nightly
   fast_finish: true
@@ -35,22 +35,22 @@ git:
 
 before_script:
   # linux - PostgreSQL - 9.6.6
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then sudo service postgresql stop && sudo service postgresql start $POSTGRESQL_VERSION               ; fi
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql --version                                                                                  ; fi
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql -U postgres -tc 'SHOW server_version'                                                      ; fi
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql -U postgres -c '\conninfo'                                                                 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then sudo service postgresql stop && sudo service postgresql start $POSTGRESQL_VERSION            ; fi
+  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql --version                                                                               ; fi
+  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql -U postgres -tc 'SHOW server_version'                                                   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql -U postgres -c '\conninfo'                                                              ; fi
   # linux - MySQL      - 5.6.33
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then mysql -e 'show variables like "socket";' -uroot                                                 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then mysql -e 'show variables like "socket";' -uroot                                              ; fi
   # osx   - PostgreSQL - 9.6.5
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then rm -rf /usr/local/var/postgres                                                                  ; fi
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then initdb /usr/local/var/postgres                                                                  ; fi
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then pg_ctl -D /usr/local/var/postgres start                                                         ; fi
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then until createuser -s postgres; do echo "Postgres is unavailable - sleeping"; sleep 0.05; done    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then rm -rf /usr/local/var/postgres                                                               ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then initdb /usr/local/var/postgres                                                               ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then pg_ctl -D /usr/local/var/postgres start                                                      ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then until createuser -s postgres; do echo "Postgres is unavailable - sleeping"; sleep 0.05; done ; fi
   # osx   - MySQL      - 5.7.21
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew install   mysql                                                                            ; fi
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew services start mysql                                                                       ; fi
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then mysql.server start                                                                              ; fi
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then sleep 0.1                                                                                       ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew install   mysql                                                                         ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew services start mysql                                                                    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then mysql.server start                                                                           ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then sleep 0.1                                                                                    ; fi
   - psql -c "CREATE DATABASE postgresqltest;" -U postgres
   - psql --version
   - mysql -e 'CREATE DATABASE mysqltest;' -uroot
@@ -59,15 +59,15 @@ before_script:
 
 script:
   - pwd
-  - julia -e 'using Octo'
-  - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add DataStreams#master")' # for MySQL.jl
-  - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add LibPQ#master")'
-  - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add MySQL#master")'
+  - julia --color=yes -e 'using Octo'
+  - julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add DataStreams#master")' # for MySQL.jl
+  - julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add LibPQ#master")'
+  - julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add MySQL#master")'
   # - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add SQLite#master")'
   - cd test
-  - julia --depwarn=no runtests.jl
+  - julia --color=yes --depwarn=no runtests.jl
   # TODO: coverage
 
 after_success:
   # push coverage results to Codecov
-  #- if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add Coverage#master"); using Coverage; Codecov.submit(Codecov.process_folder())'   ; fi
+  #- if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add Coverage#master"); using Coverage; Codecov.submit(Codecov.process_folder())'   ; fi
