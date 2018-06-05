@@ -23,6 +23,7 @@ function sqlrepr(db::DatabaseID, clause::FromItem)::SqlPart
     _sqlrepr(db, clause; with_as=false)
 end
 
-window(query::Structured, as::Union{Nothing,Symbol}=nothing) = @warn "SQLite does not support"
+export        AUTOINCREMENT
+@sql_keywords AUTOINCREMENT
 
 end # Octo.Adapters.SQLite

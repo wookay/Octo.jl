@@ -19,7 +19,7 @@ to_sql(subquery::SubQuery)::String = _to_sql(DatabaseID(), subquery)
 placeholder(nth::Int) = _placeholder(DatabaseID(), nth)
 placeholders(dims::Int) = _placeholders(DatabaseID(), dims)
 
-export        USE
-@sql_keywords USE
+export        AUTO_INCREMENT, USE
+@sql_keywords AUTO_INCREMENT  USE
 
 end # Octo.Adapters.MySQL
