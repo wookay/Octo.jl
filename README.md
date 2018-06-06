@@ -210,7 +210,10 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 
 
 ## Colored SQL statements
- * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/builds/359976228#L602](https://travis-ci.org/wookay/Octo.jl/builds/359976228#L602).
+
+![colored_sql_statements.png](https://raw.github.com/wookay/Octo.jl/master/docs/images/colored_sql_statements.png)
+
+ * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691](https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691).
 
 
 ## Requirements

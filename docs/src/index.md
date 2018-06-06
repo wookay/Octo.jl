@@ -202,7 +202,3 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 | Cloris    |
 3 rows.
 ```
-
-
-### Colored SQL statements
- * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/builds/359976228#L602](https://travis-ci.org/wookay/Octo.jl/builds/359976228#L602).
