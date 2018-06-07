@@ -66,8 +66,28 @@ script:
   # - julia -e 'using Pkg; Pkg.REPLMode.pkgstr("add SQLite#master")'
   - cd test
   - julia --color=yes --depwarn=no runtests.jl
-  # TODO: coverage
+  - cd ..
 
 after_success:
   # push coverage results to Codecov
-  #- if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add Coverage#master"); using Coverage; Codecov.submit(Codecov.process_folder())'   ; fi
+  - pwd
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then mkdir -p ~/.julia/dev/Octo ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then mkdir -p ~/.julia/environments/v0.7 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cp -r src test REQUIRE Project.toml ~/.julia/dev/Octo/ ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cat ~/.julia/dev/Octo/test/runtests.jl ; fi
+  - cd
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("dev DataStreams")' ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add LibPQ#master")' ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add MySQL#master")' ; fi
+  - echo -e ""                                                >> manifest
+  - echo -e "[[Octo]]"                                        >> manifest
+  - echo -e "deps = [\"Dates\"]"                              >> manifest
+  - echo -e "path = \"$HOME/.julia/dev/Octo\""                >> manifest
+  - echo -e "uuid = \"c980e7ac-2ea9-11e8-1f3c-e1d64ddcfff6\"" >> manifest
+  - echo -e "version = \"0.1.0\""                             >> manifest
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cat manifest >> ~/.julia/environments/v0.7/Manifest.toml ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then echo -e "Octo = \"c980e7ac-2ea9-11e8-1f3c-e1d64ddcfff6\"" >> ~/.julia/environments/v0.7/Project.toml ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cat ~/.julia/environments/v0.7/Manifest.toml ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cat ~/.julia/environments/v0.7/Project.toml ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("test --coverage Octo")' ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add Coverage#master"); using Coverage; Codecov.submit(Codecov.process_folder(normpath(Pkg.devdir(), "Octo", "src")))' ; fi
