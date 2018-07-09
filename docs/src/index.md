@@ -32,6 +32,8 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 "SELECT * FROM users WHERE id = 2"
 ```
 
+![structured.svg](./assets/octo/structured.svg)
+
 
 ## Repo
 
