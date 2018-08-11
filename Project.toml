@@ -1,7 +1,7 @@
 authors = ["WooKyoung Noh <wookay.noh@gmail.com>"]
 name = "Octo"
 uuid = "c980e7ac-2ea9-11e8-1f3c-e1d64ddcfff6"
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"

@@ -2,12 +2,11 @@ using Test
 
 ignores = [joinpath("adapters", "jdbc"),
            joinpath("adapters", "odbc"),
-           joinpath("adapters", "sqlite"), # temporal
+           joinpath("adapters", "mysql"), # wait to support 1.0
+           joinpath("adapters", "sqlite"), # wait to support 1.0
     ]
-if Sys.iswindows()
-    push!(ignores, joinpath("adapters", "mysql"))
-    # push!(ignores, joinpath("adapters", "sqlite"))
-end
+#if Sys.iswindows()
+#end
 
 all_tests = []
 for (root, dirs, files) in walkdir(".")
