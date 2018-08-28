@@ -1,8 +1,10 @@
 module PostgreSQLLoader
 
+using Octo.Repo: ExecuteResult
 # https://github.com/invenia/LibPQ.jl
-import LibPQ
-import Octo.Repo: ExecuteResult
+using LibPQ
+
+LibPQ.Memento.config!("critical")
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,

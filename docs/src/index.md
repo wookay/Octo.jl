@@ -1,13 +1,13 @@
-# Octo.jl Documentation
+# Octo.jl
 
-Octo.jl 🐙  is an SQL Query DSL in [Julia](https://julialang.org).
+Octo.jl 🐙 is an SQL Query DSL in Julia (https://julialang.org).
 
-It's influenced by [Ecto](https://github.com/elixir-ecto/ecto).
+It's influenced by Ecto (https://github.com/elixir-ecto/ecto).
 
 
 ## SQL Query DSL
 
-```julia-repl
+```julia
 julia> using Octo.Adapters.SQL
 
 julia> struct User
@@ -32,14 +32,14 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 "SELECT * FROM users WHERE id = 2"
 ```
 
-![structured.svg](./assets/octo/structured.svg)
+![structured.svg](https://wookay.github.io/docs/Octo.jl/assets/octo/structured.svg)
 
 
 ## Repo
 
 Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
 
-```julia-repl
+```julia
 julia> using Octo.Adapters.PostgreSQL
 
 julia> Repo.debug_sql()
@@ -182,7 +182,7 @@ julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
 ```
 
 ### Subqueries
-```julia-repl
+```julia
 julia> sub = from([SELECT * FROM em WHERE em.Salary > 30000], :sub)
 (SELECT * FROM Employee WHERE Salary > 30000) AS sub
 
@@ -203,4 +203,37 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 | Jessica   |
 | Cloris    |
 3 rows.
+```
+
+
+## Colored SQL statements
+
+![colored_sql_statements.png](https://raw.github.com/wookay/Octo.jl/master/docs/images/colored_sql_statements.png)
+
+ * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691](https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691).
+
+
+## Requirements
+
+You need [Julia 1.0](https://julialang.org/downloads/).
+
+`julia>` type `]` key
+
+```julia
+(v1.0) pkg> add Octo
+```
+
+* for PostgreSQL
+```julia
+(v1.0) pkg> add LibPQ
+```
+
+* for MySQL
+```julia
+(v1.0) pkg> add MySQL
+```
+
+* for SQLite
+```julia
+(v1.0) pkg> add SQLite
 ```

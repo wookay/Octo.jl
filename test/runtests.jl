@@ -2,8 +2,6 @@ using Test
 
 ignores = [joinpath("adapters", "jdbc"),
            joinpath("adapters", "odbc"),
-           joinpath("adapters", "mysql"), # wait to support 1.0
-           joinpath("adapters", "sqlite"), # wait to support 1.0
     ]
 #if Sys.iswindows()
 #end

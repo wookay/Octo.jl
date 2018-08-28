@@ -2,9 +2,9 @@ module adapters_sqlite_placeholder_test
 
 using Test # @test
 using Octo.Adapters.SQLite # from to_sql Schema.model PlaceHolder SELECT FROM WHERE
-using Pkg # Pkg.dir
 
-dbfile = joinpath(Pkg.dir("SQLite"), "test", "Chinook_Sqlite.sqlite")
+import SQLite
+dbfile = joinpath(dirname(pathof(SQLite)), "..", "test", "Chinook_Sqlite.sqlite")
 dbfile2 = joinpath(@__DIR__, "test.sqlite")
 cp(dbfile, dbfile2; force=true)
 
