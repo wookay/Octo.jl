@@ -64,4 +64,13 @@ Repo.delete!(Temp, changes)
 df = Repo.get(Temp, 6)
 @test size(df) == (0,)
 
+
+❔  = Octo.PlaceHolder
+
+a = from(Temp)
+df = Repo.query([SELECT * FROM a WHERE a.Title == ❔  AND a.ArtistId == ❔ ], ["The Doors", 140])
+@test size(df) == (1,)
+
+Repo.disconnect()
+
 end # module adapters_sqlite_repo_test

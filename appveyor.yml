@@ -37,6 +37,7 @@ services:
     # Note: if you change this service also change the paths to match
     # (see where Program Files\Postgres\9.6 is used)
     - postgresql96
+    - mysql
 
 cache:
   # Rebuild cache if following file changes
@@ -215,9 +216,9 @@ build_script:
     - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
     - CD c:\projects\octo_jl
     - IF EXIST .git\shallow (git fetch --unshallow)
-    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add DataStreams LibPQ\")"
-    #- C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add MySQL#master\")"
-    #- C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add SQLite#master\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add LibPQ\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add MySQL\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add SQLite\")"
     - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.instantiate()"
     - C:\projects\julia\bin\julia --color=yes -e "pushfirst!(LOAD_PATH, \"@.\"); using Octo"
 
