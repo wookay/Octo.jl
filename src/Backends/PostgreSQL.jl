@@ -1,8 +1,10 @@
 module PostgreSQLLoader
 
+using Octo.Repo: ExecuteResult
 # https://github.com/invenia/LibPQ.jl
-import LibPQ
-import Octo.Repo: ExecuteResult
+using LibPQ
+
+LibPQ.Memento.config!("critical")
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
@@ -40,7 +42,7 @@ function query(sql::String)
     stmt = LibPQ.prepare(conn, sql)
     result = LibPQ.execute(stmt)
     df = LibPQ.fetch!(sink, result)
-    LibPQ.clear!(result)
+    LibPQ.close(result)
     df
 end
 
@@ -50,7 +52,7 @@ function query(prepared::String, vals::Vector)
     stmt = LibPQ.prepare(conn, prepared)
     result = LibPQ.execute(stmt, vals)
     df = LibPQ.fetch!(sink, result)
-    LibPQ.clear!(result)
+    LibPQ.close(result)
     df
 end
 

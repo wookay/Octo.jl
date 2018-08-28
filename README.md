@@ -35,7 +35,7 @@ SELECT * FROM users WHERE id = 2
 
 julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 "SELECT * FROM users WHERE id = 2"
-````
+```
 
 ![structured.svg](https://wookay.github.io/docs/Octo.jl/assets/octo/structured.svg)
 
@@ -220,17 +220,27 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 
 ## Requirements
 
-You need latest [Julia 0.7 beta](https://julialang.org/downloads/nightlies.html).
+You need [Julia 1.0](https://julialang.org/downloads/).
 
 `julia>` type `]` key
 
 ```julia
-(v0.7) pkg> add Octo
+(v1.0) pkg> add Octo
+```
 
-(v0.7) pkg> add DataStreams#master
-(v0.7) pkg> add LibPQ#master
-(v0.7) pkg> add MySQL#master
-(v0.7) pkg> add SQLite#master
+* for PostgreSQL
+```julia
+(v1.0) pkg> add LibPQ
+```
+
+* for MySQL
+```julia
+(v1.0) pkg> add MySQL
+```
+
+* for SQLite
+```julia
+(v1.0) pkg> add SQLite
 ```
 
 

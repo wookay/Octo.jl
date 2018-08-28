@@ -2,9 +2,9 @@ module adapters_sqlite_repo_test
 
 using Test # @test
 using Octo.Adapters.SQLite # Repo Schema from SELECT FROM WHERE
-using Pkg # Pkg.dir
 
-dbfile = joinpath(Pkg.dir("SQLite"), "test", "Chinook_Sqlite.sqlite")
+import SQLite
+dbfile = joinpath(dirname(pathof(SQLite)), "..", "test", "Chinook_Sqlite.sqlite")
 dbfile2 = joinpath(@__DIR__, "test.sqlite")
 cp(dbfile, dbfile2; force=true)
 
@@ -13,7 +13,7 @@ Repo.debug_sql()
 repo = Repo.connect(
     adapter = Octo.Adapters.SQLite,
     sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-    database = joinpath(dirname(@__FILE__), "test.sqlite")
+    database = joinpath(@__DIR__, "test.sqlite")
 )
 
 struct Employee
@@ -63,5 +63,14 @@ df = Repo.get(Temp, 6)
 Repo.delete!(Temp, changes)
 df = Repo.get(Temp, 6)
 @test size(df) == (0,)
+
+
+❔  = Octo.PlaceHolder
+
+a = from(Temp)
+df = Repo.query([SELECT * FROM a WHERE a.Title == ❔  AND a.ArtistId == ❔ ], ["The Doors", 140])
+@test size(df) == (1,)
+
+Repo.disconnect()
 
 end # module adapters_sqlite_repo_test

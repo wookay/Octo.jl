@@ -2,11 +2,9 @@ using Test
 
 ignores = [joinpath("adapters", "jdbc"),
            joinpath("adapters", "odbc"),
-           joinpath("adapters", "sqlite"), # temporal
     ]
 if Sys.iswindows()
     push!(ignores, joinpath("adapters", "mysql"))
-    # push!(ignores, joinpath("adapters", "sqlite"))
 end
 
 all_tests = []

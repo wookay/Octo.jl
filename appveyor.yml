@@ -11,9 +11,8 @@ environment:
         CMD_IN_ENV: cmd /E:ON /V:ON /C .\appveyor\run_with_env.cmd
 
     matrix:
-        # For Python versions available on Appveyor, see
-        # http://www.appveyor.com/docs/installed-software#python
-      - {PYVER: "36", PYTHON_ARCH: "64"}
+    - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/1.0/julia-1.0.0-win64.exe"
+    - JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x64/julia-latest-win64.exe"
 
     OPENSSL_VERSION: "1_0_2n"
     POSTGRES_VERSION: "REL9_5_12"
@@ -26,7 +25,10 @@ environment:
 
     PGUSER: postgres
     PGPASSWORD: Password12!
-    JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x64/julia-latest-win64.exe"
+    # For Python versions available on Appveyor, see
+    # http://www.appveyor.com/docs/installed-software#python
+    PYVER: "36"
+    PYTHON_ARCH: "64"
 
 matrix:
     fast_finish: false
@@ -35,6 +37,7 @@ services:
     # Note: if you change this service also change the paths to match
     # (see where Program Files\Postgres\9.6 is used)
     - postgresql96
+    - mysql
 
 cache:
   # Rebuild cache if following file changes
@@ -213,8 +216,9 @@ build_script:
     - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
     - CD c:\projects\octo_jl
     - IF EXIST .git\shallow (git fetch --unshallow)
-    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add DataStreams#master LibPQ#master MySQL#master\")"
-    #- C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add SQLite#master\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add LibPQ\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add MySQL\")"
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add SQLite\")"
     - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.instantiate()"
     - C:\projects\julia\bin\julia --color=yes -e "pushfirst!(LOAD_PATH, \"@.\"); using Octo"
 
@@ -223,4 +227,4 @@ before_test:
     - createdb %OCTO_TESTDB%
 
 test_script:
-  - C:\projects\julia\bin\julia --color=yes --depwarn=no -e "pushfirst!(LOAD_PATH, \"@.\"); cd(\"test\"); include(\"runtests.jl\")"
+  - C:\projects\julia\bin\julia --color=yes -e "pushfirst!(LOAD_PATH, \"@.\"); cd(\"test\"); include(\"runtests.jl\")"

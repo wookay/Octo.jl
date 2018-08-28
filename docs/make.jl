@@ -1,11 +1,6 @@
-if haskey(ENV, "PRIVATE_DOCUMENTER")
-    include("../../PrivateDocumenter/src/Documenter.jl")
-    using .Documenter
-else
-    using Documenter
-end
 using Octo
-import Octo: Repo, Schema
+using .Octo: Repo, Schema
+using Documenter
 
 makedocs(
     build = joinpath(@__DIR__, "local" in ARGS ? "build_local" : "build"),
