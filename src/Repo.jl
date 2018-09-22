@@ -1,11 +1,11 @@
 module Repo # Octo
 
-import ..Backends
-import ..AdapterBase
-import ..Queryable: Structured, SubQuery, FromItem
-import ..Raw
-import ..Schema # Schema.validates
-import ..Pretty: show
+using ..Backends
+using ..AdapterBase
+using ..Queryable: Structured, SubQuery, FromItem
+using ..Octo: Raw
+using ..Schema # Schema.validates
+using ..Pretty: show
 
 struct NeedsConnectError <: Exception
     msg

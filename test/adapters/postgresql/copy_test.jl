@@ -13,7 +13,7 @@ Repo.connect(
 # https://discourse.julialang.org/t/postgresql-in-julia-libpq-jl/9379/4
 Repo.execute(Raw("CREATE TABLE IF NOT EXISTS a_uts (ut text, id serial)"))
 
-import LibPQ.libpq_c: PQputCopyData, PQputCopyEnd
+using LibPQ.libpq_c: PQputCopyData, PQputCopyEnd
 loader = Repo.current_loader()
 jl_conn = loader.current_conn()
 

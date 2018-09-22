@@ -1,9 +1,9 @@
 module ODBCLoader
 
 # https://github.com/JuliaDatabases/ODBC.jl
-import ODBC
-import Octo.Repo: ExecuteResult
-import Octo.Backends: UnsupportedError
+using ODBC
+using Octo.Repo: ExecuteResult
+using Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
     :dsn => nothing,

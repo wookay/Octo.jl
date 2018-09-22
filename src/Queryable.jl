@@ -1,7 +1,7 @@
 module Queryable # Octo
 
-import ..Octo: Structured, FromItem, SubQuery, Field, SQLAlias, SQLExtract, SQLFunction, Predicate, SQLKeyword
-import Dates: CompoundPeriod
+using ..Octo: Structured, FromItem, SubQuery, Field, SQLAlias, SQLExtract, SQLFunction, Predicate, SQLKeyword
+using Dates: CompoundPeriod
 using Dates # DatePeriod, TimePeriod, TimeType
 
 """

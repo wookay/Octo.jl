@@ -3,7 +3,7 @@ module adapters_sqlite_repo_test
 using Test # @test
 using Octo.Adapters.SQLite # Repo Schema from SELECT FROM WHERE
 
-import SQLite
+import SQLite # pathof(SQLite)
 dbfile = joinpath(dirname(pathof(SQLite)), "..", "test", "Chinook_Sqlite.sqlite")
 dbfile2 = joinpath(@__DIR__, "test.sqlite")
 cp(dbfile, dbfile2; force=true)

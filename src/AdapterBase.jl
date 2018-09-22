@@ -10,13 +10,13 @@ struct ODBCDatabase <: AbstractDatabase end
 # struct JDBCDatabase <: AbstractDatabase end
 end # module Octo.AdapterBase.Database
 
-import .Database: AbstractDatabase
-import ..Octo
-import .Octo.Queryable: Structured, FromItem, SubQuery
-import .Octo: SQLElement, SQLAlias, SQLExtract, SQLFunctionName, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, SQLKeyword, KeywordAllKeyword, VectorOfTuples
-import .Octo: Schema
-import .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
-import .Octo: @sql_keywords, @sql_functions, db_keywords, db_functionnames
+using .Database: AbstractDatabase
+using ..Octo
+using .Octo.Queryable: Structured, FromItem, SubQuery
+using .Octo: SQLElement, SQLAlias, SQLExtract, SQLFunctionName, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, SQLKeyword, KeywordAllKeyword, VectorOfTuples
+using .Octo: Schema
+using .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
+using .Octo: @sql_keywords, @sql_functions, db_keywords, db_functionnames
 
 const current = Dict{Symbol,AbstractDatabase}(
     :database => Database.SQLDatabase()
@@ -57,7 +57,7 @@ end # Octo.AdapterBase.Beautiful
 
 const SqlPartElement = Beautiful.Element
 const SqlPart        = Beautiful.Container
-import .Beautiful: ElementStyle
+using .Beautiful: ElementStyle
 
 const style_normal                  = ElementStyle(:normal)
 const style_subquery_select         = ElementStyle(:light_green, true)

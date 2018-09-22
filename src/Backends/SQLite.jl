@@ -1,7 +1,7 @@
 module SQLiteLoader
 
-import SQLite
-import Octo.Repo: ExecuteResult
+using SQLite
+using Octo.Repo: ExecuteResult
 
 const current = Dict{Symbol, Any}(
     :db => nothing,

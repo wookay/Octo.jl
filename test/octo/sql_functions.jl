@@ -13,7 +13,7 @@ s = as(AVG(t.salary), :s)
 @test to_sql([s]) == "AVG(salary) AS s"
 
 
-import Octo: @sql_functions
+using Octo: @sql_functions
 
 @sql_functions A
 

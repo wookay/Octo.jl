@@ -2,7 +2,7 @@ module adapters_mysql_placeholder_test
 
 using Test # @test_throws
 using Octo.Adapters.MySQL # from to_sql Schema.model PlaceHolder SELECT FROM WHERE
-import Octo.Backends: UnsupportedError
+using Octo.Backends: UnsupportedError
 
 Repo.debug_sql()
 

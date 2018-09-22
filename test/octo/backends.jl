@@ -1,7 +1,7 @@
 module test_octo_backends
 
 using Test # @test_throws
-import Octo: Backends
+using Octo: Backends
 
 module UnsupportedAdapter
 end

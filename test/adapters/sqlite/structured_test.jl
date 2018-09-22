@@ -30,7 +30,7 @@ struct Temp
 end
 Schema.model(Temp, table_name="temp")
 
-import Octo.Adapters.SQLite: placeholders
+using Octo.Adapters.SQLite: placeholders
 
 temp = from(Temp)
 @test to_sql([INSERT INTO temp VALUES placeholders(3)]) == "INSERT INTO temp VALUES (?, ?, ?)"

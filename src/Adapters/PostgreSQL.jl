@@ -4,8 +4,8 @@ export extract
 
 include("sql_exports.jl")
 include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
-import .Octo.Queryable: extract #
-import .Octo: @sql_keywords, @sql_functions
+using .Octo.Queryable: extract #
+using .Octo: @sql_keywords, @sql_functions
 
 const DatabaseID = Database.PostgreSQLDatabase
 
@@ -31,7 +31,8 @@ export         AUTOCOMMIT, COPY, CURRENT_DATE, EXPLAIN, FALSE, LATERAL, SEQUENCE
 export         COALESCE, NOW
 @sql_functions COALESCE  NOW
 
-import .Octo.AdapterBase: FromItem, SqlPart, sqlrepr, _sqlrepr
+using .Octo.AdapterBase: FromItem, SqlPart, _sqlrepr
+import .Octo.AdapterBase: sqlrepr
 function sqlrepr(db::DatabaseID, clause::FromItem)::SqlPart
     _sqlrepr(db, clause; with_as=false)
 end

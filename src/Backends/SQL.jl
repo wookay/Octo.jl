@@ -1,6 +1,6 @@
 module SQLLoader
 
-import Octo.Repo: ExecuteResult
+using Octo.Repo: ExecuteResult
 
 # sink
 function sink(::Type)

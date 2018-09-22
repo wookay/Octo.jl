@@ -1,9 +1,9 @@
 module JDBCLoader
 
 # https://github.com/JuliaDatabases/JDBC.jl
-import JDBC
-import Octo.Repo: ExecuteResult
-import Octo.Backends: UnsupportedError
+using JDBC
+using Octo.Repo: ExecuteResult
+using Octo.Backends: UnsupportedError
 
 # sink
 function sink(::Type)

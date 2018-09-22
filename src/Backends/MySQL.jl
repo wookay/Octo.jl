@@ -1,9 +1,9 @@
 module MySQLLoader
 
 # https://github.com/JuliaDatabases/MySQL.jl
-import MySQL
-import Octo.Repo: ExecuteResult
-import Octo.Backends: UnsupportedError
+using MySQL
+using Octo.Repo: ExecuteResult
+using Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
