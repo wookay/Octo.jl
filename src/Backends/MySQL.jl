@@ -1,7 +1,7 @@
 module MySQLLoader
 
 # https://github.com/JuliaDatabases/MySQL.jl
-using MySQL
+using MySQL # MySQL.jl v0.7.0
 using Octo.Repo: ExecuteResult
 using Octo.Backends: UnsupportedError
 
@@ -38,7 +38,8 @@ end
 function query(sql::String)
     conn = current_conn()
     sink = current_sink()
-    MySQL.query(conn, sql, sink)
+    table = MySQL.Query(conn, sql, sink=sink)
+    collect(table)
 end
 
 function query(prepared::String, vals::Vector) # throw UnsupportedError
@@ -62,7 +63,7 @@ end
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     conn = current_conn()
     stmt = MySQL.Stmt(conn, prepared)
-    MySQL.Data.stream!(nts, stmt)
+    MySQL.execute!(stmt, nts...)
     ExecuteResult()
 end
 
