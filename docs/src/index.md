@@ -211,29 +211,3 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 ![colored_sql_statements.png](https://raw.github.com/wookay/Octo.jl/master/docs/images/colored_sql_statements.png)
 
  * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691](https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691).
-
-
-## Requirements
-
-You need [Julia 1.0](https://julialang.org/downloads/).
-
-`julia>` type `]` key
-
-```julia
-(v1.0) pkg> add Octo
-```
-
-* for PostgreSQL
-```julia
-(v1.0) pkg> add LibPQ
-```
-
-* for MySQL
-```julia
-(v1.0) pkg> add MySQL
-```
-
-* for SQLite
-```julia
-(v1.0) pkg> add SQLite
-```

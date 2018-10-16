@@ -228,17 +228,17 @@ You need [Julia 1.0](https://julialang.org/downloads/).
 (v1.0) pkg> add Octo
 ```
 
-* for PostgreSQL
+* for PostgreSQL ([LibPQ.jl](https://github.com/invenia/LibPQ.jl) v0.5.0)
 ```julia
 (v1.0) pkg> add LibPQ
 ```
 
-* for MySQL
+* for MySQL ([MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl) v0.7.0)
 ```julia
 (v1.0) pkg> add MySQL
 ```
 
-* for SQLite
+* for SQLite ([SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl) v0.7.0)
 ```julia
 (v1.0) pkg> add SQLite
 ```
