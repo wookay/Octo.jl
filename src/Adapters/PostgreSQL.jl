@@ -25,8 +25,8 @@ placeholders(dims::Int) = _placeholders(DatabaseID(), dims)
 _placeholder(db::DatabaseID, nth::Int) = PlaceHolder("\$$nth")
 _placeholders(db::DatabaseID, dims::Int) = Enclosed([PlaceHolder("\$$x") for x in 1:dims])
 
-export         AUTOCOMMIT, COPY, CURRENT_DATE, EXPLAIN, FALSE, LATERAL, SEQUENCE, SERIAL, TRUE, WINDOW
-@sql_keywords  AUTOCOMMIT  COPY  CURRENT_DATE  EXPLAIN  FALSE  LATERAL  SEQUENCE  SERIAL  TRUE  WINDOW
+export         AUTOCOMMIT, COPY, CURRENT_DATE, DESCRIBE, EXPLAIN, FALSE, LATERAL, SEQUENCE, SERIAL, TRUE, WINDOW
+@sql_keywords  AUTOCOMMIT  COPY  CURRENT_DATE  DESCRIBE  EXPLAIN  FALSE  LATERAL  SEQUENCE  SERIAL  TRUE  WINDOW
 
 export         COALESCE, NOW
 @sql_functions COALESCE  NOW
