@@ -1,7 +1,7 @@
 module test_octo_pretty
 
 using Test
-using Octo: Pretty
+using Octo.Pretty
 
 nts = [(id=1,name="John"),(id=2,name="Tom")]
 @test Pretty.table(nts) == """

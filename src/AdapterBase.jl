@@ -14,7 +14,7 @@ using .Database: AbstractDatabase
 using ..Octo
 using .Octo.Queryable: Structured, FromItem, SubQuery
 using .Octo: SQLElement, SQLAlias, SQLExtract, SQLFunctionName, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, SQLKeyword, KeywordAllKeyword, VectorOfTuples
-using .Octo: Schema
+using .Octo.Schema
 using .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
 using .Octo: @sql_keywords, @sql_functions, db_keywords, db_functionnames
 
