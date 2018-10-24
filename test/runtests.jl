@@ -7,6 +7,13 @@ if Sys.iswindows()
     push!(ignores, joinpath("adapters", "mysql"))
 end
 
+# juliarun-ci
+if startswith(@__FILE__, "/home/jrun/Octo")
+    @info "FIXME: How to test it on JuliaCIBot?"
+    push!(ignores, joinpath("adapters", "mysql"))
+    push!(ignores, joinpath("adapters", "postgresql"))
+end
+
 all_tests = []
 for (root, dirs, files) in walkdir(".")
     for filename in files
