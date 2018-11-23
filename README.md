@@ -42,7 +42,7 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 
 ## Repo
 
-Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
+Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl), ODBC(via [ODBC.jl](https://github.com/JuliaDatabases/ODBC.jl))
 
 ```julia
 julia> using Octo.Adapters.PostgreSQL
@@ -228,21 +228,12 @@ You need [Julia 1.0](https://julialang.org/downloads/).
 (v1.0) pkg> add Octo
 ```
 
-* for PostgreSQL ([LibPQ.jl](https://github.com/invenia/LibPQ.jl) v0.5.0)
 ```julia
-(v1.0) pkg> add LibPQ
+(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl v0.5.0)
+(v1.0) pkg> add MySQL   # for MySQL (depends on MySQL.jl v0.7.0)
+(v1.0) pkg> add SQLite  # for SQLite (depends on SQLite.jl v0.7.0)
+(v1.0) pkg> add ODBC    # for ODBC (depends on ODBC.jl v0.8.1)
 ```
-
-* for MySQL ([MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl) v0.7.0)
-```julia
-(v1.0) pkg> add MySQL
-```
-
-* for SQLite ([SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl) v0.7.0)
-```julia
-(v1.0) pkg> add SQLite
-```
-
 
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg

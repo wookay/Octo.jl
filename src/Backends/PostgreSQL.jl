@@ -1,8 +1,9 @@
 module PostgreSQLLoader
 
 using Octo.Repo: ExecuteResult
+
 # https://github.com/invenia/LibPQ.jl
-using LibPQ
+using LibPQ # v0.5.0
 
 LibPQ.Memento.config!("critical")
 

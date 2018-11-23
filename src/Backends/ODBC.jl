@@ -1,9 +1,9 @@
 module ODBCLoader
 
-# https://github.com/JuliaDatabases/ODBC.jl
-using ODBC
 using Octo.Repo: ExecuteResult
-using Octo.Backends: UnsupportedError
+
+# https://github.com/JuliaDatabases/ODBC.jl
+using ODBC # v0.8.1
 
 const current = Dict{Symbol, Any}(
     :dsn => nothing,
@@ -21,12 +21,10 @@ end
 # db_connect
 function db_connect(; kwargs...)
     if !isempty(kwargs)
-        args = (:username, :password)
+        connectionstring = get(kwargs, :dsn, "")
         username = get(kwargs, :username, "")
         password = get(kwargs, :password, "")
-        conn_args = filter(kv -> !(kv.first in args), kwargs)
-        conn_str = join(map(kv->join(kv, '='), collect(conn_args)), ';')
-        dsn = ODBC.DSN(conn_str, username, password)
+        dsn = ODBC.DSN(connectionstring, username, password)
         current[:dsn] = dsn
     end 
 end
@@ -41,12 +39,15 @@ end
 # query
 function query(sql::String)
     dsn = current_dsn()
-    sink = current_sink()
-    ODBC.query(dsn, sql, sink)
+    q = ODBC.Query(dsn, sql)
+    collect(q)
 end
 
 function query(prepared::String, vals::Vector)
-    throw(UnsupportedError("needs to be implemented"))
+    dsn = current_dsn()
+    stmt = ODBC.prepare(dsn, prepared)
+    ODBC.execute!(stmt, vals)
+    ExecuteResult()
 end
 
 # execute
