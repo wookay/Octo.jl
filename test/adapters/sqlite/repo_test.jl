@@ -7,13 +7,14 @@ import SQLite # pathof(SQLite)
 dbfile = joinpath(dirname(pathof(SQLite)), "..", "test", "Chinook_Sqlite.sqlite")
 dbfile2 = joinpath(@__DIR__, "test.sqlite")
 cp(dbfile, dbfile2; force=true)
+chmod(dbfile2, 0o666)
 
 Repo.debug_sql()
 
 repo = Repo.connect(
     adapter = Octo.Adapters.SQLite,
     sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-    database = joinpath(@__DIR__, "test.sqlite")
+    database = dbfile2
 )
 
 struct Employee
