@@ -1,5 +1,8 @@
 ## Documentation: http://docs.travis-ci.com/user/languages/julia/
 
+notifications:
+  email: false
+
 language: julia
 
 os:
@@ -7,16 +10,14 @@ os:
 # - osx # TODO: Got errors on starting postgresql
 
 services:
- - postgresql
- - mysql
+  - postgresql
+  - mysql
 
 addons:
   apt:
     packages:
       - unixodbc
       - unixodbc-dev
-      - libmyodbc
-      - libsqliteodbc
       - odbc-postgresql
 
 julia:
@@ -24,18 +25,7 @@ julia:
   - nightly
 
 env:
-  - POSTGRESQL_VERSION=9.6 PGHOST="/var/run/postgresql"
-
-matrix:
-  allow_failures:
-    - julia: nightly
-  fast_finish: true
-
-notifications:
-  email: false
-
-git:
-  depth: 99999999
+  - POSTGRESQL_VERSION=9.6 PGHOST="/var/run/postgresql" ODBC_TEST_DRIVERS="postgresql"
 
 before_script:
   # linux - PostgreSQL - 9.6.6
@@ -43,26 +33,41 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql --version                                                                               ; fi
   - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql -U postgres -tc 'SHOW server_version'                                                   ; fi
   - if [[ "$TRAVIS_OS_NAME" == linux ]]; then psql -U postgres -c '\conninfo'                                                              ; fi
-  # linux - MySQL      - 5.6.33
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then mysql -e 'show variables like "socket";' -uroot                                              ; fi
+
   # osx   - PostgreSQL - 9.6.5
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then rm -rf /usr/local/var/postgres                                                               ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then initdb /usr/local/var/postgres                                                               ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then pg_ctl -D /usr/local/var/postgres start                                                      ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then until createuser -s postgres; do echo "Postgres is unavailable - sleeping"; sleep 0.05; done ; fi
+
+  # PostgreSQL
+  - psql -c "CREATE DATABASE postgresqltest;" -U postgres
+  - psql --version
+
+  # ODBC
+  - julia --color=yes -e 'using Pkg; pkg"add ODBC"; pkg"precompile"'
+  - julia --color=yes -e 'using ODBC; setupdir=normpath(pathof(ODBC), "..", "..", "test", "setup"); run(`odbcinst -i -s -h -f $(normpath(setupdir, "postgresqltest.odbc.ini"))`)'
+
+  # linux - MySQL      - 5.6.33
+  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then mysql -e 'show variables like "socket";' -uroot                                              ; fi
+
   # osx   - MySQL      - 5.7.21
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew install   mysql                                                                         ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew services start mysql                                                                    ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then mysql.server start                                                                           ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then sleep 0.1                                                                                    ; fi
-  - psql -c "CREATE DATABASE postgresqltest;" -U postgres
-  - psql --version
+
+  # MySQL
   - mysql -e 'CREATE DATABASE mysqltest;' -uroot
   - mysql -e 'GRANT ALL PRIVILEGES ON mysqltest.* TO "root"@"localhost" IDENTIFIED BY ""' -uroot
   - mysql --version
 
+  # master updates: LegacyStrings v0.4.0 - WARNING: could not import Base.lcfirst into LegacyStrings
+  - julia --color=yes -e 'using Pkg; pkg"add LegacyStrings#master"; pkg"precompile"'
+
+
 after_success:
-  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" != nightly ]] ; then julia --project=. -e 'using Pkg;
+  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" != nightly ]] ; then julia --color=yes --project=. -e 'using Pkg;
                                                                                                            Pkg.add("Coverage");
                                                                                                            using Coverage;
                                                                                                            Codecov.submit(process_folder())' ; fi

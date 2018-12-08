@@ -11,7 +11,7 @@ environment:
         CMD_IN_ENV: cmd /E:ON /V:ON /C .\appveyor\run_with_env.cmd
 
     matrix:
-    - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/1.0/julia-1.0.0-win64.exe"
+    - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/1.0/julia-1.0.2-win64.exe"
     - JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x64/julia-latest-win64.exe"
 
     OPENSSL_VERSION: "1_0_2n"
@@ -40,9 +40,9 @@ services:
     - mysql
 
 cache:
-  # Rebuild cache if following file changes
-  # (See the file to zap the cache manually)
-  - C:\Others -> scripts\appveyor.cache_rebuild
+    # Rebuild cache if following file changes
+    # (See the file to zap the cache manually)
+    - C:\Others -> scripts\appveyor.cache_rebuild
 
 # Script called before repo cloning
 init:
@@ -216,15 +216,13 @@ build_script:
     - PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
     - CD c:\projects\octo_jl
     - IF EXIST .git\shallow (git fetch --unshallow)
-    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add LibPQ\")"
-    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add MySQL\")"
-    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.REPLMode.pkgstr(\"add SQLite\")"
-    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; Pkg.instantiate()"
-    - C:\projects\julia\bin\julia --color=yes -e "pushfirst!(LOAD_PATH, \"@.\"); using Octo"
+    # master updates: LegacyStrings v0.4.0 - WARNING: could not import Base.lcfirst into LegacyStrings
+    - C:\projects\julia\bin\julia --color=yes -e "using Pkg; pkg\"add LegacyStrings#master\"; pkg\"precompile\""
+    - C:\projects\julia\bin\julia --color=yes --project=. -e "using Octo"
 
 before_test:
     # Create and setup PostgreSQL database for the tests
     - createdb %OCTO_TESTDB%
 
 test_script:
-  - C:\projects\julia\bin\julia --color=yes -e "pushfirst!(LOAD_PATH, \"@.\"); cd(\"test\"); include(\"runtests.jl\")"
+    - C:\projects\julia\bin\julia --color=yes --project=. -e "using Pkg; Pkg.test()"
