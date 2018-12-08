@@ -2,6 +2,10 @@
 
 language: julia
 
+os:
+  - linux
+# - osx # TODO: Got errors on starting postgresql
+
 services:
  - postgresql
  - mysql
@@ -57,39 +61,8 @@ before_script:
   - mysql -e 'GRANT ALL PRIVILEGES ON mysqltest.* TO "root"@"localhost" IDENTIFIED BY ""' -uroot
   - mysql --version
 
-#script:
-#  - pwd
-#  - julia --color=yes -e 'using Octo'
-#  - julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add DataStreams")'
-#  - julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add LibPQ")'
-#  # - julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add MySQL#master")'
-#  # - julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add SQLite#master")'
-#  - cd test
-#  - julia --color=yes runtests.jl
-#  - cd ..
-
 after_success:
-   - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia -e 'Pkg.add("Coverage"); cd(Pkg.dir("Octo")); using Coverage; Codecov.submit(process_folder())' ; fi
-#after_success:
-#  # push coverage results to Codecov
-#  - pwd
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then mkdir -p ~/.julia/dev/Octo ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then mkdir -p ~/.julia/environments/v1.0 ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cp -r src test REQUIRE Project.toml ~/.julia/dev/Octo/ ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cat ~/.julia/dev/Octo/test/runtests.jl ; fi
-#  - cd
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("dev DataStreams")' ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add LibPQ")' ; fi
-#  #- if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add MySQL#master")' ; fi
-#  - echo -e ""                                                >> manifest
-#  - echo -e "[[Octo]]"                                        >> manifest
-#  - echo -e "deps = [\"Dates\"]"                              >> manifest
-#  - echo -e "path = \"$HOME/.julia/dev/Octo\""                >> manifest
-#  - echo -e "uuid = \"c980e7ac-2ea9-11e8-1f3c-e1d64ddcfff6\"" >> manifest
-#  - echo -e "version = \"0.1.1\""                             >> manifest
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cat manifest >> ~/.julia/environments/v1.0/Manifest.toml ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then echo -e "Octo = \"c980e7ac-2ea9-11e8-1f3c-e1d64ddcfff6\"" >> ~/.julia/environments/v1.0/Project.toml ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cat ~/.julia/environments/v1.0/Manifest.toml ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then cat ~/.julia/environments/v1.0/Project.toml ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("test --coverage Octo")' ; fi
-#  - if [[ "$TRAVIS_OS_NAME" == osx ]]; then julia --color=yes -e 'using Pkg; Pkg.REPLMode.pkgstr("add Coverage#master"); using Coverage; Codecov.submit(Codecov.process_folder(normpath(Pkg.devdir(), "Octo", "src")))' ; fi
+  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" != nightly ]] ; then julia --project=. -e 'using Pkg;
+                                                                                                           Pkg.add("Coverage");
+                                                                                                           using Coverage;
+                                                                                                           Codecov.submit(process_folder())' ; fi
