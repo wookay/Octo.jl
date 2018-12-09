@@ -67,7 +67,7 @@ before_script:
 
 
 after_success:
-  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" != nightly ]] ; then julia --color=yes --project=. -e 'using Pkg;
+  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == nightly ]] ; then julia --color=yes --project=. -e 'using Pkg;
                                                                                                            Pkg.add("Coverage");
                                                                                                            using Coverage;
                                                                                                            Codecov.submit(process_folder())' ; fi
