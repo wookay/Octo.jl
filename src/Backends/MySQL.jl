@@ -15,7 +15,7 @@ current_sink() = current[:sink]
 
 # sink
 function sink(T::Type)
-   current[:sink] = T
+    current[:sink] = T
 end
 
 # db_connect

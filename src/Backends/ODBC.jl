@@ -14,7 +14,7 @@ current_dsn() = current[:dsn]
 current_sink() = current[:sink]
 
 # sink
-function sink(::Type)
+function sink(T::Type)
     current[:sink] = T
 end
 

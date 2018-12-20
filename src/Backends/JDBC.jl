@@ -1,42 +1,115 @@
 module JDBCLoader
 
 # https://github.com/JuliaDatabases/JDBC.jl
-using JDBC
+using JDBC # v0.4.0
 using Octo.Repo: ExecuteResult
 using Octo.Backends: UnsupportedError
 
+const current = Dict{Symbol, Any}(
+    :conn => nothing,
+    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
+)
+
+current_conn() = current[:conn]
+current_sink() = current[:sink]
+
 # sink
-function sink(::Type)
+function sink(T::Type)
+    current[:sink] = T
 end
 
 # db_connect
 function db_connect(; kwargs...)
+    connection = getindex(kwargs, :connection)
+    url = connection.url
+    opts = collect(pairs(connection))[2:end]
+    if isempty(opts)
+        conn = JDBC.DriverManager.getConnection(url)
+    else
+        props = Dict([string.(kv) for kv in opts])
+        conn = JDBC.DriverManager.getConnection(url, props)
+    end
+    current[:conn] = conn
 end
 
 # db_disconnect
 function db_disconnect()
+    conn = current_conn()
+    JDBC.close(conn)
+    current[:conn] = nothing
 end
 
 # query
 function query(sql::String)
-    throw(UnsupportedError("needs to be implemented"))
+    conn = current_conn()
+    sink = current_sink()
+    stmt = JDBC.createStatement(conn)
+    rs = JDBC.executeQuery(stmt, sql)
+    df = JDBC.load(sink, rs)
+    JDBC.close(rs)
+    JDBC.close(stmt)
+    df
+end
+
+function prepared_execute(conn, prepared::String, vals::Vector)
+    ppstmt = JDBC.prepareStatement(conn, prepared)
+    for (idx, val) in enumerate(vals)
+        if val isa Int
+            typ = :Int
+        elseif val isa Float32
+            typ = :Float
+        elseif val isa Float64
+            typ = :Double
+        else
+            typ = Symbol(typeof(val))
+        end
+        name = Symbol(:set, typ)
+        if isdefined(JDBC, name)
+            setter = getfield(JDBC, name)
+            setter(ppstmt, idx, val)
+        else
+            throw(UnsupportedError(string(name, " is not defined in JDBC")))
+        end
+    end
+    n = JDBC.executeUpdate(ppstmt)
+    JDBC.close(ppstmt)
+    n
 end
 
 function query(prepared::String, vals::Vector)
-    throw(UnsupportedError("needs to be implemented"))
+    conn = current_conn()
+    sink = current_sink()
+    rs = prepared_execute(conn, prepared, vals)
+    df = JDBC.load(sink, rs)
+    JDBC.close(rs)
+    df
 end
 
 # execute
 function execute(sql::String)::ExecuteResult
-    throw(UnsupportedError("needs to be implemented"))
+    conn = current_conn()
+    sink = current_sink()
+    stmt = JDBC.createStatement(conn)
+    n = JDBC.executeUpdate(stmt, sql)
+    JDBC.close(stmt)
+    ExecuteResult()
 end
 
 function execute(prepared::String, vals::Vector)::ExecuteResult
-    throw(UnsupportedError("needs to be implemented"))
+    conn = current_conn()
+    sink = current_sink()
+    n = prepared_execute(conn, prepared, vals)
+    ExecuteResult()
 end
 
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
-    throw(UnsupportedError("needs to be implemented"))
+    conn = current_conn()
+    sink = current_sink()
+    for tup in nts
+        vals = collect(tup)
+        n = prepared_execute(conn, prepared, vals)
+    end
+    ExecuteResult()
 end
 
 end # module Octo.Backends.JDBCLoader
