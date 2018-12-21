@@ -1,9 +1,10 @@
 # Octo.jl
 
-Octo.jl 🐙 is an SQL Query DSL in Julia (https://julialang.org).
+Octo.jl 🐙 is an SQL Query DSL in [Julia](https://julialang.org).
+It also comes with a very useful tool called [Repo](https://github.com/wookay/Octo.jl#repo).
+You could `Repo.get`, `Repo.insert!` `Repo.update!` `Repo.delete!` for many database drivers without hand-written SQL.
 
-It's influenced by Ecto (https://github.com/elixir-ecto/ecto).
-
+It's influenced by [Ecto](https://github.com/elixir-ecto/ecto).
 
 ## SQL Query DSL
 
@@ -37,7 +38,12 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 
 ## Repo
 
-Current supported databases: PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl)), MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl)), SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
+Current supported database drivers:
+  - PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl))
+  - MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
+  - SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl)
+  - ODBC(via [ODBC.jl](https://github.com/JuliaDatabases/ODBC.jl))
+  - JDBC(via [JDBC.jl](https://github.com/JuliaDatabases/JDBC.jl))
 
 ```julia
 julia> using Octo.Adapters.PostgreSQL
@@ -211,3 +217,22 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 ![colored_sql_statements.png](https://raw.github.com/wookay/Octo.jl/master/docs/images/colored_sql_statements.png)
 
  * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691](https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691).
+
+
+## Requirements
+
+You need [Julia 1.0](https://julialang.org/downloads/).
+
+`julia>` type `]` key
+
+```julia
+(v1.0) pkg> add Octo
+```
+
+```julia
+(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl v0.5.0)
+(v1.0) pkg> add MySQL   # for MySQL (depends on MySQL.jl v0.7.0)
+(v1.0) pkg> add SQLite  # for SQLite (depends on SQLite.jl v0.7.0)
+(v1.0) pkg> add ODBC    # for ODBC (depends on ODBC.jl v0.8.1)
+(v1.0) pkg> add JDBC    # for JDBC (depends on JDBC.jl v0.4.0)
+```

@@ -6,7 +6,7 @@ makedocs(
     build = joinpath(@__DIR__, "local" in ARGS ? "build_local" : "build"),
     modules = [Octo],
     clean = false,
-    format = :html,
+    format = Documenter.HTML(),
     sitename = "Octo.jl 🐙",
     authors = "WooKyoung Noh",
     pages = Any[
@@ -24,5 +24,4 @@ makedocs(
         ],
         "Pretty" => "Pretty.md",
     ],
-    html_prettyurls = !("local" in ARGS),
 )
