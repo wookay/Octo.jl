@@ -3,6 +3,7 @@ using Test
 ignores = Set()
 
 push!(ignores, joinpath("adapters", "jdbc"))
+push!(ignores, joinpath("adapters", "hive"))
 
 if Sys.iswindows()
     push!(ignores, joinpath("adapters", "mysql"))

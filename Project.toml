@@ -13,6 +13,7 @@ SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
 MySQL = "39abe10b-433b-5dbd-92d4-e302a9df00cd"
 ODBC = "be6f12e9-ca4f-5eb2-a339-a4f995cc0291"
 JDBC = "6042db11-3c3d-5e84-8dba-9cbf74c9ba48"
+Hive = "6735fb99-e7a2-5b86-aa6b-3fb73ebb43ff"
 
 [targets]
-test = ["Test", "LibPQ", "SQLite", "MySQL", "ODBC", "JDBC"]
+test = ["Test", "LibPQ", "SQLite", "MySQL", "ODBC", "JDBC", "Hive"]

@@ -8,6 +8,7 @@ struct MySQLDatabase <: AbstractDatabase end
 struct PostgreSQLDatabase <: AbstractDatabase end
 struct ODBCDatabase <: AbstractDatabase end
 struct JDBCDatabase <: AbstractDatabase end
+struct HiveDatabase <: AbstractDatabase end
 end # module Octo.AdapterBase.Database
 
 using .Database: AbstractDatabase
