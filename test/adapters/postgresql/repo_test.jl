@@ -47,8 +47,7 @@ multiple_changes = [
     (Name="Tom", Salary=20000.25),
     (Name="Jim", Salary=30000.00),
 ]
-result = Repo.insert!(Employee, multiple_changes)
-@test result isa Repo.ExecuteResult
+Repo.insert!(Employee, multiple_changes)
 
 Repo.execute(Raw("""INSERT INTO Employee (Name, Salary) VALUES (\$1, \$2)"""), multiple_changes)
 

@@ -294,52 +294,53 @@ end
 
 # Repo.execute
 """
-    Repo.execute(stmt::Structured)::ExecuteResult
+    Repo.execute(stmt::Structured)
 """
-function execute(stmt::Structured)::ExecuteResult
+function execute(stmt::Structured)
     a = current_adapter()
     sql = a.to_sql(stmt)
     print_debug_sql(stmt)
     loader = current_loader()
     loader.execute(sql)
+    nothing
 end
 
 """
-    Repo.execute(stmt::Structured, vals::Vector)::ExecuteResult
+    Repo.execute(stmt::Structured, vals::Vector)
 """
-function execute(stmt::Structured, vals::Vector)::ExecuteResult
+function execute(stmt::Structured, vals::Vector)
     a = current_adapter()
     prepared = a.to_sql(stmt)
     print_debug_sql(stmt, vals)
     loader = current_loader()
     loader.execute(prepared, vals)
+    nothing
 end
 
 """
-    Repo.execute(stmt::Structured, nts::Vector{<:NamedTuple})::ExecuteResult
+    Repo.execute(stmt::Structured, nts::Vector{<:NamedTuple})
 """
-function execute(stmt::Structured, nts::Vector{<:NamedTuple})::ExecuteResult
+function execute(stmt::Structured, nts::Vector{<:NamedTuple})
     a = current_adapter()
     prepared = a.to_sql(stmt)
     print_debug_sql(stmt, nts)
     loader = current_loader()
     loader.execute(prepared, nts)
+    nothing
 end
 
-execute(raw::AdapterBase.Raw)::ExecuteResult                            = execute([raw])
-execute(raw::AdapterBase.Raw, nt::NamedTuple)::ExecuteResult            = execute([raw], [nt])
-execute(raw::AdapterBase.Raw, nts::Vector{<:NamedTuple})::ExecuteResult = execute([raw], nts)
-execute(raw::AdapterBase.Raw, vals::Vector)::ExecuteResult              = execute([raw], vals)
+execute(raw::AdapterBase.Raw)                            = execute([raw])
+execute(raw::AdapterBase.Raw, nt::NamedTuple)            = execute([raw], [nt])
+execute(raw::AdapterBase.Raw, nts::Vector{<:NamedTuple}) = execute([raw], nts)
+execute(raw::AdapterBase.Raw, vals::Vector)              = execute([raw], vals)
 
 
 # Repo.insert!
 """
-    Repo.insert!(M::Type, nts::Vector{<:NamedTuple})::ExecuteResult
+    Repo.insert!(M::Type, nts::Vector{<:NamedTuple})
 """
-function insert!(M::Type, nts::Vector{<:NamedTuple})::ExecuteResult
-    if isempty(nts)
-        ExecuteResult()
-   else
+function insert!(M::Type, nts::Vector{<:NamedTuple})
+    if !isempty(nts)
         Schema.validates.(M, nts) # throw InvalidChangesetError
         a = current_adapter()
         table = a.from(M)
@@ -347,34 +348,34 @@ function insert!(M::Type, nts::Vector{<:NamedTuple})::ExecuteResult
         fieldnames = a.Enclosed(collect(keys(nt)))
         execute([a.INSERT a.INTO table fieldnames a.VALUES a.placeholders(length(nt))], nts)
    end
+   nothing
 end
 
 """
-    Repo.insert!(M, nt::NamedTuple)::ExecuteResult
+    Repo.insert!(M, nt::NamedTuple)
 """
-function insert!(M, nt::NamedTuple)::ExecuteResult
+function insert!(M, nt::NamedTuple)
     insert!(M, [nt])
 end
 
 """
-    Repo.insert!(M::Type, vals::Vector{<:Tuple})::ExecuteResult
+    Repo.insert!(M::Type, vals::Vector{<:Tuple})
 """
-function insert!(M::Type, vals::Vector{<:Tuple})::ExecuteResult
-    if isempty(vals)
-        ExecuteResult()
-   else
+function insert!(M::Type, vals::Vector{<:Tuple})
+    if !isempty(vals)
         a = current_adapter()
         table = a.from(M)
         execute([a.INSERT a.INTO table a.VALUES a.VectorOfTuples(vals)])
    end
+   nothing
 end
 
 
 # Repo.update!
 """
-    Repo.update!(M::Type, nt::NamedTuple)::ExecuteResult
+    Repo.update!(M::Type, nt::NamedTuple)
 """
-function update!(M::Type, nt::NamedTuple)::ExecuteResult # throw Schema.PrimaryKeyError
+function update!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
     Schema.validates(M, nt) # throw InvalidChangesetError
     a = current_adapter()
     (key, pk) = _get_primary_key_with(M, nt)
@@ -389,31 +390,31 @@ function update!(M::Type, nt::NamedTuple)::ExecuteResult # throw Schema.PrimaryK
     push!(v, a.WHERE)
     push!(v, key == pk)
     execute(v, collect(values(rest)))
+    nothing
 end
 
 
 # Repo.delete!
 """
-    Repo.delete!(M::Type, nt::NamedTuple)::ExecuteResult
+    Repo.delete!(M::Type, nt::NamedTuple)
 """
-function delete!(M::Type, nt::NamedTuple)::ExecuteResult # throw Schema.PrimaryKeyError
+function delete!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
     a = current_adapter()
     (key, pk) = _get_primary_key_with(M, nt)
     table = a.from(M)
     execute([a.DELETE a.FROM table a.WHERE key == pk])
+    nothing
 end
 
 """
-    Repo.delete!(M::Type, pk_range::UnitRange{Int64})::ExecuteResult
+    Repo.delete!(M::Type, pk_range::UnitRange{Int64})
 """
-function delete!(M::Type, pk_range::UnitRange{Int64})::ExecuteResult # throw Schema.PrimaryKeyError
+function delete!(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
     a = current_adapter()
     table = a.from(M)
     key = _get_primary_key(M)
     execute([a.DELETE a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop])
-end
-
-function Base.show(io::IO, mime::MIME"text/plain", result::ExecuteResult)
+    nothing
 end
 
 end # module Octo.Repo

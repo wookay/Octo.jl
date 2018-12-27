@@ -424,7 +424,8 @@ function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} 
 end
 
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
-    print(io, nameof(typeof(element)), ' ')
+    printstyled(io, nameof(typeof(element)), color=:underline)
+    print(io, ' ')
     printpart(io, sqlrepr(db, element))
 end
 

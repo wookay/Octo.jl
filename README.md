@@ -54,7 +54,7 @@ Current supported database drivers:
 julia> using Octo.Adapters.PostgreSQL
 
 julia> Repo.debug_sql()
-LogLevelDebugSQL::Octo.Repo.RepoLogLevel = -1
+LogLevelDebugSQL::RepoLogLevel = -1
 
 julia> Repo.connect(
            adapter = Octo.Adapters.PostgreSQL,
@@ -73,7 +73,13 @@ PostgreSQL connection (CONNECTION_OK) with parameters:
   krbsrvname = postgres
   target_session_attrs = any
 
-julia> Repo.execute([DROP TABLE IF EXISTS :Employee])
+julia> struct Employee
+       end
+
+julia> Schema.model(Employee, table_name="Employee", primary_key="ID")
+Employee => Dict(:primary_key=>"ID",:table_name=>"Employee")
+
+julia> Repo.execute([DROP TABLE IF EXISTS Employee])
 [ Info: DROP TABLE IF EXISTS Employee
 
 julia> Repo.execute(Raw("""
@@ -89,12 +95,6 @@ julia> Repo.execute(Raw("""
 │     Salary FLOAT(8),
 │     PRIMARY KEY (ID)
 └ )
-
-julia> struct Employee
-       end
-
-julia> Schema.model(Employee, table_name="Employee", primary_key="ID")
-Employee => Dict(:primary_key=>"ID",:table_name=>"Employee")
 
 julia> Repo.insert!(Employee, [
            (Name="Jeremy",  Salary=10000.50),
@@ -193,9 +193,10 @@ julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
 ```
 
 ### Subqueries
+
 ```julia
 julia> sub = from([SELECT * FROM em WHERE em.Salary > 30000], :sub)
-(SELECT * FROM Employee WHERE Salary > 30000) AS sub
+SubQuery (SELECT * FROM Employee WHERE Salary > 30000) AS sub
 
 julia> Repo.query(sub)
 [ Info: SELECT * FROM Employee WHERE Salary > 30000
