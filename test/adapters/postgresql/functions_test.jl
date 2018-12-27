@@ -16,7 +16,7 @@ Schema.model(User, table_name="users")
 
 u = from(User)
 
-Repo.execute([DROP TABLE IF EXISTS u])
+Repo.execute([DROP TABLE IF EXISTS User])
 Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS users (
                      ID SERIAL,
                      name VARCHAR(255),

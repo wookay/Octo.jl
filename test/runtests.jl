@@ -2,12 +2,12 @@ using Test
 
 ignores = Set()
 
-push!(ignores, joinpath("adapters", "jdbc"))
 push!(ignores, joinpath("adapters", "hive"))
 
 if Sys.iswindows()
     push!(ignores, joinpath("adapters", "mysql"))
     push!(ignores, joinpath("adapters", "odbc"))
+    push!(ignores, joinpath("adapters", "jdbc"))
 end
 
 # juliarun-ci
@@ -16,6 +16,7 @@ if startswith(@__FILE__, "/home/jrun/Octo")
     push!(ignores, joinpath("adapters", "postgresql"))
     push!(ignores, joinpath("adapters", "mysql"))
     push!(ignores, joinpath("adapters", "odbc"))
+    push!(ignores, joinpath("adapters", "jdbc"))
 end
 
 function runtests(tests)

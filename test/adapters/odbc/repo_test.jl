@@ -14,12 +14,9 @@ Repo.connect(
 
 struct Employee
 end
-Schema.model(Employee,
-    table_name = "Employee",
-    primary_key = "ID"
-)
+Schema.model(Employee, table_name="Employee", primary_key="ID")
 
-Repo.execute([DROP TABLE IF EXISTS :Employee])
+Repo.execute([DROP TABLE IF EXISTS Employee])
 Repo.execute(Raw("""
     CREATE TABLE Employee (
         ID SERIAL,

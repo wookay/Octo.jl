@@ -12,18 +12,17 @@ Repo.connect(
     user = "postgres",
 )
 
-Repo.execute([DROP TABLE IF EXISTS :users])
+struct User
+end
+Schema.model(User, table_name="users")
+
+Repo.execute([DROP TABLE IF EXISTS User])
 Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS users (
                      ID SERIAL,
                      name VARCHAR(255),
                      salary FLOAT(8),
                      PRIMARY KEY (ID) )
                  """))
-
-struct User
-end
-
-Schema.model(User, table_name="users")
 
 ❔ = Octo.PlaceHolder
 

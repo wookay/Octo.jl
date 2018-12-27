@@ -11,7 +11,7 @@ struct Employee
 end
 Schema.model(Employee, table_name="employee", primary_key="eid")
 
-Repo.execute([DROP TABLE IF EXISTS :employee])
+Repo.execute([DROP TABLE IF EXISTS Employee])
 Repo.execute(Raw("""
 CREATE TABLE IF NOT EXISTS employee (eid Int, name String, salary Double)
 """))

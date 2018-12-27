@@ -12,6 +12,8 @@ Schema.model(Customer, table_name="Customers")
 
 customers = from(Customer)
 
+@test to_sql([FROM Customer]) == "FROM Customers"
+
 # IN
 @test to_sql([customers.Country IN ("Germany", "France", "UK")]) == "Country IN ('Germany', 'France', 'UK')"
 @test to_sql([customers.Country NOT IN ("Germany", "France", "UK")]) == "Country NOT IN ('Germany', 'France', 'UK')"
@@ -56,5 +58,6 @@ sub = from([SELECT tbl1.id FROM tbl1 EXCEPT subexcept], :t)
 
 sub = from([SELECT tbl1.id FROM tbl1 EXCEPT SELECT tbl2.id FROM tbl2 EXCEPT SELECT tbl3.id FROM tbl3], :t)
 @test to_sql([SELECT COUNT(*) FROM sub]) == "SELECT COUNT(*) FROM (SELECT tbl1.id FROM tbl1 EXCEPT SELECT tbl2.id FROM tbl2 EXCEPT SELECT tbl3.id FROM tbl3) AS t"
+
 
 end # module test_octo_structured

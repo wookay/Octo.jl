@@ -13,14 +13,14 @@ Repo.connect(
     user = "postgres",
 )
 
-Repo.execute([DROP TABLE IF EXISTS :test1])
-Repo.execute(Raw("""
-CREATE TABLE IF NOT EXISTS test1 (a boolean, b text)
-"""))
-
 struct Test1
 end
 Schema.model(Test1, table_name="test1")
+
+Repo.execute([DROP TABLE IF EXISTS Test1])
+Repo.execute(Raw("""
+CREATE TABLE IF NOT EXISTS test1 (a boolean, b text)
+"""))
 
 Repo.insert!(Test1, (a=true, b="sic est"))
 Repo.insert!(Test1, (a=false, b="non est"))

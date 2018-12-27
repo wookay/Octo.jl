@@ -32,8 +32,8 @@ struct Comment
 end
 Schema.model(Comment, table_name="comments")
 
-Repo.execute([DROP TABLE IF EXISTS :posts])
-Repo.execute([DROP TABLE IF EXISTS :comments])
+Repo.execute([DROP TABLE IF EXISTS Post])
+Repo.execute([DROP TABLE IF EXISTS Comment])
 
 Repo.execute(Raw("""
 CREATE TABLE posts (
@@ -110,8 +110,8 @@ struct D
 end
 Schema.model(D, table_name="d")
 
-Repo.execute([DROP TABLE IF EXISTS :c])
-Repo.execute([DROP TABLE IF EXISTS :d])
+Repo.execute([DROP TABLE IF EXISTS C])
+Repo.execute([DROP TABLE IF EXISTS D])
 Repo.execute(Raw("""
 CREATE TABLE c
   (

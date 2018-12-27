@@ -12,10 +12,11 @@ Repo.connect(;
     Options.arguments...
 )
 
-#Repo.execute([DROP DATABASE IF EXISTS :mysqltest])
-#Repo.execute([CREATE DATABASE :mysqltest])
-#Repo.execute([USE :mysqltest])
-Repo.execute([DROP TABLE IF EXISTS :Employee])
+struct Employee
+end
+Schema.model(Employee, table_name="Employee", primary_key="ID")
+
+Repo.execute([DROP TABLE IF EXISTS Employee])
 Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS Employee
                  (
                      ID INT NOT NULL AUTO_INCREMENT,
@@ -37,12 +38,6 @@ Repo.execute(Raw("""INSERT INTO Employee (Name, Salary, JoinDate, LastLogin, Lun
                  ('Jim', 30000.00, '2015-6-2', '2015-9-5 10:05:10', '12:30:00', 45, 'Management', b'0', 1567);
               """))
 
-struct Employee
-end
-Schema.model(Employee,
-    table_name = "Employee",
-    primary_key = "ID"
-)
 df = Repo.query(Employee)
 @test size(df) == (3,)
 

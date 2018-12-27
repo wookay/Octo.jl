@@ -89,6 +89,7 @@ sqlrepr(::DB where DB<:AbstractDatabase, h::PlaceHolder)::SqlPartElement     = S
 sqlrepr(::DB where DB<:AbstractDatabase, el::SQLKeyword)::SqlPartElement     = SqlPartElement(style_keyword, el.name)
 sqlrepr(::DB where DB<:AbstractDatabase, var::TypeVar)::SqlPartElement       = SqlPartElement(style_keyword, string(var)) # ANY
 sqlrepr(::DB where DB<:AbstractDatabase, f::SQLFunctionName)::SqlPartElement = SqlPartElement(style_functionname, f.name)
+sqlrepr(::DB where DB<:AbstractDatabase, T::Type)::SqlPartElement            = SqlPartElement(style_table_name, _table_name_of(T))
 
 function sqlrepr(::DB where DB<:AbstractDatabase, M::Type{PlaceHolder})::SqlPartElement
     SqlPartElement(style_placeholder, '?')

@@ -65,6 +65,8 @@ before_script:
   # master updates: LegacyStrings v0.4.0 - WARNING: could not import Base.lcfirst into LegacyStrings
   - julia --color=yes -e 'using Pkg; pkg"add LegacyStrings#master"; pkg"precompile"'
 
+script:
+  - julia --color=yes --handle-signals=no --project=. -e 'using Pkg; Pkg.test()'
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == nightly ]] ; then julia --color=yes --project=. -e 'using Pkg;

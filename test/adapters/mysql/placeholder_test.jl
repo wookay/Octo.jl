@@ -13,7 +13,11 @@ Repo.connect(;
     Options.arguments...
 )
 
-Repo.execute([DROP TABLE IF EXISTS :users])
+struct User
+end
+Schema.model(User, table_name="users")
+
+Repo.execute([DROP TABLE IF EXISTS User])
 Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS users (
                      ID INT NOT NULL AUTO_INCREMENT,
                      name VARCHAR(255),
@@ -21,13 +25,8 @@ Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS users (
                      PRIMARY KEY (ID) 
                  )"""))
 
-struct User
-end
-
-Schema.model(User, table_name="users")
-u = from(User)
-
 ❔ = Octo.PlaceHolder
+u = from(User)
 
 userName = """ ' OR '1'='1 """
 @test_throws UnsupportedError Repo.query([SELECT * FROM u WHERE u.name == ❔ AND u.salary > ❔], [userName, 2000])
