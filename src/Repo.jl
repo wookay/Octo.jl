@@ -1,5 +1,6 @@
 module Repo # Octo
 
+using ..DBMS
 using ..Backends
 using ..AdapterBase
 using ..Queryable: Structured, SubQuery, FromItem
@@ -66,12 +67,13 @@ end
 
 # Repo.connect
 """
-    Repo.connect(; adapter::Module, kwargs...)
+    Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, kwargs...)
 """
-function connect(; adapter::Module, kwargs...)
-    sym = nameof(adapter)
-    DatabaseID = getfield(AdapterBase.Database, Symbol(sym, :Database))
-    AdapterBase.current[:database] = DatabaseID()
+function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, kwargs...)
+    if database !== nothing
+        adapter.Database[:ID] = database
+    end
+    AdapterBase.current[:database] = adapter.DatabaseID()
 
     current[:adapter] = adapter
     loader = Backends.backend(adapter)

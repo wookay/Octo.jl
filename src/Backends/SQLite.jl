@@ -19,8 +19,8 @@ end
 
 # db_connect
 function db_connect(; kwargs...)
-    database = getindex(kwargs, :database)
-    db = SQLite.DB(database)
+    dbfile = getindex(kwargs, :dbfile)
+    db = SQLite.DB(dbfile)
     current[:db] = db
 end
 

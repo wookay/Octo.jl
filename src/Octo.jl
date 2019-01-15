@@ -3,6 +3,7 @@ module Octo
 include("Deps.jl")
 include("types.jl")
 include("macros.jl")     # @sql_keywords @sql_functions
+include("DBMS.jl")
 include("Schema.jl")     # Schema.model Schema.changeset
 include("Queryable.jl")  # Queryable: from, as, window
 include("predicates.jl")

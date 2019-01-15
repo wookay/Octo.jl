@@ -14,10 +14,10 @@ using .Octo.AdapterBase: DENSE_RANK, RANK, ROW_NUMBER
 
 #                                     ()        ?
 using .Octo.AdapterBase: Field, Raw, Enclosed, PlaceHolder, VectorOfTuples
-using .Octo.AdapterBase.Database
 using .Octo.AdapterBase: Structured, SubQuery, _to_sql
 import .Octo.AdapterBase: _placeholder, _placeholders
 
+using .Octo.DBMS
 using .Octo.Repo
 using .Octo.Schema
 using .Octo.Pretty

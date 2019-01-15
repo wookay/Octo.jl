@@ -3,11 +3,11 @@ module PostgreSQL
 export extract
 
 include("sql_exports.jl")
-include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
+include("sql_imports.jl") # DBMS Structured SubQuery _to_sql _placeholder _placeholders
 using .Octo.Queryable: extract #
 using .Octo: @sql_keywords, @sql_functions
 
-const DatabaseID = Database.PostgreSQLDatabase
+const DatabaseID = DBMS.PostgreSQL
 
 """
     to_sql(query::Structured)::String

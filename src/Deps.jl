@@ -1,7 +1,3 @@
-module Deps # Octo
-
-end # module Octo.Deps
-
 using Dates: DatePeriod, Year, Month, Day
 using Dates: TimePeriod, Hour, Minute, Second
 using Dates: CompoundPeriod

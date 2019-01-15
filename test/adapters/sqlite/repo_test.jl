@@ -14,7 +14,7 @@ Repo.debug_sql()
 repo = Repo.connect(
     adapter = Octo.Adapters.SQLite,
     sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-    database = dbfile2
+    dbfile = dbfile2
 )
 
 struct Employee

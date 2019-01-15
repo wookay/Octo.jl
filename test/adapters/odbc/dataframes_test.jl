@@ -8,6 +8,7 @@ Repo.debug_sql()
 
 Repo.connect(
     adapter  = Octo.Adapters.ODBC,
+    database = Octo.DBMS.SQL,
     dsn      = "PgSQL-test",
     username = "postgres",
     password = "",

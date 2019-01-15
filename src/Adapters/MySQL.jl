@@ -1,10 +1,10 @@
 module MySQL
 
 include("sql_exports.jl")
-include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
+include("sql_imports.jl") # DBMS Structured SubQuery _to_sql _placeholder _placeholders
 using .Octo: @sql_keywords
 
-const DatabaseID = Database.MySQLDatabase
+const DatabaseID = DBMS.MySQL
 
 """
     to_sql(query::Structured)::String

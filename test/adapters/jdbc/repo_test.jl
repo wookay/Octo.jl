@@ -17,6 +17,7 @@ JDBC.init()
 
 Repo.connect(
     adapter    = Octo.Adapters.JDBC,
+    database   = Octo.DBMS.SQL,
     connection = (url="jdbc:derby:jar:($toursdb_jar)toursdb",),
 )
 
@@ -42,6 +43,7 @@ end
 
 Repo.connect(
     adapter    = Octo.Adapters.JDBC,
+    database   = Octo.DBMS.SQL,
     connection = (url="jdbc:derby:tmptest", create=true),
 )
 

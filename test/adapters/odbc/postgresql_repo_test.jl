@@ -1,4 +1,4 @@
-module adapters_odbc_repo_test
+module adapters_odbc_postgresql_repo_test
 
 using Test # @test
 using Octo.Adapters.ODBC # Repo Schema
@@ -7,6 +7,7 @@ Repo.debug_sql()
 
 Repo.connect(
     adapter  = Octo.Adapters.ODBC,
+    database = Octo.DBMS.SQL,
     dsn      = "PgSQL-test",
     username = "postgres",
     password = "",
@@ -36,4 +37,4 @@ df = Repo.query(Employee)
 
 Repo.disconnect()
 
-end # module adapters_odbc_repo_test
+end # module adapters_odbc_postgresql_repo_test

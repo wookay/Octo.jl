@@ -1,9 +1,9 @@
 module SQL
 
 include("sql_exports.jl")
-include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholder _placeholders
+include("sql_imports.jl") # DBMS Structured SubQuery _to_sql _placeholder _placeholders
 
-const DatabaseID = Database.SQLDatabase
+const DatabaseID = DBMS.SQL
 
 """
     to_sql(query::Structured)::String

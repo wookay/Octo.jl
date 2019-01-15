@@ -1,26 +1,16 @@
 module AdapterBase # Octo
 
-module Database
-abstract type AbstractDatabase end
-struct SQLDatabase <: AbstractDatabase end
-struct SQLiteDatabase <: AbstractDatabase end
-struct MySQLDatabase <: AbstractDatabase end
-struct PostgreSQLDatabase <: AbstractDatabase end
-struct ODBCDatabase <: AbstractDatabase end
-struct JDBCDatabase <: AbstractDatabase end
-struct HiveDatabase <: AbstractDatabase end
-end # module Octo.AdapterBase.Database
-
-using .Database: AbstractDatabase
 using ..Octo
 using .Octo.Queryable: Structured, FromItem, SubQuery
 using .Octo: SQLElement, SQLAlias, SQLExtract, SQLFunctionName, SQLFunction, Field, Predicate, Raw, Enclosed, PlaceHolder, SQLKeyword, KeywordAllKeyword, VectorOfTuples
 using .Octo.Schema
+using .Octo.DBMS
+using .Octo.DBMS: AbstractDatabase
 using .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
 using .Octo: @sql_keywords, @sql_functions, db_keywords, db_functionnames
 
 const current = Dict{Symbol,AbstractDatabase}(
-    :database => Database.SQLDatabase()
+    :database => DBMS.SQL()
 )
 
 @sql_keywords  ADD ALL ALTER AND AS ASC BEGIN BETWEEN BY COMMIT COLUMN CONSTRAINT CREATE DATABASE DEFAULT DELETE DESC DISTINCT DROP EXCEPT EXECUTE EXISTS FOREIGN FROM FULL GROUP

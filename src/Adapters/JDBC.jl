@@ -1,9 +1,12 @@
 module JDBC
 
 include("sql_exports.jl")
-include("sql_imports.jl") # Database Structured SubQuery _to_sql _placeholders
+include("sql_imports.jl") # DBMS Structured SubQuery _to_sql _placeholders
 
-const DatabaseID = Database.JDBCDatabase
+Database = Dict{Symbol,Type{D} where {D <: DBMS.AbstractDatabase}}(
+    :ID => DBMS.SQL
+)
+DatabaseID() = Database[:ID]()
 
 """
     to_sql(query::Structured)::String
