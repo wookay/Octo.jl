@@ -1,21 +1,21 @@
-authors = ["WooKyoung Noh <wookay.noh@gmail.com>"]
 name = "Octo"
 uuid = "16905944-f982-529b-abb2-b839f98f160b"
+authors = ["WooKyoung Noh <wookay.noh@gmail.com>"]
 version = "0.2.2-DEV"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Hive = "6735fb99-e7a2-5b86-aa6b-3fb73ebb43ff"
+JDBC = "6042db11-3c3d-5e84-8dba-9cbf74c9ba48"
 Jive = "ba5e3d4b-8524-549f-bc71-e76ad9e9deed"
 LibPQ = "194296ae-ab2e-5f79-8cd4-7183a0a5a0d1"
-SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
 MySQL = "39abe10b-433b-5dbd-92d4-e302a9df00cd"
 ODBC = "be6f12e9-ca4f-5eb2-a339-a4f995cc0291"
-JDBC = "6042db11-3c3d-5e84-8dba-9cbf74c9ba48"
-Hive = "6735fb99-e7a2-5b86-aa6b-3fb73ebb43ff"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "Jive", "LibPQ", "SQLite", "MySQL", "ODBC", "JDBC", "Hive", "DataFrames"]

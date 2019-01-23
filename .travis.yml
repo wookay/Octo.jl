@@ -62,14 +62,14 @@ before_script:
   - mysql -e 'GRANT ALL PRIVILEGES ON mysqltest.* TO "root"@"localhost" IDENTIFIED BY ""' -uroot
   - mysql --version
 
-  # master updates: LegacyStrings v0.4.0 - WARNING: could not import Base.lcfirst into LegacyStrings
-  - julia --color=yes -e 'using Pkg; pkg"add LegacyStrings#master"; pkg"precompile"'
-
 script:
-  - julia --color=yes --handle-signals=no --project=. -e 'using Pkg; Pkg.test()'
+  -                 julia --color=yes --handle-signals=no --project=. -e 'using Pkg; Pkg.test()'
+  - JIVE_PROCS=auto julia --color=yes                     --project=. -e 'using Pkg; Pkg.test()'
+  -                 julia --color=yes                                 -e 'using Pkg; pkg"add Jive JDBC"'
+  -                 julia --color=yes --handle-signals=no --project=. test/runtests.jl adapters/jdbc
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == nightly ]] ; then julia --color=yes --project=. -e 'using Pkg;
-                                                                                                           Pkg.add("Coverage");
-                                                                                                           using Coverage;
-                                                                                                           Codecov.submit(process_folder())' ; fi
+                                                                                                                       Pkg.add("Coverage");
+                                                                                                                       using Coverage;
+                                                                                                                       Codecov.submit(process_folder())' ; fi
