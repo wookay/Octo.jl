@@ -11,6 +11,9 @@ You could `Repo.get`, `Repo.insert!` `Repo.update!` `Repo.delete!` for many data
 
 It's influenced by [Ecto](https://github.com/elixir-ecto/ecto).
 
+ * ☕️   You can [make a donation](https://wookay.github.io/donate/) to support this project.
+
+
 ## SQL Query DSL
 
 ```julia
