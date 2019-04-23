@@ -1,6 +1,6 @@
 The Octo.jl package is licensed under the MIT "Expat" License:
 
-> Copyright (c) 2017, 2018: WooKyoung Noh.
+> Copyright (c) 2017, 2018, 2019: WooKyoung Noh.
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -20,3 +20,23 @@ The Octo.jl package is licensed under the MIT "Expat" License:
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 >
+
+Octo.jl database backends are depend on Julia packages for database drivers.
+
+Hive.jl
+  https://github.com/JuliaDatabases/Hive.jl/blob/master/LICENSE.md
+
+JDBC.jl
+  https://github.com/JuliaDatabases/JDBC.jl/blob/master/LICENSE.md
+
+LibPQ.jl
+  https://github.com/invenia/LibPQ.jl/blob/master/LICENSE
+
+MySQL.jl
+  https://github.com/JuliaDatabases/MySQL.jl/blob/master/LICENSE
+
+ODBC.jl
+  https://github.com/JuliaDatabases/ODBC.jl/blob/master/LICENSE.md
+
+SQLite.jl
+  https://github.com/JuliaDatabases/SQLite.jl/blob/master/LICENSE.md
