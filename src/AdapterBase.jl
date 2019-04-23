@@ -245,11 +245,7 @@ end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, enclosed::Enclosed)::SqlPart
     body = SqlPart(sqlrepr.(Ref(db), enclosed.values), ", ")
-    if enclosed.values isa Vector{PlaceHolder} && length(enclosed.values) == 1
-        body
-    else
-        enclosed_part(style_normal, body)
-    end
+    enclosed_part(style_normal, body)
 end
 
 function sqlrepr(db::DB where DB<:AbstractDatabase, vec_of_tuples::VectorOfTuples)::SqlPart

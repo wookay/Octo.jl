@@ -94,3 +94,38 @@ Repo.insert!(Employee, Vector{NamedTuple}())
 Repo.disconnect()
 
 end # module adapters_postgresql_repo_test
+
+
+# https://github.com/wookay/Octo.jl/issues/7
+module adapters_postgresql_repo_insert_test
+
+using Test # @test
+using Octo.Adapters.PostgreSQL # Repo Schema Raw
+
+struct Role
+end
+Schema.model(Role, table_name="roles")
+
+Repo.debug_sql()
+
+Repo.connect(
+    adapter = Octo.Adapters.PostgreSQL,
+    dbname = "postgresqltest",
+    user = "postgres",
+)
+
+Repo.execute([DROP TABLE IF EXISTS Role])
+Repo.execute(Raw("""
+    CREATE TABLE roles(
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255)
+    );
+    """))
+Repo.insert!(Role, (name="tom",))
+
+df = Repo.query(Role)
+@test size(df,) == (1,)
+
+Repo.disconnect()
+
+end # module adapters_postgresql_repo_insert_test
