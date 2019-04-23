@@ -348,7 +348,8 @@ function insert!(M::Type, nts::Vector{<:NamedTuple})
         table = a.from(M)
         nt = first(nts)
         fieldnames = a.Enclosed(collect(keys(nt)))
-        execute([a.INSERT a.INTO table fieldnames a.VALUES a.placeholders(length(nt))], nts)
+        values = a.placeholders(length(nt))
+        execute([a.INSERT a.INTO table fieldnames a.VALUES values], nts)
    end
    nothing
 end
