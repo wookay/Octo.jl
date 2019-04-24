@@ -350,7 +350,8 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
         elseif el isa Tuple
             if prev === IN ||
                prev === OVER ||
-               prev === USING
+               prev === USING ||
+               prev === VALUES
                 push!(els, Enclosed(collect(el)))
             else
                 push!(els, el)
