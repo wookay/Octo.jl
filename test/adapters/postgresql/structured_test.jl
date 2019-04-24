@@ -48,4 +48,11 @@ total = as(SUM(f.len), :total)
 @test to_sql([SELECT * INTO :films_recent FROM f WHERE f.date_prod >= "2002-01-01"]) ==
              "SELECT * INTO films_recent FROM films WHERE date_prod >= '2002-01-01'"
 
+# issue 10
+struct Here
+end
+Schema.model(Here, table_name="heres", primary_key="id")
+heres = from(Here, :heres)
+@test to_sql([INSERT INTO heres VALUES ("test1", "SR")]) == "INSERT INTO heres VALUES ('test1', 'SR')"
+
 end # module adapters_postgresql_structured_test
