@@ -351,7 +351,8 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
             if prev === IN ||
                prev === OVER ||
                prev === USING ||
-               prev === VALUES
+               prev === VALUES ||
+               isa(prev, FromItem)
                 push!(els, Enclosed(collect(el)))
             else
                 push!(els, el)
