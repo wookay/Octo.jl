@@ -66,6 +66,7 @@ Schema.model(User, table_name="users")
 users = from(User)
 @test to_sql([INSERT INTO users (users.name, users.email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (name, email) VALUES ('Jick', 'Jick@dd.com')"
 users = from(User, :users)
-@test to_sql([INSERT INTO users (users.name, users.email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (users.name, users.email) VALUES ('Jick', 'Jick@dd.com')"
+@test to_sql([INSERT INTO users (users.name, users.email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (name, email) VALUES ('Jick', 'Jick@dd.com')"
+@test to_sql([INSERT INTO users (:name, :email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (name, email) VALUES ('Jick', 'Jick@dd.com')"
 
 end # module test_octo_structured

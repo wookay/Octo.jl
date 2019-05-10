@@ -16,6 +16,10 @@ const current = Dict{Symbol,AbstractDatabase}(
 @sql_keywords  ADD ALL ALTER AND AS ASC BEGIN BETWEEN BY COMMIT COLUMN CONSTRAINT CREATE DATABASE DEFAULT DELETE DESC DISTINCT DROP EXCEPT EXECUTE EXISTS FOREIGN FROM FULL GROUP
 @sql_keywords  HAVING IF IN INDEX INNER INSERT INTERSECT INTO IS JOIN KEY LEFT LIKE LIMIT NULL OFF OFFSET ON OR ORDER OUTER OVER
 @sql_keywords  PARTITION PREPARE PRIMARY RECURSIVE REFERENCES RELEASE RIGHT ROLLBACK SAVEPOINT SELECT SET TABLE TO TRANSACTION TRIGGER UNION UPDATE USING VALUES WHERE WITH
+
+# dates
+@sql_keywords EXTRACT YEAR MONTH DAY HOUR MINUTE SECOND TIMESTAMP INTERVAL
+
 # @sql_keywords ANY (Julia TypeVar)
 
 # aggregates
@@ -258,7 +262,6 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, a::SQLAlias)::SqlPart
     SqlPart(sqlrepr.(Ref(db), els), " ")
 end
 
-@sql_keywords EXTRACT YEAR MONTH DAY HOUR MINUTE SECOND TIMESTAMP INTERVAL
 function sqlrepr(db::DB where DB<:AbstractDatabase, extract::SQLExtract)::SqlPart
     body = SqlPart(sqlrepr.(Ref(db), [extract.field, FROM, extract.from]), " ")
     SqlPart([
@@ -348,11 +351,16 @@ function sqlrepr(db::DB where DB<:AbstractDatabase, query::Structured)::SqlPart
                 push!(els, el)
             end
         elseif el isa Tuple
-            if prev === IN ||
-               prev === OVER ||
-               prev === USING ||
-               prev === VALUES ||
-               isa(prev, FromItem)
+            if isa(prev, FromItem)
+                if el isa NTuple{N, Field} where N
+                    push!(els, Enclosed(map(field -> Field(nothing, field.name), collect(el))))
+                else
+                    push!(els, Enclosed(collect(el)))
+                end
+            elseif prev === IN ||
+                   prev === OVER ||
+                   prev === USING ||
+                   prev === VALUES
                 push!(els, Enclosed(collect(el)))
             else
                 push!(els, el)
