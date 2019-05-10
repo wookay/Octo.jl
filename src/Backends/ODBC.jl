@@ -7,16 +7,9 @@ using ODBC # v0.8.1
 
 const current = Dict{Symbol, Any}(
     :dsn => nothing,
-    :sink => Vector{<:NamedTuple},
 )
 
 current_dsn() = current[:dsn]
-current_sink() = current[:sink]
-
-# sink
-function sink(T::Type)
-    current[:sink] = T
-end
 
 # db_connect
 function db_connect(; kwargs...)

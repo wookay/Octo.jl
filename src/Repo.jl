@@ -79,13 +79,7 @@ function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: 
     loader = Backends.backend(adapter)
     current[:loader] = loader
 
-    if haskey(kwargs, :sink)
-        Base.invokelatest(loader.sink, kwargs[:sink])
-    end
-    args = (:sink,)
-    options = filter(kv -> !(kv.first in args), kwargs)
-
-    Base.invokelatest(loader.db_connect; options...)
+    Base.invokelatest(loader.db_connect; kwargs...)
 end
 
 # Repo.disconnect

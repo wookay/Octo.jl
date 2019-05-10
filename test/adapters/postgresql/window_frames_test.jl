@@ -18,7 +18,6 @@ Repo.debug_sql()
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
-    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
     user = "postgres",
 )
 

@@ -2,7 +2,6 @@ module adapters_odbc_dataframes_test
 
 using Test # @test
 using Octo.Adapters.ODBC # Repo Schema
-using DataFrames
 
 Repo.debug_sql()
 
@@ -29,12 +28,9 @@ Repo.execute(Raw("""
         PRIMARY KEY (ID)
     )"""))
 
-df = DataFrame(col1=[1,2,3], col2=[4.0, 5.0, 6.0], col3=["hey", "there", "sailor"])
-
-for row = 1:size(df, 1)
-    nt = NamedTuple{tuple(names(df)...)}([df[row, x] for x = 1:size(df, 2)])
-    Repo.insert!(CoolTable, nt)
-end
+Repo.insert!(CoolTable, [(col1=1, col2=4.0, col3="hey"),
+                         (col1=2, col2=5.0, col3="there"),
+                         (col1=3, col2=6.0, col3="sailor")])
 
 df = Repo.query(CoolTable)
 @test size(df) == (3,)

@@ -239,9 +239,9 @@ You need [Julia 1.0](https://julialang.org/downloads/).
 ```
 
 ```julia
-(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl v0.7.0)
+(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl v0.9.1)
+(v1.0) pkg> add SQLite  # for SQLite (depends on SQLite.jl v0.8.1)
 (v1.0) pkg> add MySQL   # for MySQL (depends on MySQL.jl v0.7.0)
-(v1.0) pkg> add SQLite  # for SQLite (depends on SQLite.jl v0.7.0)
 (v1.0) pkg> add ODBC    # for ODBC (depends on ODBC.jl v0.8.1)
 (v1.0) pkg> add JDBC    # for JDBC (depends on JDBC.jl v0.4.0)
 ```
