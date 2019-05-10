@@ -59,5 +59,14 @@ sub = from([SELECT tbl1.id FROM tbl1 EXCEPT subexcept], :t)
 sub = from([SELECT tbl1.id FROM tbl1 EXCEPT SELECT tbl2.id FROM tbl2 EXCEPT SELECT tbl3.id FROM tbl3], :t)
 @test to_sql([SELECT COUNT(*) FROM sub]) == "SELECT COUNT(*) FROM (SELECT tbl1.id FROM tbl1 EXCEPT SELECT tbl2.id FROM tbl2 EXCEPT SELECT tbl3.id FROM tbl3) AS t"
 
+# Issue #13
+struct User
+end
+Schema.model(User, table_name="users")
+users = from(User)
+@test to_sql([INSERT INTO users (users.name, users.email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (name, email) VALUES ('Jick', 'Jick@dd.com')"
+users = from(User, :users)
+@test to_sql([INSERT INTO users (users.name, users.email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (name, email) VALUES ('Jick', 'Jick@dd.com')"
+@test to_sql([INSERT INTO users (:name, :email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (name, email) VALUES ('Jick', 'Jick@dd.com')"
 
 end # module test_octo_structured
