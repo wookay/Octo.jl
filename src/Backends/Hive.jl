@@ -6,16 +6,9 @@ using Octo.Repo: ExecuteResult
 
 const current = Dict{Symbol, Any}(
     :sess => nothing,
-    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
 )
 
 current_sess() = current[:sess]
-current_sink() = current[:sink]
-
-# sink
-function sink(T::Type)
-    current[:sink] = T
-end
 
 # db_connect
 function db_connect(; host::String="localhost", port::Integer=10000, auth::HiveAuth=HiveAuth(), tprotocol::Symbol=:binary)

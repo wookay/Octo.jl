@@ -7,16 +7,9 @@ using Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
-    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
 )
 
 current_conn() = current[:conn]
-current_sink() = current[:sink]
-
-# sink
-function sink(T::Type)
-    current[:sink] = T
-end
 
 # db_connect
 function db_connect(; kwargs...)
@@ -37,8 +30,7 @@ end
 # query
 function query(sql::String)
     conn = current_conn()
-    sink = current_sink()
-    table = MySQL.Query(conn, sql, sink=sink)
+    table = MySQL.Query(conn, sql)
     collect(table)
 end
 

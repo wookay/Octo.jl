@@ -2,10 +2,6 @@ module SQLLoader
 
 using Octo.Repo: ExecuteResult
 
-# sink
-function sink(::Type)
-end
-
 # db_connect
 function db_connect(; kwargs...)
 end

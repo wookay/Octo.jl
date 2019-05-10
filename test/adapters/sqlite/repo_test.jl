@@ -13,7 +13,6 @@ Repo.debug_sql()
 
 repo = Repo.connect(
     adapter = Octo.Adapters.SQLite,
-    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
     dbfile = dbfile2
 )
 

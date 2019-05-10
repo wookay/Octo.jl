@@ -3,22 +3,14 @@ module PostgreSQLLoader
 using Octo.Repo: ExecuteResult
 
 # https://github.com/invenia/LibPQ.jl
-using LibPQ # v0.7.0
-
-LibPQ.Memento.config!("critical")
+using LibPQ # v0.9.1
+using .LibPQ.Tables
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
-    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
 )
 
 current_conn() = current[:conn]
-current_sink() = current[:sink]
-
-# sink
-function sink(T::Type)
-    current[:sink] = T
-end
 
 # db_connect
 function db_connect(; kwargs...)
@@ -39,20 +31,18 @@ end
 # query
 function query(sql::String)
     conn = current_conn()
-    sink = current_sink()
     stmt = LibPQ.prepare(conn, sql)
     result = LibPQ.execute(stmt)
-    df = LibPQ.fetch!(sink, result)
+    df = Tables.rowtable(result)
     LibPQ.close(result)
     df
 end
 
 function query(prepared::String, vals::Vector)
     conn = current_conn()
-    sink = current_sink()
     stmt = LibPQ.prepare(conn, prepared)
     result = LibPQ.execute(stmt, vals)
-    df = LibPQ.fetch!(sink, result)
+    df = Tables.rowtable(result)
     LibPQ.close(result)
     df
 end

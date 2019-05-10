@@ -11,20 +11,8 @@ Repo.debug_sql()
 
 @test_throws Repo.NeedsConnectError Repo.get(Employee, 2)
 
-#Repo.connect(
-#    adapter = Octo.Adapters.PostgreSQL,
-#    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
-#    user = "postgres",
-#)
-#
-# using Octo.Adapters.PostgreSQL # DROP DATABASE IF EXISTS CREATE TABLE
-#Repo.execute([DROP DATABASE IF EXISTS :postgresqltest])
-#Repo.execute([CREATE DATABASE :postgresqltest])
-#Repo.disconnect()
-
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
-    # sink = DataFrames.DataFrame,
     dbname = "postgresqltest",
     user = "postgres",
 )

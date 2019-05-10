@@ -7,16 +7,9 @@ using Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
     :conn => nothing,
-    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
 )
 
 current_conn() = current[:conn]
-current_sink() = current[:sink]
-
-# sink
-function sink(T::Type)
-    current[:sink] = T
-end
 
 # db_connect
 function db_connect(; kwargs...)
@@ -42,10 +35,9 @@ end
 # query
 function query(sql::String)
     conn = current_conn()
-    sink = current_sink()
     stmt = JDBC.createStatement(conn)
     rs = JDBC.executeQuery(stmt, sql)
-    df = JDBC.load(sink, rs)
+    df = JDBC.load(Vector{<:NamedTuple}, rs)
     JDBC.close(rs)
     JDBC.close(stmt)
     df
@@ -78,9 +70,8 @@ end
 
 function query(prepared::String, vals::Vector)
     conn = current_conn()
-    sink = current_sink()
     rs = prepared_execute(conn, prepared, vals)
-    df = JDBC.load(sink, rs)
+    df = JDBC.load(Vector{<:NamedTuple}, rs)
     JDBC.close(rs)
     df
 end
@@ -88,7 +79,6 @@ end
 # execute
 function execute(sql::String)::ExecuteResult
     conn = current_conn()
-    sink = current_sink()
     stmt = JDBC.createStatement(conn)
     n = JDBC.executeUpdate(stmt, sql)
     JDBC.close(stmt)
@@ -97,14 +87,12 @@ end
 
 function execute(prepared::String, vals::Vector)::ExecuteResult
     conn = current_conn()
-    sink = current_sink()
     n = prepared_execute(conn, prepared, vals)
     ExecuteResult()
 end
 
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     conn = current_conn()
-    sink = current_sink()
     for tup in nts
         vals = collect(tup)
         n = prepared_execute(conn, prepared, vals)

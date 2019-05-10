@@ -1,21 +1,14 @@
 module SQLiteLoader
 
 # https://github.com/JuliaDatabases/SQLite.jl
-using SQLite # SQLite.jl v0.7.0
+using SQLite # SQLite.jl v0.8.1
 using Octo.Repo: ExecuteResult
 
 const current = Dict{Symbol, Any}(
     :db => nothing,
-    :sink => Vector{<:NamedTuple}, # DataFrames.DataFrame
 )
 
 current_db() = current[:db]
-current_sink() = current[:sink]
-
-# sink
-function sink(T::Type)
-    current[:sink] = T
-end
 
 # db_connect
 function db_connect(; kwargs...)

@@ -21,7 +21,7 @@ addons:
       - odbc-postgresql
 
 julia:
-  - 1.0
+  - 1.1
   - nightly
 
 env:
@@ -45,7 +45,7 @@ before_script:
   - psql --version
 
   # ODBC
-  - julia --color=yes -e 'using Pkg; pkg"add ODBC"; pkg"precompile"'
+  - julia --color=yes -e 'using Pkg; pkg"add ODBC@0.8.1"; pkg"precompile"'
   - julia --color=yes -e 'using ODBC; setupdir=normpath(pathof(ODBC), "..", "..", "test", "setup"); run(`odbcinst -i -s -h -f $(normpath(setupdir, "postgresqltest.odbc.ini"))`)'
 
   # linux - MySQL      - 5.6.33
@@ -65,8 +65,6 @@ before_script:
 script:
   -                 julia --color=yes --handle-signals=no --project=. -e 'using Pkg; Pkg.test()'
   - JIVE_PROCS=auto julia --color=yes                     --project=. -e 'using Pkg; Pkg.test()'
-  -                 julia --color=yes                                 -e 'using Pkg; pkg"add Jive JDBC"'
-  -                 julia --color=yes --handle-signals=no --project=. test/runtests.jl adapters/jdbc
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == nightly ]] ; then julia --color=yes --project=. -e 'using Pkg;

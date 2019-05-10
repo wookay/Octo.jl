@@ -8,7 +8,6 @@ Repo.debug_sql()
 include("options.jl")
 Repo.connect(;
     adapter = Octo.Adapters.MySQL,
-    sink = Vector{<:NamedTuple}, # DataFrames.DataFrame
     Options.arguments...
 )
 
