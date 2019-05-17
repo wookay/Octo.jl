@@ -41,12 +41,12 @@ struct PlaceHolder <: SQLElement
     body::String
 end
 
-const PredicateValueTypes = Union{Bool, Number, String, Symbol, Day, <:SQLElement}
+const PredicateValueTypes = Union{Bool, Number, String, Symbol, Day, <:SQLElement, Type{PlaceHolder}}
 
 struct Predicate <: SQLElement
     func::Function
     left::PredicateValueTypes
-    right::Union{PredicateValueTypes, Type{PlaceHolder}}
+    right::PredicateValueTypes
 end
 
 struct SQLAlias <: SQLElement
