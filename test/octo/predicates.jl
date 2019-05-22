@@ -39,4 +39,6 @@ q = [SELECT
      DESC]
 @test to_sql(q) == "SELECT relname, 100 * idx_scan / (seq_scan + idx_scan) AS percent_of_times_index_used, n_live_tup AS rows_in_table FROM pg_statio_user_tables WHERE (seq_scan + idx_scan) > 0 ORDER BY n_live_tup DESC"
 
+@test to_sql([u.name != NULL]) == "name != NULL"
+
 end # module test_octo_predicates

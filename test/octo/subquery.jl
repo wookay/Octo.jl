@@ -42,7 +42,7 @@ A = from(SA, :A)
 B = from(SB, :B)
 C = from(SC, :C)
 sub = from([SELECT (B.id, COUNT(*)) FROM B WHERE B.val == ❔ + 1 GROUP BY B.id], :B)
-q = ([SELECT * FROM (A, C, sub) WHERE A.val == 123 AND A.id == C.a_id AND B.id == C.b_id])
+q = [SELECT * FROM (A, C, sub) WHERE A.val == 123 AND A.id == C.a_id AND B.id == C.b_id]
 @test to_sql(q) == "SELECT * FROM A, C, (SELECT B.id, COUNT(*) FROM B WHERE B.val = ? + 1 GROUP BY B.id) AS B WHERE A.val = 123 AND A.id = C.a_id AND B.id = C.b_id"
 
 end # module test_octo_subquery

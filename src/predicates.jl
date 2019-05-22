@@ -1,9 +1,9 @@
 # module Octo
 
-import Base: ==, <, >, <=, >=, -, +, *, /
+import Base: ==, !=, <, >, <=, >=, -, +, *, /
 const PlainTypes = Union{Number, String, Symbol, <:DatePeriod, <:TimePeriod}
 
-for op in (:(==), :(<), :(>), :(<=), :(>=), :(-), :(+), :(*), :(/))
+for op in (:(==), :(!=), :(<), :(>), :(<=), :(>=), :(-), :(+), :(*), :(/))
     @eval begin
         ($op)(left::SQLElement, right::SQLElement) = Predicate(($op), left, right)
         ($op)(left::SQLElement, right::PlainTypes) = Predicate(($op), left, right)
