@@ -16,8 +16,12 @@ if haskey(ENV, "TRAVIS") && ENV["TRAVIS_OS_NAME"] == "osx"
 end
 
 using Jive.Distributed: nprocs
-if nprocs() > 1 || !(get(ENV, "JIVE_PROCS", "") in ["", "0"])
+if nprocs() > 1 || !(get(ENV, "JIVE_PROCS", "") in ["", "0"]) || VERSION >= v"1.3.0-alpha"
     push!(ignores, joinpath("adapters", "jdbc"))
 end
+
+# LibPQ v0.11.1
+#     ERROR: LoadError: ArgumentError: cannot convert NULL to string
+push!(ignores, "adapters/postgresql/copy_test")
 
 runtests(@__DIR__, skip=["adapters/mysql/options.jl", ignores...])
