@@ -1,7 +1,8 @@
 module JDBCLoader
 
 # https://github.com/JuliaDatabases/JDBC.jl
-using JDBC # v0.4.0
+using JDBC # v0.5.0
+using DataFrames: DataFrame
 using Octo.Repo: ExecuteResult
 using Octo.Backends: UnsupportedError
 
@@ -32,15 +33,21 @@ function db_disconnect()
     current[:conn] = nothing
 end
 
+function Vector{<:NamedTuple}(df::DataFrame)
+    map(eachrow(df)) do x
+        NamedTuple{keys(x)}(values(x))
+    end
+end
+
 # query
 function query(sql::String)
     conn = current_conn()
     stmt = JDBC.createStatement(conn)
     rs = JDBC.executeQuery(stmt, sql)
-    df = JDBC.load(Vector{<:NamedTuple}, rs)
+    df = JDBC.load(DataFrame, rs)
     JDBC.close(rs)
     JDBC.close(stmt)
-    df
+    Vector{<:NamedTuple}(df)
 end
 
 function prepared_execute(conn, prepared::String, vals::Vector)
@@ -71,9 +78,9 @@ end
 function query(prepared::String, vals::Vector)
     conn = current_conn()
     rs = prepared_execute(conn, prepared, vals)
-    df = JDBC.load(Vector{<:NamedTuple}, rs)
+    df = JDBC.load(DataFrame, rs)
     JDBC.close(rs)
-    df
+    Vector{<:NamedTuple}(df)
 end
 
 # execute

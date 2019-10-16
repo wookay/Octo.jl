@@ -53,7 +53,8 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == linux ]]; then mysql -e 'show variables like "socket";' -uroot                                              ; fi
 
   # osx   - MySQL      - 5.7.21
-  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew install   mysql                                                                         ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew update-reset                                                                            ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew install mysql                                                                           ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew services start mysql                                                                    ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then mysql.server start                                                                           ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then sleep 0.1                                                                                    ; fi
@@ -64,8 +65,7 @@ before_script:
   - mysql --version
 
 script:
-  -                 julia --color=yes --handle-signals=no --project -e 'using Pkg; pkg"instantiate"; pkg"precompile"; Pkg.test(coverage=true)'
-  - JIVE_PROCS=auto julia --color=yes --handle-signals=no --project -e 'using Pkg; pkg"instantiate"; pkg"precompile"; Pkg.test()'
+  - julia --color=yes --handle-signals=no --project -e 'using Pkg; pkg"instantiate"; pkg"precompile"; Pkg.test(coverage=true)'
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == 1.2 ]] ; then julia --color=yes --project=. -e 'using Pkg;
