@@ -72,7 +72,7 @@ before_script:
   - mysql --version
 
 script:
-  - julia --color=yes --handle-signals=no --project -e 'using Pkg; pkg"instantiate"; pkg"precompile"; Pkg.test(coverage=true)'
+  - julia --color=yes --project --handle-signals=no -e 'using Pkg; pkg"instantiate"; pkg"precompile"; Pkg.test(coverage=true)'
 
 after_success:
   - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == 1.1 ]] ; then julia --color=yes --project=. -e 'using Pkg;
