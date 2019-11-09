@@ -8,10 +8,17 @@ language: julia
 os:
   - linux
   - osx
+#  - windows
 
 julia:
-  - 1.2
   - 1.3
+
+matrix:
+  include:
+    - os: linux
+      julia: 1.1
+    - os: linux
+      julia: nightly
 
 services:
   - postgresql
@@ -68,7 +75,7 @@ script:
   - julia --color=yes --handle-signals=no --project -e 'using Pkg; pkg"instantiate"; pkg"precompile"; Pkg.test(coverage=true)'
 
 after_success:
-  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == 1.2 ]] ; then julia --color=yes --project=. -e 'using Pkg;
+  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == 1.1 ]] ; then julia --color=yes --project=. -e 'using Pkg;
                                                                                                                    Pkg.add("Coverage");
                                                                                                                    using Coverage;
                                                                                                                    Codecov.submit(process_folder())' ; fi
