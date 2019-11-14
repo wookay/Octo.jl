@@ -53,6 +53,7 @@ before_script:
   - psql -c "CREATE DATABASE postgresqltest;" -U postgres
 
   # ODBC - linux
+  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == nightly ]]; then julia --color=yes -e 'using Pkg; pkg"dev DecFP"; pkg"precompile"' ; fi
   - if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using Pkg; pkg"add ODBC@0.8.1"; pkg"precompile"'                       ; fi
   - if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using ODBC; setupdir=normpath(pathof(ODBC), "..", "..", "test", "setup"); run(`odbcinst -i -s -h -f $(normpath(setupdir, "postgresqltest.odbc.ini"))`)' ; fi
 
@@ -63,6 +64,7 @@ before_script:
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew update-reset                                                                            ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew install mysql                                                                           ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then brew services start mysql                                                                    ; fi
+  - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then sudo chown -R _mysql:_mysql /usr/local/opt/mysql/                                            ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then mysql.server start                                                                           ; fi
   - if [[ "$TRAVIS_OS_NAME" == osx   ]]; then sleep 0.1                                                                                    ; fi
 
