@@ -1,7 +1,7 @@
 module adapters_sql_structured_test
 
 using Test # @test
-using Octo.Adapters.SQL # Schema from SELECT FROM WHERE COUNT SUM AVG
+using Octo.Adapters.SQL # Schema from SELECT FROM WHERE COUNT SUM AVG BIGINT
 
 struct User
 end
@@ -35,5 +35,7 @@ show(IOContext(buf, :color=>true), MIME"text/plain"(), [FROM u])
 @test String(take!(buf)) == "\e[36mFROM\e[39m \e[0musers \e[36mAS\e[39m \e[0m\e[1mu\e[22m"
 show(IOContext(buf, :color=>true), MIME"text/plain"(), [1,2,3])
 @test String(take!(buf)) == "[1, 2, 3]"
+
+@test BIGINT isa Octo.SQLKeyword
 
 end # module adapters_sql_structured_test
