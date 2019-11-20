@@ -1,6 +1,6 @@
 module SQLLoader
 
-using Octo.Repo: ExecuteResult
+using Octo.Repo: SQLKeyword, ExecuteResult
 
 # db_connect
 function db_connect(; kwargs...)
@@ -27,6 +27,11 @@ function execute(prepared::String, vals::Vector)::ExecuteResult
 end
 
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
+    ExecuteResult()
+end
+
+# execute_result
+function execute_result(command::SQLKeyword)::ExecuteResult
     ExecuteResult()
 end
 

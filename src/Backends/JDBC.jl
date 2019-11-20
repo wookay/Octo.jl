@@ -3,7 +3,7 @@ module JDBCLoader
 # https://github.com/JuliaDatabases/JDBC.jl
 using JDBC # v0.5.0
 using DataFrames: DataFrame
-using Octo.Repo: ExecuteResult
+using Octo.Repo: SQLKeyword, ExecuteResult
 using Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
@@ -104,6 +104,11 @@ function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
         vals = collect(tup)
         n = prepared_execute(conn, prepared, vals)
     end
+    ExecuteResult()
+end
+
+# execute_result
+function execute_result(command::SQLKeyword)::ExecuteResult
     ExecuteResult()
 end
 

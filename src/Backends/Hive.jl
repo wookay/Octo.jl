@@ -2,7 +2,7 @@ module HiveLoader
 
 # https://github.com/JuliaDatabases/Hive.jl v0.3.0
 using Hive # HiveSession HiveAuth
-using Octo.Repo: ExecuteResult
+using Octo.Repo: SQLKeyword, ExecuteResult
 
 const current = Dict{Symbol, Any}(
     :sess => nothing,
@@ -55,6 +55,11 @@ end
 
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult # throw UnsupportedError
     throw(UnsupportedError("needs to be implemented"))
+end
+
+# execute_result
+function execute_result(command::SQLKeyword)::ExecuteResult
+    ExecuteResult()
 end
 
 end # module Octo.Backends.HiveLoader

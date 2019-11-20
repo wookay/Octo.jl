@@ -1,6 +1,6 @@
 module PostgreSQLLoader
 
-using Octo.Repo: ExecuteResult
+using Octo.Repo: SQLKeyword, ExecuteResult
 
 # https://github.com/invenia/LibPQ.jl
 using LibPQ # v0.9.1
@@ -50,24 +50,40 @@ end
 # execute
 function execute(sql::String)::ExecuteResult
     conn = current_conn()
-    LibPQ.execute(conn, sql)
-    ExecuteResult()
+    result = LibPQ.execute(conn, sql)
+    execute_result(result)
 end
 
 function execute(prepared::String, vals::Vector)::ExecuteResult
     conn = current_conn()
     stmt = LibPQ.prepare(conn, prepared)
-    LibPQ.execute(stmt, vals)
-    ExecuteResult()
+    result = LibPQ.execute(stmt, vals)
+    execute_result(result)
 end
 
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     conn = current_conn()
     stmt = LibPQ.prepare(conn, prepared)
+    result = []
     for tup in nts
-        LibPQ.execute(stmt, collect(tup))
+        result = LibPQ.execute(stmt, collect(tup))
     end
+    execute_result(result)
+end
+
+# execute_result
+function execute_result(command::SQLKeyword)::ExecuteResult
     ExecuteResult()
+end
+
+function execute_result(result)
+    if !isempty(result)
+        df = Tables.rowtable(result)
+        LibPQ.close(result)
+        first(df)
+    else
+        ExecuteResult()
+    end
 end
 
 end # module Octo.Backends.PostgreSQLLoader

@@ -2,7 +2,7 @@ module SQLiteLoader
 
 # https://github.com/JuliaDatabases/SQLite.jl
 using SQLite # SQLite.jl v0.8.1
-using Octo.Repo: ExecuteResult
+using Octo.Repo: SQLKeyword, ExecuteResult, INSERT
 
 const current = Dict{Symbol, Any}(
     :db => nothing,
@@ -54,6 +54,15 @@ function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
         SQLite.Query(db, prepared; values=values(nt))
     end
     ExecuteResult()
+end
+
+# execute_result
+function execute_result(command::SQLKeyword)::ExecuteResult
+    if INSERT === command
+        db = current_db()
+        last_insert_id = SQLite.last_insert_rowid(db)
+        (id=last_insert_id,)
+    end
 end
 
 end # module Octo.Backends.SQLiteLoader
