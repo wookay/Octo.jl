@@ -22,8 +22,8 @@ Repo.execute(Raw("""
 CREATE TABLE IF NOT EXISTS test1 (a boolean, b text)
 """))
 
-Repo.insert!(Test1, (a=true, b="sic est"))
-Repo.insert!(Test1, (a=false, b="non est"))
+Repo.insert!(Test1, (a=true, b="sic est"); returning=nothing)
+Repo.insert!(Test1, (a=false, b="non est"); returning=nothing)
 
 df = Repo.query(Test1)
 @test Pretty.table(df) == """

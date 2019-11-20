@@ -3,8 +3,9 @@ module Repo # Octo
 using ..DBMS
 using ..Backends
 using ..AdapterBase
+using ..AdapterBase: INSERT
 using ..Queryable: Structured, SubQuery, FromItem
-using ..Octo: Raw
+using ..Octo: Raw, SQLKeyword
 using ..Schema # Schema.validates
 using ..Pretty: show
 
@@ -12,8 +13,7 @@ struct NeedsConnectError <: Exception
     msg
 end
 
-struct ExecuteResult
-end
+const ExecuteResult = NamedTuple
 
 @enum RepoLogLevel::Int32 begin
     LogLevelDebugSQL = -1
@@ -298,7 +298,6 @@ function execute(stmt::Structured)
     print_debug_sql(stmt)
     loader = current_loader()
     loader.execute(sql)
-    nothing
 end
 
 """
@@ -310,7 +309,6 @@ function execute(stmt::Structured, vals::Vector)
     print_debug_sql(stmt, vals)
     loader = current_loader()
     loader.execute(prepared, vals)
-    nothing
 end
 
 """
@@ -322,7 +320,6 @@ function execute(stmt::Structured, nts::Vector{<:NamedTuple})
     print_debug_sql(stmt, nts)
     loader = current_loader()
     loader.execute(prepared, nts)
-    nothing
 end
 
 execute(raw::AdapterBase.Raw)                            = execute([raw])
@@ -333,9 +330,9 @@ execute(raw::AdapterBase.Raw, vals::Vector)              = execute([raw], vals)
 
 # Repo.insert!
 """
-    Repo.insert!(M::Type, nts::Vector{<:NamedTuple})
+    Repo.insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Vector}=[:id])
 """
-function insert!(M::Type, nts::Vector{<:NamedTuple})
+function insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Vector}=[_get_primary_key(M)])
     if !isempty(nts)
         Schema.validates.(M, nts) # throw InvalidChangesetError
         a = current_adapter()
@@ -343,28 +340,52 @@ function insert!(M::Type, nts::Vector{<:NamedTuple})
         nt = first(nts)
         fieldnames = a.Enclosed(collect(keys(nt)))
         values = a.placeholders(length(nt))
-        execute([a.INSERT a.INTO table fieldnames a.VALUES values], nts)
-   end
-   nothing
+        extra = []
+        if a.DatabaseID === DBMS.PostgreSQL && returning !== nothing
+            extra = [a.RETURNING returning]
+        end
+        result = execute([a.INSERT a.INTO table fieldnames a.VALUES values extra...], nts)
+        if a.DatabaseID === DBMS.PostgreSQL
+            result
+        else
+            execute_result(INSERT)
+        end
+    else
+        nothing
+    end
+end
+
+function execute_result(keyword::SQLKeyword)::ExecuteResult
+    loader = current_loader()
+    loader.execute_result(keyword)
 end
 
 """
-    Repo.insert!(M, nt::NamedTuple)
+    Repo.insert!(M, nt::NamedTuple; returning::Union{Noting,Vector}=[:id])
 """
-function insert!(M, nt::NamedTuple)
-    insert!(M, [nt])
+function insert!(M, nt::NamedTuple; kwargs...)
+    insert!(M, [nt]; kwargs...)
 end
 
 """
-    Repo.insert!(M::Type, vals::Vector{<:Tuple})
+    Repo.insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Vector}=[:id])
 """
-function insert!(M::Type, vals::Vector{<:Tuple})
+function insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Vector}=[_get_primary_key(M)])
     if !isempty(vals)
         a = current_adapter()
         table = a.from(M)
-        execute([a.INSERT a.INTO table a.VALUES a.VectorOfTuples(vals)])
+        if a.DatabaseID === DBMS.PostgreSQL && returning !== nothing
+            extra = [a.RETURNING returning]
+        end
+        result = execute([a.INSERT a.INTO table a.VALUES a.VectorOfTuples(vals) extra...])
+        if a.DatabaseID === DBMS.PostgreSQL
+            result
+        else
+            execute_result(INSERT)
+        end
+   else
+       nothing
    end
-   nothing
 end
 
 

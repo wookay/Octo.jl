@@ -1,6 +1,6 @@
 module ODBCLoader
 
-using Octo.Repo: ExecuteResult
+using Octo.Repo: SQLKeyword, ExecuteResult
 
 # https://github.com/JuliaDatabases/ODBC.jl
 using ODBC # v0.8.1
@@ -63,6 +63,11 @@ function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     for tup in nts
         ODBC.execute!(stmt, collect(tup))
     end
+    ExecuteResult()
+end
+
+# execute_result
+function execute_result(command::SQLKeyword)::ExecuteResult
     ExecuteResult()
 end
 

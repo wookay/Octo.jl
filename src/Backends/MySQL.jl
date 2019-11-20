@@ -2,7 +2,7 @@ module MySQLLoader
 
 # https://github.com/JuliaDatabases/MySQL.jl
 using MySQL # MySQL.jl v0.7.0
-using Octo.Repo: ExecuteResult
+using Octo.Repo: SQLKeyword, ExecuteResult, INSERT
 using Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(
@@ -57,6 +57,15 @@ function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     stmt = MySQL.Stmt(conn, prepared)
     MySQL.execute!(stmt, nts...)
     ExecuteResult()
+end
+
+# execute_result
+function execute_result(command::SQLKeyword)::ExecuteResult
+    if INSERT === command
+        conn = current_conn()
+        last_insert_id = MySQL.insertid(conn)
+        (id=last_insert_id,)
+    end
 end
 
 end # module Octo.Backends.MySQLLoader
