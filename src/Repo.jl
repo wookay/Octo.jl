@@ -3,7 +3,6 @@ module Repo # Octo
 using ..DBMS
 using ..Backends
 using ..AdapterBase
-using ..AdapterBase: INSERT
 using ..Queryable: Structured, SubQuery, FromItem
 using ..Octo: Raw, SQLKeyword
 using ..Schema # Schema.validates
@@ -329,6 +328,20 @@ execute(raw::AdapterBase.Raw, vals::Vector)              = execute([raw], vals)
 
 
 # Repo.insert!
+
+function do_insert(block, a, returning::Union{Nothing,Vector})
+    extra = []
+    if a.DatabaseID === DBMS.PostgreSQL && returning !== nothing
+        extra = [a.RETURNING returning]
+    end
+    result = block(extra)
+    if a.DatabaseID === DBMS.PostgreSQL
+        result
+    else
+        execute_result(a.INSERT)
+    end
+end
+
 """
     Repo.insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Vector}=[:id])
 """
@@ -340,31 +353,12 @@ function insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Ve
         nt = first(nts)
         fieldnames = a.Enclosed(collect(keys(nt)))
         values = a.placeholders(length(nt))
-        extra = []
-        if a.DatabaseID === DBMS.PostgreSQL && returning !== nothing
-            extra = [a.RETURNING returning]
-        end
-        result = execute([a.INSERT a.INTO table fieldnames a.VALUES values extra...], nts)
-        if a.DatabaseID === DBMS.PostgreSQL
-            result
-        else
-            execute_result(INSERT)
+        do_insert(a, returning) do extra
+            execute([a.INSERT a.INTO table fieldnames a.VALUES values extra...], nts)
         end
     else
         nothing
     end
-end
-
-function execute_result(keyword::SQLKeyword)::ExecuteResult
-    loader = current_loader()
-    loader.execute_result(keyword)
-end
-
-"""
-    Repo.insert!(M, nt::NamedTuple; returning::Union{Noting,Vector}=[:id])
-"""
-function insert!(M, nt::NamedTuple; kwargs...)
-    insert!(M, [nt]; kwargs...)
 end
 
 """
@@ -374,18 +368,27 @@ function insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Vector
     if !isempty(vals)
         a = current_adapter()
         table = a.from(M)
-        if a.DatabaseID === DBMS.PostgreSQL && returning !== nothing
-            extra = [a.RETURNING returning]
+        do_insert(a, returning) do extra
+            execute([a.INSERT a.INTO table a.VALUES a.VectorOfTuples(vals) extra...])
         end
-        result = execute([a.INSERT a.INTO table a.VALUES a.VectorOfTuples(vals) extra...])
-        if a.DatabaseID === DBMS.PostgreSQL
-            result
-        else
-            execute_result(INSERT)
-        end
-   else
-       nothing
-   end
+    else
+        nothing
+    end
+end
+
+"""
+    Repo.insert!(M, nt::NamedTuple; returning::Union{Noting,Vector}=[:id])
+"""
+function insert!(M, nt::NamedTuple; kwargs...)
+    insert!(M, [nt]; kwargs...)
+end
+
+
+# Repo.execute_result
+
+function execute_result(command::SQLKeyword)::ExecuteResult
+    loader = current_loader()
+    loader.execute_result(command)
 end
 
 

@@ -1,7 +1,7 @@
 module adapters_mysql_execute_result_test
 
 using Test # @test
-using Octo.Adapters.MySQL # Repo Schema Raw USE
+using Octo.Adapters.MySQL # Repo Schema Raw USE INSERT
 
 Repo.debug_sql()
 

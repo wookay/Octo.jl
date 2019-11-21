@@ -2,7 +2,8 @@ module MySQLLoader
 
 # https://github.com/JuliaDatabases/MySQL.jl
 using MySQL # MySQL.jl v0.7.0
-using Octo.Repo: SQLKeyword, ExecuteResult, INSERT
+using Octo.Repo: SQLKeyword, ExecuteResult
+using Octo.AdapterBase: INSERT
 using Octo.Backends: UnsupportedError
 
 const current = Dict{Symbol, Any}(

@@ -2,7 +2,8 @@ module SQLiteLoader
 
 # https://github.com/JuliaDatabases/SQLite.jl
 using SQLite # SQLite.jl v0.8.1
-using Octo.Repo: SQLKeyword, ExecuteResult, INSERT
+using Octo.Repo: SQLKeyword, ExecuteResult
+using Octo.AdapterBase: INSERT
 
 const current = Dict{Symbol, Any}(
     :db => nothing,
