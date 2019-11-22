@@ -15,15 +15,15 @@ Repo.connect(
 
 struct Test1
 end
-Schema.model(Test1, table_name="test1")
+Schema.model(Test1, table_name="test1", primary_key=nothing)
 
 Repo.execute([DROP TABLE IF EXISTS Test1])
 Repo.execute(Raw("""
 CREATE TABLE IF NOT EXISTS test1 (a boolean, b text)
 """))
 
-Repo.insert!(Test1, (a=true, b="sic est"); returning=nothing)
-Repo.insert!(Test1, (a=false, b="non est"); returning=nothing)
+Repo.insert!(Test1, (a=true, b="sic est"))
+Repo.insert!(Test1, (a=false, b="non est"))
 
 df = Repo.query(Test1)
 @test Pretty.table(df) == """

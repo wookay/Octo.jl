@@ -3,12 +3,14 @@ module Schema # Octo
 tables = Dict{Core.TypeName,Dict{Symbol,Union{String,Tuple}}}()
 validation_models = Dict{Core.TypeName,Function}()
 
-function _model(M::Type; table_name::String, primary_key::Union{String,Tuple})
+function _model(M::Type; table_name::String, primary_key::Union{Nothing,String,Tuple})
     Tname = Base.typename(M)
-    dict = Dict(
+    dict = Dict{Symbol,Union{String,Tuple}}(
         :table_name => table_name,
-        :primary_key => primary_key
     )
+    if primary_key !== nothing
+        dict[:primary_key] = primary_key
+    end
     tables[Tname] = dict
     Pair(Tname, dict)
 end
@@ -17,12 +19,7 @@ end
     model(M::Type; table_name::String, kwargs...)
 """
 function model(M::Type; table_name::String, kwargs...)
-    primary_key = "id"
-    if haskey(kwargs, :primary_key)
-        primary_key = kwargs[:primary_key]
-    elseif haskey(kwargs, :primary_keys)
-        primary_key = kwargs[:primary_keys]
-    end
+    primary_key = get(kwargs, :primary_key, "id")
     _model(M; table_name=table_name, primary_key=primary_key)
 end
 

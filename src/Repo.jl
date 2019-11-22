@@ -93,30 +93,42 @@ function disconnect()
     disconnected
 end
 
-
-function _get_primary_key(M) # throw Schema.PrimaryKeyError
+function get_primary_key(M)::Union{Nothing,Symbol,Vector}
     Tname = Base.typename(M)
-    info = Schema.tables[Tname]
-    if haskey(info, :primary_key)
-        a = current_adapter()
-        table = a.from(M)
-        primary_key = Symbol(info[:primary_key])
-        a.Field(table, primary_key)
+    tbl = Schema.tables[Tname]
+    if haskey(tbl, :primary_key)
+        pk = getindex(tbl, :primary_key)
+        if pk isa String
+            Symbol(pk)
+        elseif pk isa Tuple
+            collect(pk)
+        else
+            pk
+        end
     else
-        throw(Schema.PrimaryKeyError(""))
+        nothing
     end
 end
 
-function _get_primary_key_with(M, nt::NamedTuple) # throw Schema.PrimaryKeyError
-    Tname = Base.typename(M)
-    info = Schema.tables[Tname]
-    if haskey(info, :primary_key)
-        key = _get_primary_key(M)
-        primary_key = Symbol(info[:primary_key])
+function _field_for_primary_key(M) # throw Schema.PrimaryKeyError
+    primary_key = get_primary_key(M)
+    if primary_key === nothing
+        throw(Schema.PrimaryKeyError(""))
+    else
+        a = current_adapter()
+        table = a.from(M)
+        a.Field(table, primary_key)
+    end
+end
+
+function _field_for_primary_key(M, nt::NamedTuple) # throw Schema.PrimaryKeyError
+    primary_key = get_primary_key(M)
+    if primary_key === nothing
+        throw(Schema.PrimaryKeyError(""))
+    else
+        key = _field_for_primary_key(M)
         pk = getfield(nt, primary_key)
         (key, pk)
-     else
-        throw(Schema.PrimaryKeyError(""))
     end
 end
 
@@ -183,7 +195,7 @@ end
 function query(M::Type, pk::Union{Int, String}) # throw Schema.PrimaryKeyError
     a = current_adapter()
     table = a.from(M)
-    key = _get_primary_key(M)
+    key = _field_for_primary_key(M)
     query([a.SELECT * a.FROM table a.WHERE key == pk])
 end
 
@@ -201,7 +213,7 @@ end
 function query(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
     a = current_adapter()
     table = a.from(M)
-    key = _get_primary_key(M)
+    key = _field_for_primary_key(M)
     query([a.SELECT * a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop])
 end
 
@@ -329,10 +341,10 @@ execute(raw::AdapterBase.Raw, vals::Vector)              = execute([raw], vals)
 
 # Repo.insert!
 
-function do_insert(block, a, returning::Union{Nothing,Vector})
+function do_insert(block, a, returning::Union{Nothing,Symbol,Vector})
     extra = []
     if a.DatabaseID === DBMS.PostgreSQL && returning !== nothing
-        extra = [a.RETURNING returning]
+        extra = vcat(a.RETURNING, returning isa Symbol ? returning : tuple(Symbol.(returning)...))
     end
     result = block(extra)
     if a.DatabaseID === DBMS.PostgreSQL
@@ -343,9 +355,9 @@ function do_insert(block, a, returning::Union{Nothing,Vector})
 end
 
 """
-    Repo.insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Vector}=[:id])
+    Repo.insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Symbol,Vector}=[:id])
 """
-function insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Vector}=[_get_primary_key(M)])
+function insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Symbol,Vector}=get_primary_key(M))
     if !isempty(nts)
         Schema.validates.(M, nts) # throw InvalidChangesetError
         a = current_adapter()
@@ -362,9 +374,9 @@ function insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Ve
 end
 
 """
-    Repo.insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Vector}=[:id])
+    Repo.insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Symbol,Vector}=[:id])
 """
-function insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Vector}=[_get_primary_key(M)])
+function insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Symbol,Vector}=get_primary_key(M))
     if !isempty(vals)
         a = current_adapter()
         table = a.from(M)
@@ -377,7 +389,7 @@ function insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Vector
 end
 
 """
-    Repo.insert!(M, nt::NamedTuple; returning::Union{Noting,Vector}=[:id])
+    Repo.insert!(M, nt::NamedTuple; returning::Union{Noting,Symbol,Vector}=[:id])
 """
 function insert!(M, nt::NamedTuple; kwargs...)
     insert!(M, [nt]; kwargs...)
@@ -399,7 +411,7 @@ end
 function update!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
     Schema.validates(M, nt) # throw InvalidChangesetError
     a = current_adapter()
-    (key, pk) = _get_primary_key_with(M, nt)
+    (key, pk) = _field_for_primary_key(M, nt)
     table = a.from(M)
     rest = filter(kv -> kv.first != key.name, pairs(nt))
     v = Any[a.UPDATE, table, a.SET]
@@ -421,7 +433,7 @@ end
 """
 function delete!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
     a = current_adapter()
-    (key, pk) = _get_primary_key_with(M, nt)
+    (key, pk) = _field_for_primary_key(M, nt)
     table = a.from(M)
     execute([a.DELETE a.FROM table a.WHERE key == pk])
     nothing
@@ -433,7 +445,7 @@ end
 function delete!(M::Type, pk_range::UnitRange{Int64}) # throw Schema.PrimaryKeyError
     a = current_adapter()
     table = a.from(M)
-    key = _get_primary_key(M)
+    key = _field_for_primary_key(M)
     execute([a.DELETE a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop])
     nothing
 end
