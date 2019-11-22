@@ -93,21 +93,10 @@ function disconnect()
     disconnected
 end
 
-function get_primary_key(M)::Union{Nothing,Symbol,Vector}
+function get_primary_key(M)::Union{Nothing,Symbol,Vector{Symbol}}
     Tname = Base.typename(M)
     tbl = Schema.tables[Tname]
-    if haskey(tbl, :primary_key)
-        pk = getindex(tbl, :primary_key)
-        if pk isa String
-            Symbol(pk)
-        elseif pk isa Tuple
-            collect(pk)
-        else
-            pk
-        end
-    else
-        nothing
-    end
+    Base.get(tbl, :primary_key, nothing)
 end
 
 function _field_for_primary_key(M) # throw Schema.PrimaryKeyError

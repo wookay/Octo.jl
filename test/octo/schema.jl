@@ -17,8 +17,14 @@ Repo.connect(adapter=Octo.Adapters.SQL)
 Repo.insert!(User, (username="abcdef",))
 @test_throws InvalidChangesetError Repo.insert!(User, (username="a",))
 
-
-Schema.model(User, table_name="users", primary_key=("pk1", "pk2"))
+Schema.model(User, table_name="users", primary_key=[:pk1, :pk2])
 Repo.get(User, (pk1=1, pk2=2))
+
+Schema.model(User, table_name="users")
+Schema.model(User, table_name="users", primary_key=nothing)
+Schema.model(User, table_name="users", primary_key=:pk1)
+Schema.model(User, table_name="users", primary_key=[:pk1, :pk2])
+Schema.model(User, table_name="users", primary_key="pk1")
+Schema.model(User, table_name="users", primary_key=["pk1", "pk2"])
 
 end # module test_octo_schema

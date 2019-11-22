@@ -1,11 +1,11 @@
 module Schema # Octo
 
-tables = Dict{Core.TypeName,Dict{Symbol,Union{String,Tuple}}}()
+tables = Dict{Core.TypeName,Dict{Symbol,Union{String,Symbol,Vector{Symbol}}}}()
 validation_models = Dict{Core.TypeName,Function}()
 
-function _model(M::Type; table_name::String, primary_key::Union{Nothing,String,Tuple})
+function _model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,Vector{Symbol}})
     Tname = Base.typename(M)
-    dict = Dict{Symbol,Union{String,Tuple}}(
+    dict = Dict{Symbol,Union{String,Symbol,Vector{Symbol}}}(
         :table_name => table_name,
     )
     if primary_key !== nothing
@@ -16,11 +16,19 @@ function _model(M::Type; table_name::String, primary_key::Union{Nothing,String,T
 end
 
 """
-    model(M::Type; table_name::String, kwargs...)
+    model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,String,Vector,Tuple}="id")
 """
-function model(M::Type; table_name::String, kwargs...)
-    primary_key = get(kwargs, :primary_key, "id")
-    _model(M; table_name=table_name, primary_key=primary_key)
+function model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,String,Vector,Tuple}="id")
+    if primary_key isa Vector{String}
+        pk = Symbol.(primary_key)
+    elseif primary_key isa String
+        pk = Symbol(primary_key)
+    elseif primary_key isa Tuple # legacy
+        pk = collect(Symbol.(primary_key))
+    else
+        pk = primary_key
+    end
+    _model(M; table_name=table_name, primary_key=pk)
 end
 
 struct TableNameError <: Exception
