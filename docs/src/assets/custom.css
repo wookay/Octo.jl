@@ -1,0 +1,8 @@
+html article code {
+    color: #222;
+}
+
+html.theme--documenter-dark article code {
+    color: #00cbf4;
+}
+

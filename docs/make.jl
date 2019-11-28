@@ -6,7 +6,10 @@ makedocs(
     build = joinpath(@__DIR__, "local" in ARGS ? "build_local" : "build"),
     modules = [Octo],
     clean = false,
-    format = Documenter.HTML(),
+    format = Documenter.HTML(
+        prettyurls = !("local" in ARGS),
+        assets = ["assets/custom.css"],
+    ),
     sitename = "Octo.jl 🐙",
     authors = "WooKyoung Noh",
     pages = Any[

@@ -415,16 +415,28 @@ function update!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
     nothing
 end
 
+function vecjoin(elements::Array{E, N}, delim::D)::Vector{Union{E, D}} where  {E, N, D}
+    first = true
+    result = Vector{Union{E, D}}()
+    for el in elements
+        if first
+            first = false
+        else
+            push!(result, delim)
+        end
+        push!(result, el)
+    end
+    result
+end
 
 # Repo.delete!
 """
     Repo.delete!(M::Type, nt::NamedTuple)
 """
-function delete!(M::Type, nt::NamedTuple) # throw Schema.PrimaryKeyError
+function delete!(M::Type, nt::NamedTuple)
     a = current_adapter()
-    (key, pk) = _field_for_primary_key(M, nt)
     table = a.from(M)
-    execute([a.DELETE a.FROM table a.WHERE key == pk])
+    execute(hcat([a.DELETE a.FROM table a.WHERE], vecjoin([a.Field(table, k) == v for (k, v) in pairs(nt)], a.AND)...))
     nothing
 end
 
