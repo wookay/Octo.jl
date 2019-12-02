@@ -5,7 +5,7 @@
 |  [![][docs-latest-img]][docs-latest-url]  |  [![][travis-img]][travis-url]  [![][codecov-img]][codecov-url]  |
 
 
-Octo.jl 🐙 is an SQL Query DSL in [Julia](https://julialang.org).
+`Octo.jl` is an SQL Query DSL in [Julia](https://julialang.org).
 It also comes with a very useful tool called [Repo](https://github.com/wookay/Octo.jl#repo).
 You could `Repo.get`, `Repo.insert!` `Repo.update!` `Repo.delete!` for many database drivers without hand-written SQL.
 
