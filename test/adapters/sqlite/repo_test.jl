@@ -1,3 +1,55 @@
+module adapters_sqlite_array_test
+
+# https://discourse.julialang.org/t/use-julia-array-in-sqlite-query/32049
+
+using Test # @test
+using Octo.Adapters.SQLite # Repo Schema from SELECT FROM WHERE
+
+import SQLite # pathof(SQLite)
+dbfile = joinpath(dirname(pathof(SQLite)), "..", "test", "Chinook_Sqlite.sqlite")
+dbfile2 = joinpath(@__DIR__, "test.sqlite")
+cp(dbfile, dbfile2; force=true)
+chmod(dbfile2, 0o666)
+
+Repo.debug_sql()
+
+repo = Repo.connect(
+    adapter = Octo.Adapters.SQLite,
+    dbfile = dbfile2
+)
+
+struct Temp
+end
+Schema.model(Temp, table_name="temp")
+
+Repo.execute([DROP TABLE IF EXISTS Temp])
+Repo.execute(Raw("""
+    CREATE TABLE Temp (
+        id INTEGER PRIMARY KEY,
+        label TEXT NOT NULL
+    )"""))
+
+Repo.insert!(Temp, [
+                    (label="d",),
+                    (label="c",),
+                    (label="c",),
+                    (label="b",),
+                    (label="a",)])
+
+df = Repo.query([SELECT * FROM Temp WHERE :label IN ("a","b","c")])
+@test size(df) == (4,)
+
+df = Repo.query([SELECT * FROM Temp WHERE :label IN ("a",)])
+@test size(df) == (1,)
+
+df = Repo.query([SELECT * FROM Temp WHERE :label IN ()])
+@test size(df) == (0,)
+
+Repo.disconnect()
+
+end # module adapters_sqlite_array_test
+
+
 module adapters_sqlite_repo_test
 
 using Test # @test

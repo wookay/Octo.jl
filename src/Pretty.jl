@@ -87,7 +87,7 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple})
     limit_colsize = settings[:colsize]
     header_spike(tree, bold) = printstyled(io, tree, bold=bold)
     row_spike(tree, bold)    = printstyled(io, tree, bold=bold)
-    colnames = collect(first(typeof(nts).parameters).names)
+    colnames = fieldnames(first(typeof(nts).parameters))
     ncols = length(colnames)
     real_nrows = length(nts)
     function print_header(pad_, paddings_)
