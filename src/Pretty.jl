@@ -56,7 +56,7 @@ function _regularize_text(str::String, padding::Int)::String
         end
     end
     n = 0
-    a = []
+    a = Char[]
     for (idx, x) in enumerate(s)
         n += textwidth(x)
         push!(a, x)
@@ -65,12 +65,12 @@ function _regularize_text(str::String, padding::Int)::String
         end
     end
     newstr = join(a)
-    newdiff = textwidth(s) - textwidth(newstr)
-    if length(s) == length(a)
+    if length(s) == length(a) && padding > textwidth(newstr)
         news = newstr
         npad = padding - textwidth(newstr)
     else
-        if newdiff > 0 && length(a) >= 2
+        newdiff = textwidth(s) - textwidth(newstr)
+        if padding < textwidth(newstr) || newdiff > 0 && length(a) >= 2
             newstr = join(a[1:end-2])
             newpad = padding - textwidth(newstr)
             news = string(newstr, fill('.', newpad)...)
