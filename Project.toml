@@ -13,6 +13,7 @@ LibPQ = "≥ 0.9.1"
 MySQL = "≥ 0.7.0"
 ODBC = "≥ 0.8.1"
 SQLite = "≥ 0.8.1"
+DataFrames = "0.18, 0.19, 0.20"
 julia = "1"
 
 [extras]
