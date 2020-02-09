@@ -1,7 +1,7 @@
 module SQLiteLoader
 
 # https://github.com/JuliaDatabases/SQLite.jl
-using SQLite # SQLite.jl v0.8.1
+using SQLite # SQLite.jl v0.9.0
 using Octo.Repo: SQLKeyword, ExecuteResult
 using Octo.AdapterBase: INSERT
 
@@ -26,14 +26,12 @@ end
 # query
 function query(sql::String)
     db = current_db()
-    table = SQLite.Query(db, sql)
-    collect(table)
+    (SQLite.rowtable ∘ SQLite.Query)(db, sql)
 end
 
 function query(prepared::String, vals::Vector)
     db = current_db()
-    table = SQLite.Query(db, prepared; values=vals)
-    collect(table)
+    SQLite.rowtable(SQLite.Query(db, prepared, values=vals))
 end
 
 # execute

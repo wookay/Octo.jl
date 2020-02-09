@@ -1,7 +1,7 @@
 name = "Octo"
 uuid = "16905944-f982-529b-abb2-b839f98f160b"
 authors = ["WooKyoung Noh <wookay.noh@gmail.com>"]
-version = "0.2.5"
+version = "0.2.6-DEV"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -12,7 +12,7 @@ JDBC = "≥ 0.5.0"
 LibPQ = "≥ 0.9.1"
 MySQL = "≥ 0.7.0"
 ODBC = "≥ 0.8.1"
-SQLite = "≥ 0.8.1"
+SQLite = "≥ 0.9"
 DataFrames = "0.18, 0.19, 0.20"
 julia = "1"
 
