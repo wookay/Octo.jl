@@ -12,6 +12,11 @@ elseif VERSION < v"1.3.0"
     push!(ignores, joinpath("adapters", "jdbc"))
 end
 
+if Sys.isapple()
+    push!(ignores, joinpath("adapters", "odbc"))
+    push!(ignores, joinpath("adapters", "mysql"))
+end
+
 if haskey(ENV, "TRAVIS") && ENV["TRAVIS_OS_NAME"] == "osx"
     push!(ignores, joinpath("adapters", "mysql"))
     push!(ignores, joinpath("adapters", "odbc"))

@@ -59,7 +59,9 @@ end
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     conn = current_conn()
     stmt = DBInterface.prepare(conn, prepared)
-    DBInterface.execute(stmt, nts...)
+    for nt in nts
+        DBInterface.execute(stmt, values(nt))
+    end
     ExecuteResult()
 end
 
