@@ -1,7 +1,7 @@
 module SQLiteLoader
 
 # https://github.com/JuliaDatabases/SQLite.jl
-using SQLite # SQLite.jl v0.9.0
+using SQLite # SQLite.jl v1.0.2
 using Octo.Repo: SQLKeyword, ExecuteResult
 using Octo.AdapterBase: INSERT
 
@@ -26,31 +26,31 @@ end
 # query
 function query(sql::String)
     db = current_db()
-    (SQLite.rowtable ∘ SQLite.Query)(db, sql)
+    (SQLite.rowtable ∘ SQLite.DBInterface.execute)(db, sql)
 end
 
 function query(prepared::String, vals::Vector)
     db = current_db()
-    SQLite.rowtable(SQLite.Query(db, prepared, values=vals))
+    SQLite.rowtable(SQLite.DBInterface.execute(db, prepared, vals))
 end
 
 # execute
 function execute(sql::String)::ExecuteResult
     db = current_db()
-    SQLite.Query(db, sql)
+    SQLite.DBInterface.execute(db, sql)
     ExecuteResult()
 end
 
 function execute(prepared::String, vals::Vector)::ExecuteResult
     db = current_db()
-    SQLite.Query(db, prepared; values=vals)
+    SQLite.DBInterface.execute(db, prepared, vals)
     ExecuteResult()
 end
 
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     db = current_db()
     for nt in nts
-        SQLite.Query(db, prepared; values=values(nt))
+        SQLite.DBInterface.execute(db, prepared, values(nt))
     end
     ExecuteResult()
 end
