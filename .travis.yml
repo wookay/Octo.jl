@@ -53,8 +53,7 @@ before_script:
   - psql -c "CREATE DATABASE postgresqltest;" -U postgres
 
   # ODBC - linux
-  - if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_JULIA_VERSION" == nightly ]]; then julia --color=yes -e 'using Pkg; pkg"dev DecFP"; pkg"precompile"' ; fi
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using Pkg; pkg"add ODBC@0.8.1"; pkg"precompile"'                       ; fi
+  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using Pkg; pkg"add ODBC"; pkg"precompile"'                             ; fi
   - if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using ODBC; setupdir=normpath(pathof(ODBC), "..", "..", "test", "setup"); run(`odbcinst -i -s -h -f $(normpath(setupdir, "postgresqltest.odbc.ini"))`)' ; fi
 
   # linux - MySQL      - 5.6.33
