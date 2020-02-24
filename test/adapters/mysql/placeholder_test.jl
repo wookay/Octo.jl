@@ -28,7 +28,7 @@ Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS users (
 u = from(User)
 
 userName = """ ' OR '1'='1 """
-@test_throws UnsupportedError Repo.query([SELECT * FROM u WHERE u.name == ❔ AND u.salary > ❔], [userName, 2000])
+Repo.query([SELECT * FROM u WHERE u.name == ❔ AND u.salary > ❔], [userName, 2000])
 
 Repo.disconnect()
 
