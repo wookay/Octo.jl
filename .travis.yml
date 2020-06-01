@@ -52,9 +52,10 @@ before_script:
   - psql -U postgres -c '\conninfo'
   - psql -c "CREATE DATABASE postgresqltest;" -U postgres
 
-  # ODBC - linux
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using Pkg; pkg"add ODBC"; pkg"precompile"'                             ; fi
-  - if [[ "$TRAVIS_OS_NAME" == linux ]]; then julia --color=yes -e 'using ODBC; setupdir=normpath(pathof(ODBC), "..", "..", "test", "setup"); run(`odbcinst -i -s -h -f $(normpath(setupdir, "postgresqltest.odbc.ini"))`)' ; fi
+  # ODBC
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install mysql; brew services start mysql; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then curl -O https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-ga-debian-x86_64.tar.gz; mkdir mariadb64; tar xfz mariadb-connector-odbc-3.1.7-ga-debian-x86_64.tar.gz -C mariadb64; curl -O https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-ga-debian-i686.tar.gz; mkdir mariadb32; tar xfz mariadb-connector-odbc-3.1.7-ga-debian-i686.tar.gz -C mariadb32; fi
+  - if [ "$TRAVIS_OS_NAME" == "windows" ]; then curl -O https://downloads.mariadb.com/Connectors/odbc/connector-odbc-3.1.7/mariadb-connector-odbc-3.1.7-win64.msi; echo 'making dir'; mkdir /c/mariadb64; echo 'msiexecing'; lessmsi x mariadb-connector-odbc-3.1.7-win64.msi; fi
 
   # linux - MySQL      - 5.6.33
   - if [[ "$TRAVIS_OS_NAME" == linux ]]; then mysql -e 'show variables like "socket";' -uroot                                              ; fi

@@ -3,7 +3,7 @@ module PostgreSQLLoader
 using Octo.Repo: SQLKeyword, ExecuteResult
 
 # https://github.com/invenia/LibPQ.jl
-using LibPQ # v0.9.1
+using LibPQ # 1.2
 using .LibPQ.Tables
 
 const current = Dict{Symbol, Any}(

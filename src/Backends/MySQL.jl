@@ -1,7 +1,7 @@
 module MySQLLoader
 
 # https://github.com/JuliaDatabases/MySQL.jl
-using MySQL # MySQL.jl v1.0.0
+using MySQL # MySQL.jl 1.1
 using .MySQL.DBInterface
 using .MySQL.Tables
 using Octo.Repo: SQLKeyword, ExecuteResult
@@ -33,13 +33,13 @@ end
 # query
 function query(sql::String)
     conn = current_conn()
-    (collect ∘ Tables.datavaluerows ∘ DBInterface.execute)(conn, sql)
+    (Tables.rowtable ∘ DBInterface.execute)(conn, sql)
 end
 
 function query(prepared::String, vals::Vector)
     conn = current_conn()
     stmt = DBInterface.prepare(conn, prepared)
-    (collect ∘ Tables.datavaluerows ∘ DBInterface.execute)(stmt, vals)
+    (Tables.rowtable ∘ DBInterface.execute)(stmt, vals)
 end
 
 # execute

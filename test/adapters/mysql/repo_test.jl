@@ -38,6 +38,7 @@ Repo.execute(Raw("""INSERT INTO Employee (Name, Salary, JoinDate, LastLogin, Lun
               """))
 
 df = Repo.query(Employee)
+@info :df df
 @test size(df) == (3,)
 
 df = Repo.get(Employee, 2)
@@ -55,6 +56,7 @@ df = Repo.get(Employee, (Name="Tim",))
 changes = (ID=2, Name="Chloe", OfficeNo=56)
 Repo.update!(Employee, changes)
 df = Repo.get(Employee, 2)
+@info :df df
 @test df[1].Name == "Chloe"
 
 Repo.delete!(Employee, changes)

@@ -1,7 +1,7 @@
 module SQLiteLoader
 
 # https://github.com/JuliaDatabases/SQLite.jl
-using SQLite # SQLite.jl v1.0.2
+using SQLite # SQLite.jl 1.0
 using .SQLite: Tables, DBInterface
 using Octo.Repo: SQLKeyword, ExecuteResult
 using Octo.AdapterBase: INSERT

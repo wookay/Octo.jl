@@ -3,65 +3,63 @@ module ODBCLoader
 using Octo.Repo: SQLKeyword, ExecuteResult
 
 # https://github.com/JuliaDatabases/ODBC.jl
-using ODBC # v0.8.1
+using ODBC # 1.0
+using .ODBC.DBInterface
+using .ODBC.Tables
 
 const current = Dict{Symbol, Any}(
-    :dsn => nothing,
+    :conn => nothing,
 )
 
-current_dsn() = current[:dsn]
+current_conn() = current[:conn]
 
 # db_connect
 function db_connect(; kwargs...)
     if !isempty(kwargs)
-        connectionstring = get(kwargs, :dsn, "")
-        username = get(kwargs, :username, "")
-        password = get(kwargs, :password, "")
-        dsn = ODBC.DSN(connectionstring, username, password)
-        current[:dsn] = dsn
+        dsn = get(kwargs, :dsn, "")
+        conn = DBInterface.connect(ODBC.Connection, dsn)
+        current[:conn] = conn
     end 
 end
 
 # db_disconnect
 function db_disconnect()
-    dsn = current_dsn()
-    ODBC.disconnect!(dsn)
-    current[:dsn] = nothing
+    conn = current_conn()
+    DBInterface.close!(conn)
+    current[:conn] = nothing
 end
 
 # query
 function query(sql::String)
-    dsn = current_dsn()
-    q = ODBC.Query(dsn, sql)
-    collect(q)
+    conn = current_conn()
+    (Tables.rowtable ∘ DBInterface.execute)(conn, sql)
 end
 
 function query(prepared::String, vals::Vector)
-    dsn = current_dsn()
-    stmt = ODBC.prepare(dsn, prepared)
-    ODBC.execute!(stmt, vals)
-    ExecuteResult()
+    conn = current_conn()
+    stmt = DBInterface.prepare(conn, prepared)
+    (Tables.rowtable ∘ DBInterface.execute)(stmt, vals)
 end
 
 # execute
 function execute(sql::String)::ExecuteResult
-    dsn = current_dsn()
-    ODBC.execute!(dsn, sql)
+    conn = current_conn()
+    DBInterface.execute(conn, sql)
     ExecuteResult()
 end
 
 function execute(prepared::String, vals::Vector)::ExecuteResult
-    dsn = current_dsn()
-    stmt = ODBC.prepare(dsn, prepared)
-    ODBC.execute!(stmt, vals) 
+    conn = current_conn()
+    stmt = DBInterface.prepare(conn, prepared)
+    DBInterface.execute(stmt, vals)
     ExecuteResult()
 end
 
 function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
-    dsn = current_dsn()
-    stmt = ODBC.prepare(dsn, prepared)
-    for tup in nts
-        ODBC.execute!(stmt, collect(tup))
+    conn = current_conn()
+    stmt = DBInterface.prepare(conn, prepared)
+    for nt in nts
+        DBInterface.execute(stmt, values(nt))
     end
     ExecuteResult()
 end

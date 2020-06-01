@@ -224,18 +224,10 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 
 ## Requirements
 
-You need [Julia 1.0](https://julialang.org/downloads/).
+You need [Julia](https://julialang.org/downloads/).
 
 `julia>` type `]` key
 
 ```julia
 (v1.0) pkg> add Octo
-```
-
-```julia
-(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl v0.9.1)
-(v1.0) pkg> add SQLite  # for SQLite (depends on SQLite.jl v1.0.2)
-(v1.0) pkg> add MySQL   # for MySQL (depends on MySQL.jl v1.0.0)
-(v1.0) pkg> add ODBC    # for ODBC (depends on ODBC.jl v0.8.1)
-(v1.0) pkg> add JDBC    # for JDBC (depends on JDBC.jl v0.5.0)
 ```
