@@ -12,6 +12,7 @@ JDBC = "≥ 0.5.0"
 LibPQ = "1.1, 1.2"
 MySQL = "1.0, 1.1"
 ODBC = "1.0"
+MariaDB_Connector_C_jll = "3.1"
 SQLite = "1.0"
 DataFrames = "0.20, 0.21"
 julia = "1"
@@ -23,9 +24,10 @@ LibPQ = "194296ae-ab2e-5f79-8cd4-7183a0a5a0d1"
 SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
 MySQL = "39abe10b-433b-5dbd-92d4-e302a9df00cd"
 ODBC = "be6f12e9-ca4f-5eb2-a339-a4f995cc0291"
+MariaDB_Connector_C_jll = "aabc7e14-95f1-5e66-9f32-aea603782360"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 JDBC = "6042db11-3c3d-5e84-8dba-9cbf74c9ba48"
 Hive = "6735fb99-e7a2-5b86-aa6b-3fb73ebb43ff"
 
 [targets]
-test = ["Test", "Jive", "LibPQ", "SQLite", "MySQL", "ODBC", "DataFrames", "JDBC", "Hive"]
+test = ["Test", "Jive", "LibPQ", "SQLite", "MySQL", "ODBC", "MariaDB_Connector_C_jll", "DataFrames", "JDBC", "Hive"]
