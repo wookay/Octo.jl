@@ -16,8 +16,6 @@ julia:
 matrix:
   include:
     - os: linux
-      julia: 1.1
-    - os: linux
       julia: nightly
 
 services:
