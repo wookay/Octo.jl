@@ -27,7 +27,7 @@ Repo.execute(Raw("""
     CREATE TABLE cool_table (
         ID SERIAL,
         col1 INTEGER,
-        col2 FLOAT(8),
+        col2 DOUBLE,
         col3 VARCHAR(255),
         PRIMARY KEY (ID)
     )"""))
@@ -51,7 +51,7 @@ Repo.execute(Raw("""
     CREATE TABLE Employee (
         ID SERIAL,
         Name VARCHAR(255),
-        Salary FLOAT(8),
+        Salary DOUBLE,
         PRIMARY KEY (ID)
     )"""))
 
