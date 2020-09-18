@@ -6,31 +6,26 @@ using Octo.Repo: SQLKeyword, ExecuteResult
 using LibPQ # 1.2
 using .LibPQ.Tables
 
-const current = Dict{Symbol, Any}(
-    :conn => nothing,
-)
-
-current_conn() = current[:conn]
+# db_dbname
+function db_dbname(nt::NamedTuple)::String
+    get(nt, :dbname, "")
+end
 
 # db_connect
 function db_connect(; kwargs...)
     if !isempty(kwargs)
         str = join(map(kv->join(kv, '='), collect(kwargs)), ' ')
-        conn = LibPQ.Connection(str)
-        current[:conn] = conn
+        LibPQ.Connection(str)
     end
 end
 
 # db_disconnect
-function db_disconnect()
-    conn = current_conn()
+function db_disconnect(conn)
     close(conn)
-    current[:conn] = nothing
 end
 
 # query
-function query(sql::String)
-    conn = current_conn()
+function query(conn, sql::String)
     stmt = LibPQ.prepare(conn, sql)
     result = LibPQ.execute(stmt)
     df = Tables.rowtable(result)
@@ -38,8 +33,7 @@ function query(sql::String)
     df
 end
 
-function query(prepared::String, vals::Vector)
-    conn = current_conn()
+function query(conn, prepared::String, vals::Vector)
     stmt = LibPQ.prepare(conn, prepared)
     result = LibPQ.execute(stmt, vals)
     df = Tables.rowtable(result)
@@ -48,35 +42,32 @@ function query(prepared::String, vals::Vector)
 end
 
 # execute
-function execute(sql::String)::ExecuteResult
-    conn = current_conn()
+function execute(conn, sql::String)::ExecuteResult
     result = LibPQ.execute(conn, sql)
-    execute_result(result)
+    execute_result(conn, result)
 end
 
-function execute(prepared::String, vals::Vector)::ExecuteResult
-    conn = current_conn()
+function execute(conn, prepared::String, vals::Vector)::ExecuteResult
     stmt = LibPQ.prepare(conn, prepared)
     result = LibPQ.execute(stmt, vals)
-    execute_result(result)
+    execute_result(conn, result)
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
-    conn = current_conn()
+function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     stmt = LibPQ.prepare(conn, prepared)
     result = []
     for tup in nts
         result = LibPQ.execute(stmt, collect(tup))
     end
-    execute_result(result)
+    execute_result(conn, result)
 end
 
 # execute_result
-function execute_result(command::SQLKeyword)::ExecuteResult
+function execute_result(conn, command::SQLKeyword)::ExecuteResult
     ExecuteResult()
 end
 
-function execute_result(result)
+function execute_result(conn, result)
     if !isempty(result)
         df = Tables.rowtable(result)
         LibPQ.close(result)
