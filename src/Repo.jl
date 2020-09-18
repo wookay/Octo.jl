@@ -428,7 +428,6 @@ function update!(M::Type, nt::NamedTuple; db::Pool=current_pool()) # throw Schem
     push!(v, a.WHERE)
     push!(v, key == pk)
     execute(v, collect(values(rest)); db=db)
-    nothing
 end
 
 function vecjoin(elements::Array{E, N}, delim::D)::Vector{Union{E, D}} where  {E, N, D}
@@ -453,7 +452,6 @@ function delete!(M::Type, nt::NamedTuple; db::Pool=current_pool())
     a = current_adapter()
     table = a.from(M)
     execute(hcat([a.DELETE a.FROM table a.WHERE], vecjoin([a.Field(table, k) == v for (k, v) in pairs(nt)], a.AND)...); db=db)
-    nothing
 end
 
 """
@@ -464,7 +462,6 @@ function delete!(M::Type, pk_range::UnitRange{Int64}; db::Pool=current_pool()) #
     table = a.from(M)
     key = _field_for_primary_key(M)
     execute([a.DELETE a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop]; db=db)
-    nothing
 end
 
 end # module Octo.Repo
