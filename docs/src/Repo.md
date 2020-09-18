@@ -1,6 +1,7 @@
 # Repo
 
 ```@docs
+Repo.Connection
 Repo.connect
 Repo.get
 Repo.insert!
