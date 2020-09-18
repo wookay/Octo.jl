@@ -53,6 +53,7 @@ before_script:
   - psql -U postgres -tc 'SHOW server_version'
   - psql -U postgres -c '\conninfo'
   - psql -c "CREATE DATABASE postgresqltest;" -U postgres
+  - psql -c "CREATE DATABASE postgresqltest2;" -U postgres
 
   # ODBC
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install mysql; brew services start mysql; fi

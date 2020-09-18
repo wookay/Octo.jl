@@ -2,36 +2,41 @@ module SQLLoader
 
 using Octo.Repo: SQLKeyword, ExecuteResult
 
+# db_dbname
+function db_dbname(nt::NamedTuple)::String
+    ""
+end
+
 # db_connect
 function db_connect(; kwargs...)
 end
 
 # db_disconnect
-function db_disconnect()
+function db_disconnect(conn)
 end
 
 # query
-function query(sql::String)
+function query(conn, sql::String)
 end
 
-function query(prepared::String, vals::Vector)
+function query(conn, prepared::String, vals::Vector)
 end
 
 # execute
-function execute(sql::String)::ExecuteResult
+function execute(conn, sql::String)::ExecuteResult
     ExecuteResult()
 end
 
-function execute(prepared::String, vals::Vector)::ExecuteResult
+function execute(conn, prepared::String, vals::Vector)::ExecuteResult
     ExecuteResult()
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
+function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     ExecuteResult()
 end
 
 # execute_result
-function execute_result(command::SQLKeyword)::ExecuteResult
+function execute_result(conn, command::SQLKeyword)::ExecuteResult
     ExecuteResult()
 end
 

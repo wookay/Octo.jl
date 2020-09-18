@@ -4,30 +4,25 @@ module HiveLoader
 using Hive # HiveSession HiveAuth
 using Octo.Repo: SQLKeyword, ExecuteResult
 
-const current = Dict{Symbol, Any}(
-    :sess => nothing,
-)
-
-current_sess() = current[:sess]
+# db_dbname
+function db_dbname(nt::NamedTuple)::String
+    ""
+end
 
 # db_connect
 function db_connect(; host::String="localhost", port::Integer=10000, auth::HiveAuth=HiveAuth(), tprotocol::Symbol=:binary)
-    sess = HiveSession(host, port, auth; tprotocol=tprotocol)
-    current[:sess] = sess
+    HiveSession(host, port, auth; tprotocol=tprotocol)
 end
 
 # db_disconnect
-function db_disconnect()
-    sess = current_sess()
+function db_disconnect(sess)
     if sess isa HiveSession
         Hive.close(sess)
-        current[:sess] = nothing
     end
 end
 
 # query
-function query(sql::String)
-    sess = current_sess()
+function query(sess, sql::String)
     pending = Hive.execute(sess, sql)
     rs = Hive.result(pending)
     sch = Hive.schema(rs)
@@ -38,27 +33,26 @@ function query(sql::String)
     nts
 end
 
-function query(prepared::String, vals::Vector) # throw UnsupportedError
+function query(sess, prepared::String, vals::Vector) # throw UnsupportedError
     throw(UnsupportedError("needs to be implemented"))
 end
 
 # execute
-function execute(sql::String)::ExecuteResult
-    sess = current_sess()
+function execute(sess, sql::String)::ExecuteResult
     result = Hive.execute(sess, sql)
     ExecuteResult()
 end
 
-function execute(prepared::String, vals::Vector)::ExecuteResult # throw UnsupportedError
+function execute(sess, prepared::String, vals::Vector)::ExecuteResult # throw UnsupportedError
     throw(UnsupportedError("needs to be implemented"))
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult # throw UnsupportedError
+function execute(sess, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult # throw UnsupportedError
     throw(UnsupportedError("needs to be implemented"))
 end
 
 # execute_result
-function execute_result(command::SQLKeyword)::ExecuteResult
+function execute_result(sess, command::SQLKeyword)::ExecuteResult
     ExecuteResult()
 end
 

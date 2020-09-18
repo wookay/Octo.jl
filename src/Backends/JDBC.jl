@@ -6,11 +6,10 @@ using DataFrames: DataFrame
 using Octo.Repo: SQLKeyword, ExecuteResult
 using Octo.Backends: UnsupportedError
 
-const current = Dict{Symbol, Any}(
-    :conn => nothing,
-)
-
-current_conn() = current[:conn]
+# db_dbname
+function db_dbname(nt::NamedTuple)::String
+    nt.connection.url
+end
 
 # db_connect
 function db_connect(; kwargs...)
@@ -23,14 +22,12 @@ function db_connect(; kwargs...)
         props = Dict([string.(kv) for kv in opts])
         conn = JDBC.DriverManager.getConnection(url, props)
     end
-    current[:conn] = conn
+    conn
 end
 
 # db_disconnect
-function db_disconnect()
-    conn = current_conn()
+function db_disconnect(conn)
     JDBC.close(conn)
-    current[:conn] = nothing
 end
 
 function Vector{<:NamedTuple}(df::DataFrame)
@@ -40,8 +37,7 @@ function Vector{<:NamedTuple}(df::DataFrame)
 end
 
 # query
-function query(sql::String)
-    conn = current_conn()
+function query(conn, sql::String)
     stmt = JDBC.createStatement(conn)
     rs = JDBC.executeQuery(stmt, sql)
     df = JDBC.load(DataFrame, rs)
@@ -75,8 +71,7 @@ function prepared_execute(conn, prepared::String, vals::Vector)
     n
 end
 
-function query(prepared::String, vals::Vector)
-    conn = current_conn()
+function query(conn, prepared::String, vals::Vector)
     rs = prepared_execute(conn, prepared, vals)
     df = JDBC.load(DataFrame, rs)
     JDBC.close(rs)
@@ -84,22 +79,19 @@ function query(prepared::String, vals::Vector)
 end
 
 # execute
-function execute(sql::String)::ExecuteResult
-    conn = current_conn()
+function execute(conn, sql::String)::ExecuteResult
     stmt = JDBC.createStatement(conn)
     n = JDBC.executeUpdate(stmt, sql)
     JDBC.close(stmt)
     ExecuteResult()
 end
 
-function execute(prepared::String, vals::Vector)::ExecuteResult
-    conn = current_conn()
+function execute(conn, prepared::String, vals::Vector)::ExecuteResult
     n = prepared_execute(conn, prepared, vals)
     ExecuteResult()
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
-    conn = current_conn()
+function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     for tup in nts
         vals = collect(tup)
         n = prepared_execute(conn, prepared, vals)
@@ -108,7 +100,7 @@ function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
 end
 
 # execute_result
-function execute_result(command::SQLKeyword)::ExecuteResult
+function execute_result(conn, command::SQLKeyword)::ExecuteResult
     ExecuteResult()
 end
 

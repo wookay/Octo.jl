@@ -9,7 +9,7 @@ Schema.model(Employee, table_name="Employee", primary_key="ID")
 
 Repo.debug_sql()
 
-@test_throws Repo.NeedsConnectError Repo.get(Employee, 2)
+# @test_throws Repo.NeedsConnectError Repo.get(Employee, 2)
 
 Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,

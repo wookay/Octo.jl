@@ -6,52 +6,44 @@ using .SQLite: Tables, DBInterface
 using Octo.Repo: SQLKeyword, ExecuteResult
 using Octo.AdapterBase: INSERT
 
-const current = Dict{Symbol, Any}(
-    :db => nothing,
-)
-
-current_db() = current[:db]
+# db_dbname
+function db_dbname(nt::NamedTuple)::String
+    (last ∘ splitdir)(nt.dbfile)
+end
 
 # db_connect
 function db_connect(; kwargs...)
     dbfile = getindex(kwargs, :dbfile)
-    db = SQLite.DB(dbfile)
-    current[:db] = db
+    SQLite.DB(dbfile)
 end
 
 # db_disconnect
-function db_disconnect()
-    current[:db] = nothing
+function db_disconnect(db)
 end
 
 # query
-function query(sql::String)
-    db = current_db()
+function query(db, sql::String)
     (Tables.rowtable ∘ DBInterface.execute)(db, sql)
 end
 
-function query(prepared::String, vals::Vector)
-    db = current_db()
+function query(db, prepared::String, vals::Vector)
     stmt = DBInterface.prepare(db, prepared)
     (Tables.rowtable ∘ DBInterface.execute)(stmt, vals)
 end
 
 # execute
-function execute(sql::String)::ExecuteResult
-    db = current_db()
+function execute(db, sql::String)::ExecuteResult
     DBInterface.execute(db, sql)
     ExecuteResult()
 end
 
-function execute(prepared::String, vals::Vector)::ExecuteResult
-    db = current_db()
+function execute(db, prepared::String, vals::Vector)::ExecuteResult
     stmt = DBInterface.prepare(db, prepared)
     DBInterface.execute(stmt, vals)
     ExecuteResult()
 end
 
-function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
-    db = current_db()
+function execute(db, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     stmt = DBInterface.prepare(db, prepared)
     for nt in nts
         DBInterface.execute(stmt, values(nt))
@@ -60,9 +52,8 @@ function execute(prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
 end
 
 # execute_result
-function execute_result(command::SQLKeyword)::ExecuteResult
+function execute_result(db, command::SQLKeyword)::ExecuteResult
     if INSERT === command
-        db = current_db()
         last_insert_id = SQLite.last_insert_rowid(db)
         (id=last_insert_id,)
     end
