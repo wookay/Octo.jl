@@ -44,44 +44,59 @@ end
 # execute
 function execute(conn, sql::String)::ExecuteResult
     result = LibPQ.execute(conn, sql)
-    execute_result(conn, result)
+    rowtable_and_close_result(result, get_num_affected_rows(result))
 end
 
 function execute(conn, prepared::String, vals::Vector)::ExecuteResult
     stmt = LibPQ.prepare(conn, prepared)
     result = LibPQ.execute(stmt, vals)
-    execute_result(conn, result)
+    rowtable_and_close_result(result, get_num_affected_rows(result))
 end
 
 function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     stmt = LibPQ.prepare(conn, prepared)
-    result = []
+    num_affected_rows::Union{Nothing, Int} = nothing
+    result = nothing
     for tup in nts
         result = LibPQ.execute(stmt, collect(tup))
+        num = get_num_affected_rows(result)
+        if num === nothing
+        else
+            if num_affected_rows === nothing
+                num_affected_rows = num
+            else
+                num_affected_rows += num
+            end
+        end
     end
-    execute_result(conn, result)
+    rowtable_and_close_result(result, num_affected_rows)
+end
+
+function rowtable_and_close_result(result, num_affected_rows::Union{Nothing, Int})
+    if num_affected_rows === nothing
+        NamedTuple()
+    else
+        df = Tables.rowtable(result)
+        if isempty(df)
+            (num_affected_rows=num_affected_rows,)
+        else
+            merge(first(df), (num_affected_rows=num_affected_rows,))
+        end
+    end
+end
+
+function get_num_affected_rows(result)::Union{Nothing, Int}
+    str = unsafe_string(LibPQ.libpq_c.PQcmdTuples(result.result))
+    if isempty(str)
+        nothing
+    else
+        parse(Int, str)
+    end
 end
 
 # execute_result
 function execute_result(conn, command::SQLKeyword)::ExecuteResult
     ExecuteResult()
-end
-
-function execute_result(conn, result)
-    str = unsafe_string(LibPQ.libpq_c.PQcmdTuples(result.result))
-    if isempty(str)
-        nt = NamedTuple()
-    else
-        num_affected_rows = parse(Int, str)
-        df = Tables.rowtable(result)
-        if isempty(df)
-            nt = (num_affected_rows=num_affected_rows,)
-        else
-            nt = merge(first(df), (num_affected_rows=num_affected_rows,))
-        end
-    end
-    LibPQ.close(result)
-    nt
 end
 
 end # module Octo.Backends.PostgreSQLLoader
