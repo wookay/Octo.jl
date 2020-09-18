@@ -116,8 +116,12 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple}; show_fetch
     end
     function fetched_info(io, real_nrows, limit_nrows)
         if iszero(real_nrows)
-            printstyled(io, "empty", color=:cyan)
-            printstyled(io, " row.")
+            if iszero(ncols)
+                printstyled(io, "(;)")
+            else
+                printstyled(io, "empty", color=:cyan)
+                printstyled(io, " row.")
+            end
         else
             printstyled(io, "\n")
             printstyled(io, real_nrows, color=:cyan)
@@ -126,7 +130,7 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple}; show_fetch
     end
     if isempty(nts)
         paddings = (length ∘ string).(colnames) .+ 2
-        print_header((colidx, el) -> rpad(el, paddings[colidx]), paddings)
+        !iszero(ncols) && print_header((colidx, el) -> rpad(el, paddings[colidx]), paddings)
         fetched_info(io, real_nrows, limit_nrows)
         return
     end
@@ -175,7 +179,7 @@ function Base.show(io::IO, mime::MIME"text/plain", nts::Vector{<:NamedTuple})
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", nt::NamedTuple)
-   if settings[:pretty]
+   if !isempty(nt) && settings[:pretty]
        _print_named_tuple_vector(io, [nt]; show_fetched_info=false)
    else
        Base.show(io, nt)

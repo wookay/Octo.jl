@@ -68,13 +68,20 @@ function execute_result(conn, command::SQLKeyword)::ExecuteResult
 end
 
 function execute_result(conn, result)
-    if !isempty(result)
-        df = Tables.rowtable(result)
-        LibPQ.close(result)
-        first(df)
+    str = unsafe_string(LibPQ.libpq_c.PQcmdTuples(result.result))
+    if isempty(str)
+        nt = NamedTuple()
     else
-        ExecuteResult()
+        num_affected_rows = parse(Int, str)
+        df = Tables.rowtable(result)
+        if isempty(df)
+            nt = (num_affected_rows=num_affected_rows,)
+        else
+            nt = merge(first(df), (num_affected_rows=num_affected_rows,))
+        end
     end
+    LibPQ.close(result)
+    nt
 end
 
 end # module Octo.Backends.PostgreSQLLoader
