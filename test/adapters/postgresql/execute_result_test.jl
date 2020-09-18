@@ -38,9 +38,9 @@ Repo.execute(Raw("""
 CREATE TABLE IF NOT EXISTS test1 (a boolean, b text)
 """))
 result = Repo.insert!(Test1, (a=true, b="sic est"))
-@test isempty(result)
+@test result == (num_affected_rows = 1,)
 result = Repo.insert!(Test1, (a=true, b="sic est"); returning=nothing)
-@test isempty(result)
+@test result == (num_affected_rows = 1,)
 
 struct Test2
 end
@@ -51,15 +51,15 @@ CREATE TABLE IF NOT EXISTS test2 (a boolean, b text, PRIMARY KEY (a, b))
 """))
 
 result = Repo.insert!(Test2, (a=true, b="sic est1"))
-@test result == (a=true, b="sic est1")
+@test result == (a=true, b="sic est1", num_affected_rows=1)
 result = Repo.insert!(Test2, (a=true, b="sic est2"); returning=nothing)
-@test isempty(result)
+@test result == (num_affected_rows = 1,)
 result = Repo.insert!(Test2, (a=true, b="sic est3"); returning=[:a])
-@test result == (a=true,)
+@test result == (a=true, num_affected_rows=1)
 result = Repo.insert!(Test2, (a=true, b="sic est4"); returning=[:a, :b])
-@test result == (a=true, b="sic est4")
+@test result == (a=true, b="sic est4", num_affected_rows=1)
 result = Repo.insert!(Test2, (a=true, b="sic est5"); returning=[:b, :a])
-@test result == (b="sic est5", a=true)
+@test result == (b="sic est5", a=true, num_affected_rows=1)
 
 Repo.disconnect()
 

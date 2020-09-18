@@ -46,6 +46,15 @@ function table(nts::Vector{<:NamedTuple})::String
     String(take!(buf))
 end
 
+"""
+    Pretty.table(nt::NamedTuple)::String
+"""
+function table(nt::NamedTuple)::String
+    buf = IOBuffer()
+    show(buf, MIME"text/plain"(), nt)
+    String(take!(buf))
+end
+
 function _regularize_text(str::String, padding::Int)::String
     s = escape_string(str)
     if textwidth(s) < padding
@@ -82,7 +91,7 @@ function _regularize_text(str::String, padding::Int)::String
     string(news, npad > 0 ? join(fill(' ', npad)) : "")
 end
 
-function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple})
+function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple}; show_fetched_info::Bool=true)
     limit_nrows = settings[:nrows]
     limit_colsize = settings[:colsize]
     header_spike(tree, bold) = printstyled(io, tree, bold=bold)
@@ -105,15 +114,24 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple})
         end
         header_spike(" |\n", boldtwo)
     end
-    function fetched_info()
-        printstyled(io, "\n")
-        printstyled(io, real_nrows, color=:cyan)
-        printstyled(io, " row", real_nrows == 1 ? "" : 's', '.',  real_nrows > limit_nrows ? ".." :  "")
+    function fetched_info(io, real_nrows, limit_nrows)
+        if iszero(real_nrows)
+            if iszero(ncols)
+                printstyled(io, "(;)")
+            else
+                printstyled(io, "empty", color=:cyan)
+                printstyled(io, " row.")
+            end
+        else
+            printstyled(io, "\n")
+            printstyled(io, real_nrows, color=:cyan)
+            printstyled(io, " row", real_nrows == 1 ? "" : 's', '.',  real_nrows > limit_nrows ? ".." :  "")
+        end
     end
     if isempty(nts)
         paddings = (length ∘ string).(colnames) .+ 2
-        print_header((colidx, el) -> rpad(el, paddings[colidx]), paddings)
-        fetched_info()
+        !iszero(ncols) && print_header((colidx, el) -> rpad(el, paddings[colidx]), paddings)
+        fetched_info(io, real_nrows, limit_nrows)
         return
     end
     uno = first(nts)
@@ -149,7 +167,7 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple})
         row_spike(" |", false)
         nrows != rowidx && println(io)
     end
-    fetched_info()
+    show_fetched_info && fetched_info(io, real_nrows, limit_nrows)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", nts::Vector{<:NamedTuple})
@@ -157,6 +175,14 @@ function Base.show(io::IO, mime::MIME"text/plain", nts::Vector{<:NamedTuple})
        _print_named_tuple_vector(io, nts)
    else
        Base.show(io, nts)
+   end
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", nt::NamedTuple)
+   if !isempty(nt) && settings[:pretty]
+       _print_named_tuple_vector(io, [nt]; show_fetched_info=false)
+   else
+       Base.show(io, nt)
    end
 end
 

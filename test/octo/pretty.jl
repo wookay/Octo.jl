@@ -29,8 +29,7 @@ nts = Vector{NamedTuple{(:a,),Tuple{Int}}}()
 @test Pretty.table(nts) == """
 | a   |
 | --- |
-
-0 rows."""
+empty row."""
 
 Pretty.set(false)
 buf = IOBuffer()
@@ -42,5 +41,11 @@ Pretty.set(true)
 @test Pretty._regularize_text("가1", 1) == "."
 @test Pretty._regularize_text("가1", 2) == "가"
 @test Pretty._regularize_text("가1", 3) == "가1"
+
+nt = NamedTuple{(:id, :name, :salary),Tuple{Union{Missing, Int32},Union{Missing, String},Union{Missing, Float32}}}((1, "John", 10000.5f0))
+@test Pretty.table(nt) == """
+|   id | name   |    salary |
+| ---- | ------ | --------- |
+|    1 | John   |   10000.5 |"""
 
 end # module test_octo_pretty
