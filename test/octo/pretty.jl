@@ -32,10 +32,7 @@ nts = Vector{NamedTuple{(:a,),Tuple{Int}}}()
 empty row."""
 
 Pretty.set(false)
-buf = IOBuffer()
-Base.show(buf, MIME"text/plain"(), nts)
-@test String(take!(buf)) == """
-NamedTuple{(:a,),Tuple{Int64}}[]"""
+@test sprint(show, nts) in ("NamedTuple{(:a,), Tuple{Int64}}[]", "NamedTuple{(:a,),Tuple{Int64}}[]")
 Pretty.set(true)
 
 @test Pretty._regularize_text("가1", 1) == "."
