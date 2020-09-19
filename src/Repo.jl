@@ -368,7 +368,12 @@ function do_insert(block, a, returning::Union{Nothing,Symbol,Vector}, db::Connec
     if a.DatabaseID === DBMS.PostgreSQL
         result
     else
-        execute_result(a.INSERT; db=db)
+        nt = execute_result(a.INSERT; db=db)
+        if result === nothing
+            nt
+        else
+            merge(result, nt)
+        end
     end
 end
 
@@ -415,7 +420,7 @@ end
 
 
 # Repo.execute_result
-function execute_result(command::SQLKeyword; db::Connection=current_connection())::ExecuteResult
+function execute_result(command::SQLKeyword; db::Connection=current_connection())::NamedTuple
     db.loader.execute_result(db.conn, command)
 end
 

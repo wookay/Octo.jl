@@ -52,8 +52,8 @@ function execute(sess, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResu
 end
 
 # execute_result
-function execute_result(sess, command::SQLKeyword)::ExecuteResult
-    nothing
+function execute_result(sess, command::SQLKeyword)::NamedTuple
+    NamedTuple()
 end
 
 end # module Octo.Backends.HiveLoader
