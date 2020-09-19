@@ -24,20 +24,20 @@ end
 
 # execute
 function execute(conn, sql::String)::ExecuteResult
-    ExecuteResult()
+    nothing
 end
 
 function execute(conn, prepared::String, vals::Vector)::ExecuteResult
-    ExecuteResult()
+    nothing
 end
 
 function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
-    ExecuteResult()
+    nothing
 end
 
 # execute_result
 function execute_result(conn, command::SQLKeyword)::ExecuteResult
-    ExecuteResult()
+    nothing
 end
 
 end # module Octo.Backends.SQLLoader

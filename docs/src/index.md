@@ -8,16 +8,21 @@ You could `Repo.get`, `Repo.insert!` `Repo.update!` `Repo.delete!` for many data
 
 It's influenced by [Ecto](https://github.com/elixir-ecto/ecto).
 
+ * ☕️   You can [make a donation](https://wookay.github.io/donate/) to support this project.
+
+
 ## SQL Query DSL
 
-```julia
+```julia-repl
 julia> using Octo.Adapters.SQL
 
 julia> struct User
        end
 
 julia> Schema.model(User, table_name="users")
-User => Dict(:primary_key=>"id",:table_name=>"users")
+| primary_key   | table_name   |
+| ------------- | ------------ |
+| id            | users        |
 
 julia> u = from(User)
 FromItem users
@@ -47,7 +52,7 @@ Current supported database drivers:
   - ODBC(via [ODBC.jl](https://github.com/JuliaDatabases/ODBC.jl))
   - JDBC(via [JDBC.jl](https://github.com/JuliaDatabases/JDBC.jl))
 
-```julia
+```julia-repl
 julia> using Octo.Adapters.PostgreSQL
 
 julia> Repo.debug_sql()
@@ -58,23 +63,26 @@ julia> Repo.connect(
            dbname = "postgresqltest",
            user = "postgres",
        )
-PostgreSQL connection (CONNECTION_OK) with parameters:
+Octo.Repo.Connection(false, "postgresqltest", Main.PostgreSQLLoader, PostgreSQL connection (CONNECTION_OK) with parameters:
   user = postgres
   passfile = /Users/wookyoung/.pgpass
   dbname = postgresqltest
   port = 5432
   client_encoding = UTF8
+  options = -c DateStyle=ISO,YMD -c IntervalStyle=iso_8601 -c TimeZone=UTC
   application_name = LibPQ.jl
   sslmode = prefer
-  sslcompression = 1
-  krbsrvname = postgres
-  target_session_attrs = any
+  sslcompression = 0
+  gssencmode = disable
+  target_session_attrs = any)
 
 julia> struct Employee
        end
 
 julia> Schema.model(Employee, table_name="Employee", primary_key="ID")
-Employee => Dict(:primary_key=>"ID",:table_name=>"Employee")
+| primary_key   | table_name   |
+| ------------- | ------------ |
+| ID            | Employee     |
 
 julia> Repo.execute([DROP TABLE IF EXISTS Employee])
 [ Info: DROP TABLE IF EXISTS Employee
@@ -101,7 +109,10 @@ julia> Repo.insert!(Employee, [
            (Name="Justin",  Salary=50000.50),
            (Name="Tom",     Salary=60000.50),
        ])
-[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jeremy", Salary = 10000.5), (Name = "Cloris", Salary = 20000.5), (Name = "John", Salary = 30000.5), (Name = "Hyunden", Salary = 40000.5), (Name = "Justin", Salary = 50000.5), (Name = "Tom", Salary = 60000.5)
+[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2) RETURNING ID    (Name = "Jeremy", Salary = 10000.5), (Name = "Cloris", Salary = 20000.5), (Name = "John", Salary = 30000.5), (Name = "Hyunden", Salary = 40000.5), (Name = "Justin", Salary = 50000.5), (Name = "Tom", Salary = 60000.5)
+|   id |   num_affected_rows |
+| ---- | ------------------- |
+|    6 |                   6 |
 
 julia> Repo.get(Employee, 2)
 [ Info: SELECT * FROM Employee WHERE ID = 2
@@ -140,16 +151,28 @@ julia> Repo.query(Employee)
 6 rows.
 
 julia> Repo.insert!(Employee, (Name="Jessica", Salary=70000.50))
-[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jessica", Salary = 70000.5)
+[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2) RETURNING ID    (Name = "Jessica", Salary = 70000.5)
+|   id |   num_affected_rows |
+| ---- | ------------------- |
+|    7 |                   1 |
 
 julia> Repo.update!(Employee, (ID=2, Salary=85000))
-[ Info: UPDATE Employee SET Salary = $1 WHERE ID = 2   85000
+[ Info: UPDATE Employee SET Salary = $1 WHERE ID = 2    85000
+|   num_affected_rows |
+| ------------------- |
+|                   1 |
 
 julia> Repo.delete!(Employee, (ID=3,))
 [ Info: DELETE FROM Employee WHERE ID = 3
+|   num_affected_rows |
+| ------------------- |
+|                   1 |
 
 julia> Repo.delete!(Employee, 3:5)
 [ Info: DELETE FROM Employee WHERE ID BETWEEN 3 AND 5
+|   num_affected_rows |
+| ------------------- |
+|                   2 |
 
 julia> em = from(Employee)
 FromItem Employee
@@ -182,7 +205,7 @@ julia> ❓ = Octo.PlaceHolder
 PlaceHolder
 
 julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
-[ Info: SELECT * FROM Employee WHERE Name = $1   "Cloris"
+[ Info: SELECT * FROM Employee WHERE Name = $1    "Cloris"
 |   id | name     |    salary |
 | ---- | -------- | --------- |
 |    2 | Cloris   |   85000.0 |
@@ -191,7 +214,7 @@ julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
 
 ### Subqueries
 
-```julia
+```julia-repl
 julia> sub = from([SELECT * FROM em WHERE em.Salary > 30000], :sub)
 SubQuery (SELECT * FROM Employee WHERE Salary > 30000) AS sub
 
@@ -228,6 +251,14 @@ You need [Julia](https://julialang.org/downloads/).
 
 `julia>` type `]` key
 
-```julia
+```julia-repl
 (v1.0) pkg> add Octo
+```
+
+```julia-repl
+(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.1, 1.2)
+(v1.0) pkg> add SQLite  # for SQLite (depends on SQLite.jl 1.0)
+(v1.0) pkg> add MySQL   # for MySQL (depends on MySQL.jl 1.0, 1.1)
+(v1.0) pkg> add ODBC    # for ODBC (depends on ODBC.jl 1.0)
+(v1.0) pkg> add JDBC    # for JDBC (depends on JDBC.jl ≥ 0.5.0)
 ```

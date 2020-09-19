@@ -39,13 +39,13 @@ end
 # execute
 function execute(conn, sql::String)::ExecuteResult
     DBInterface.execute(conn, sql)
-    ExecuteResult()
+    nothing
 end
 
 function execute(conn, prepared::String, vals::Vector)::ExecuteResult
     stmt = DBInterface.prepare(conn, prepared)
     DBInterface.execute(stmt, vals)
-    ExecuteResult()
+    nothing
 end
 
 function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
@@ -53,7 +53,7 @@ function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResu
     for nt in nts
         DBInterface.execute(stmt, values(nt))
     end
-    ExecuteResult()
+    nothing
 end
 
 # execute_result

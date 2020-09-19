@@ -22,7 +22,7 @@ struct Connection
     conn
 end
 
-const ExecuteResult = NamedTuple
+const ExecuteResult = Union{Nothing, NamedTuple}
 
 @enum RepoLogLevel::Int32 begin
     LogLevelDebugSQL = -1

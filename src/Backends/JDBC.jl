@@ -83,12 +83,12 @@ function execute(conn, sql::String)::ExecuteResult
     stmt = JDBC.createStatement(conn)
     n = JDBC.executeUpdate(stmt, sql)
     JDBC.close(stmt)
-    ExecuteResult()
+    nothing
 end
 
 function execute(conn, prepared::String, vals::Vector)::ExecuteResult
     n = prepared_execute(conn, prepared, vals)
-    ExecuteResult()
+    nothing
 end
 
 function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
@@ -96,12 +96,12 @@ function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResu
         vals = collect(tup)
         n = prepared_execute(conn, prepared, vals)
     end
-    ExecuteResult()
+    nothing
 end
 
 # execute_result
 function execute_result(conn, command::SQLKeyword)::ExecuteResult
-    ExecuteResult()
+    nothing
 end
 
 end # module Octo.Backends.JDBCLoader

@@ -1,9 +1,14 @@
 module Schema # Octo
 
-tables = Dict{Core.TypeName,Dict{Symbol,Union{String,Symbol,Vector{Symbol}}}}()
-validation_models = Dict{Core.TypeName,Function}()
+tables = Dict{Core.TypeName, Dict{Symbol,Union{String,Symbol,Vector{Symbol}}}}()
+validation_models = Dict{Core.TypeName, Function}()
 
-function _model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,Vector{Symbol}})
+struct Model
+    typename::Core.TypeName
+    info::Dict{Symbol,Union{String,Symbol,Vector{Symbol}}}
+end
+
+function _model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,Vector{Symbol}})::Model
     Tname = Base.typename(M)
     dict = Dict{Symbol,Union{String,Symbol,Vector{Symbol}}}(
         :table_name => table_name,
@@ -12,13 +17,13 @@ function _model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,V
         dict[:primary_key] = primary_key
     end
     tables[Tname] = dict
-    Pair(Tname, dict)
+    Model(Tname, dict)
 end
 
 """
-    model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,String,Vector,Tuple}="id")
+    model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,String,Vector,Tuple}="id")::Model
 """
-function model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,String,Vector,Tuple}="id")
+function model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,String,Vector,Tuple}="id")::Model
     if primary_key isa Vector{String}
         pk = Symbol.(primary_key)
     elseif primary_key isa String
@@ -29,6 +34,10 @@ function model(M::Type; table_name::String, primary_key::Union{Nothing,Symbol,St
         pk = primary_key
     end
     _model(M; table_name=table_name, primary_key=pk)
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", model::Model)
+    Base.show(io, mime, (; model.info...))
 end
 
 struct TableNameError <: Exception

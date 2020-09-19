@@ -40,7 +40,7 @@ end
 # execute
 function execute(sess, sql::String)::ExecuteResult
     result = Hive.execute(sess, sql)
-    ExecuteResult()
+    nothing
 end
 
 function execute(sess, prepared::String, vals::Vector)::ExecuteResult # throw UnsupportedError
@@ -53,7 +53,7 @@ end
 
 # execute_result
 function execute_result(sess, command::SQLKeyword)::ExecuteResult
-    ExecuteResult()
+    nothing
 end
 
 end # module Octo.Backends.HiveLoader

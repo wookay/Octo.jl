@@ -74,7 +74,7 @@ end
 
 function rowtable_and_close_result(result, num_affected_rows::Union{Nothing, Int})
     if num_affected_rows === nothing
-        NamedTuple()
+        nothing
     else
         df = Tables.rowtable(result)
         if isempty(df)
@@ -96,7 +96,7 @@ end
 
 # execute_result
 function execute_result(conn, command::SQLKeyword)::ExecuteResult
-    ExecuteResult()
+    nothing
 end
 
 end # module Octo.Backends.PostgreSQLLoader

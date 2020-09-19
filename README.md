@@ -23,7 +23,9 @@ julia> struct User
        end
 
 julia> Schema.model(User, table_name="users")
-User => Dict(:primary_key=>"id",:table_name=>"users")
+| primary_key   | table_name   |
+| ------------- | ------------ |
+| id            | users        |
 
 julia> u = from(User)
 FromItem users
@@ -64,23 +66,26 @@ julia> Repo.connect(
            dbname = "postgresqltest",
            user = "postgres",
        )
-PostgreSQL connection (CONNECTION_OK) with parameters:
+Octo.Repo.Connection(false, "postgresqltest", Main.PostgreSQLLoader, PostgreSQL connection (CONNECTION_OK) with parameters:
   user = postgres
   passfile = /Users/wookyoung/.pgpass
   dbname = postgresqltest
   port = 5432
   client_encoding = UTF8
+  options = -c DateStyle=ISO,YMD -c IntervalStyle=iso_8601 -c TimeZone=UTC
   application_name = LibPQ.jl
   sslmode = prefer
-  sslcompression = 1
-  krbsrvname = postgres
-  target_session_attrs = any
+  sslcompression = 0
+  gssencmode = disable
+  target_session_attrs = any)
 
 julia> struct Employee
        end
 
 julia> Schema.model(Employee, table_name="Employee", primary_key="ID")
-Employee => Dict(:primary_key=>"ID",:table_name=>"Employee")
+| primary_key   | table_name   |
+| ------------- | ------------ |
+| ID            | Employee     |
 
 julia> Repo.execute([DROP TABLE IF EXISTS Employee])
 [ Info: DROP TABLE IF EXISTS Employee
@@ -107,7 +112,10 @@ julia> Repo.insert!(Employee, [
            (Name="Justin",  Salary=50000.50),
            (Name="Tom",     Salary=60000.50),
        ])
-[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jeremy", Salary = 10000.5), (Name = "Cloris", Salary = 20000.5), (Name = "John", Salary = 30000.5), (Name = "Hyunden", Salary = 40000.5), (Name = "Justin", Salary = 50000.5), (Name = "Tom", Salary = 60000.5)
+[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2) RETURNING ID    (Name = "Jeremy", Salary = 10000.5), (Name = "Cloris", Salary = 20000.5), (Name = "John", Salary = 30000.5), (Name = "Hyunden", Salary = 40000.5), (Name = "Justin", Salary = 50000.5), (Name = "Tom", Salary = 60000.5)
+|   id |   num_affected_rows |
+| ---- | ------------------- |
+|    6 |                   6 |
 
 julia> Repo.get(Employee, 2)
 [ Info: SELECT * FROM Employee WHERE ID = 2
@@ -146,16 +154,28 @@ julia> Repo.query(Employee)
 6 rows.
 
 julia> Repo.insert!(Employee, (Name="Jessica", Salary=70000.50))
-[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2)   (Name = "Jessica", Salary = 70000.5)
+[ Info: INSERT INTO Employee (Name, Salary) VALUES ($1, $2) RETURNING ID    (Name = "Jessica", Salary = 70000.5)
+|   id |   num_affected_rows |
+| ---- | ------------------- |
+|    7 |                   1 |
 
 julia> Repo.update!(Employee, (ID=2, Salary=85000))
-[ Info: UPDATE Employee SET Salary = $1 WHERE ID = 2   85000
+[ Info: UPDATE Employee SET Salary = $1 WHERE ID = 2    85000
+|   num_affected_rows |
+| ------------------- |
+|                   1 |
 
 julia> Repo.delete!(Employee, (ID=3,))
 [ Info: DELETE FROM Employee WHERE ID = 3
+|   num_affected_rows |
+| ------------------- |
+|                   1 |
 
 julia> Repo.delete!(Employee, 3:5)
 [ Info: DELETE FROM Employee WHERE ID BETWEEN 3 AND 5
+|   num_affected_rows |
+| ------------------- |
+|                   2 |
 
 julia> em = from(Employee)
 FromItem Employee
@@ -188,7 +208,7 @@ julia> ❓ = Octo.PlaceHolder
 PlaceHolder
 
 julia> Repo.query([SELECT * FROM em WHERE em.Name == ❓], ["Cloris"])
-[ Info: SELECT * FROM Employee WHERE Name = $1   "Cloris"
+[ Info: SELECT * FROM Employee WHERE Name = $1    "Cloris"
 |   id | name     |    salary |
 | ---- | -------- | --------- |
 |    2 | Cloris   |   85000.0 |
