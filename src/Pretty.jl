@@ -96,7 +96,16 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple}; show_fetch
     limit_colsize = settings[:colsize]
     header_spike(tree, bold) = printstyled(io, tree, bold=bold)
     row_spike(tree, bold)    = printstyled(io, tree, bold=bold)
-    colnames = fieldnames(first(typeof(nts).parameters))
+    function print_empty_row(io)
+        printstyled(io, "empty", color=:cyan)
+        printstyled(io, " row.")
+    end
+    first_typeof_nts_parameters = first(typeof(nts).parameters)
+    if first_typeof_nts_parameters === NamedTuple
+        print_empty_row(io)
+        return
+    end
+    colnames = fieldnames(first_typeof_nts_parameters)
     ncols = length(colnames)
     real_nrows = length(nts)
     function print_header(pad_, paddings_)
@@ -119,8 +128,7 @@ function _print_named_tuple_vector(io::IO, nts::Vector{<:NamedTuple}; show_fetch
             if iszero(ncols)
                 printstyled(io, "(;)")
             else
-                printstyled(io, "empty", color=:cyan)
-                printstyled(io, " row.")
+                print_empty_row(io)
             end
         else
             printstyled(io, "\n")
