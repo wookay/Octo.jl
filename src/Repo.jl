@@ -19,6 +19,7 @@ struct Connection
     multiple::Bool
     dbname::String
     loader::Module
+    adapter::Module
     conn
 end
 
@@ -29,23 +30,14 @@ const ExecuteResult = Union{Nothing, NamedTuple}
     LogLevelInfo = 0
 end
 
-const current = Dict{Symbol, Union{Nothing, Module, Connection, RepoLogLevel}}(
-    :adapter => nothing,
+const current = Dict{Symbol, Union{Nothing, Connection, RepoLogLevel}}(
     :connection => nothing,
     :log_level => LogLevelInfo,
 )
+current_connection() = current[:connection]
 
 const color_params = (; color=:yellow,)
 const color_multiple_database = (; color=:blue, bold=true)
-
-current_connection() = current[:connection]
-function current_adapter() # throw Repo.NeedsConnectError
-    if current[:adapter] isa Nothing
-        throw(NeedsConnectError("Needs to Repo.connect"))
-    else
-        current[:adapter]
-    end
-end
 
 function set_log_level(level::RepoLogLevel)
     current[:log_level] = level
@@ -87,15 +79,10 @@ end
     Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
 """
 function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
-    if database !== nothing
-        adapter.Database[:ID] = database
-    end
-    AdapterBase.current[:database] = adapter.DatabaseID()
-    current[:adapter] = adapter
     loader = Backends.backend(adapter)
     conn = Base.invokelatest(loader.db_connect; kwargs...)
     dbname = Base.invokelatest(loader.db_dbname, (; kwargs...))
-    connection = Connection(multiple, dbname, loader, conn)
+    connection = Connection(multiple, dbname, loader, adapter, conn)
     if !multiple
         current[:connection] = connection
     end
@@ -110,7 +97,6 @@ function disconnect(; db::Union{Nothing, Connection}=nothing)
     if db === nothing
         connection = current_connection()
         disconnected = connection.loader.db_disconnect(connection.conn)
-        current[:adapter] = nothing
         current[:connection] = nothing
         disconnected
     else
@@ -118,29 +104,29 @@ function disconnect(; db::Union{Nothing, Connection}=nothing)
     end
 end
 
-function get_primary_key(M)::Union{Nothing,Symbol,Vector{Symbol}}
+function get_primary_key(db, M)::Union{Nothing,Symbol,Vector{Symbol}}
     Tname = Base.typename(M)
     tbl = Schema.tables[Tname]
     Base.get(tbl, :primary_key, nothing)
 end
 
-function _field_for_primary_key(M) # throw Schema.PrimaryKeyError
-    primary_key = get_primary_key(M)
+function _field_for_primary_key(db, M) # throw Schema.PrimaryKeyError
+    primary_key = get_primary_key(db, M)
     if primary_key === nothing
         throw(Schema.PrimaryKeyError(""))
     else
-        a = current_adapter()
+        a = db.adapter
         table = a.from(M)
         a.Field(table, primary_key)
     end
 end
 
-function _field_for_primary_key(M, nt::NamedTuple) # throw Schema.PrimaryKeyError
-    primary_key = get_primary_key(M)
+function _field_for_primary_key(db, M, nt::NamedTuple) # throw Schema.PrimaryKeyError
+    primary_key = get_primary_key(db, M)
     if primary_key === nothing
         throw(Schema.PrimaryKeyError(""))
     else
-        key = _field_for_primary_key(M)
+        key = _field_for_primary_key(db, M)
         pk = getfield(nt, primary_key)
         (key, pk)
     end
@@ -153,7 +139,7 @@ end
     Repo.query(stmt::Structured; db::Connection=current_connection())
 """
 function query(stmt::Structured; db::Connection=current_connection())
-    a = current_adapter()
+    a = db.adapter
     sql = a.to_sql(stmt)
     print_debug_sql(db, stmt)
     db.loader.query(db.conn, sql)
@@ -163,7 +149,7 @@ end
     Repo.query(M::Type; db::Connection=current_connection())
 """
 function query(M::Type; db::Connection=current_connection())
-    a = current_adapter()
+    a = db.adapter
     table = a.from(M)
     query([a.SELECT * a.FROM table]; db=db)
 end
@@ -201,7 +187,7 @@ end
     Repo.query(stmt::Structured, vals::Vector; db::Connection=current_connection())
 """
 function query(stmt::Structured, vals::Vector; db::Connection=current_connection()) # throw Backends.UnsupportedError
-    a = current_adapter()
+    a = db.adapter
     prepared = a.to_sql(stmt)
     print_debug_sql(db, stmt, vals)
     db.loader.query(db.conn, prepared, vals)
@@ -212,9 +198,9 @@ end
     Repo.query(M::Type, pk::Union{Int, String}; db::Connection=current_connection())
 """
 function query(M::Type, pk::Union{Int, String}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    a = current_adapter()
+    a = db.adapter
     table = a.from(M)
-    key = _field_for_primary_key(M)
+    key = _field_for_primary_key(db, M)
     query([a.SELECT * a.FROM table a.WHERE key == pk]; db=db)
 end
 
@@ -230,9 +216,9 @@ end
     Repo.query(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection())
 """
 function query(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    a = current_adapter()
+    a = db.adapter
     table = a.from(M)
-    key = _field_for_primary_key(M)
+    key = _field_for_primary_key(db, M)
     query([a.SELECT * a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop]; db=db)
 end
 
@@ -248,7 +234,7 @@ end
     Repo.query(stmt::Structured, nt::NamedTuple; db::Connection=current_connection())
 """
 function query(stmt::Structured, nt::NamedTuple; db::Connection=current_connection())
-    a = current_adapter()
+    a = db.adapter
     v = vec(stmt)
     for (idx, kv) in enumerate(pairs(nt))
         key = a.Field(nothing, kv.first)
@@ -262,7 +248,7 @@ end
     Repo.query(M::Type, nt::NamedTuple; db::Connection=current_connection())
 """
 function query(M::Type, nt::NamedTuple; db::Connection=current_connection())
-    a = current_adapter()
+    a = db.adapter
     table = a.from(M)
     v = [a.SELECT, *, a.FROM, table, a.WHERE]
     for (idx, kv) in enumerate(pairs(nt))
@@ -323,7 +309,7 @@ end
     Repo.execute(stmt::Structured; db::Connection=current_connection())
 """
 function execute(stmt::Structured; db::Connection=current_connection())
-    a = current_adapter()
+    a = db.adapter
     sql = a.to_sql(stmt)
     print_debug_sql(db, stmt)
     db.loader.execute(db.conn, sql)
@@ -333,7 +319,7 @@ end
     Repo.execute(stmt::Structured, vals::Vector; db::Connection=current_connection())
 """
 function execute(stmt::Structured, vals::Vector; db::Connection=current_connection())
-    a = current_adapter()
+    a = db.adapter
     prepared = a.to_sql(stmt)
     print_debug_sql(db, stmt, vals)
     db.loader.execute(db.conn, prepared, vals)
@@ -343,7 +329,7 @@ end
     Repo.execute(stmt::Structured, nts::Vector{<:NamedTuple}; db::Connection=current_connection())
 """
 function execute(stmt::Structured, nts::Vector{<:NamedTuple}; db::Connection=current_connection())
-    a = current_adapter()
+    a = db.adapter
     prepared = a.to_sql(stmt)
     print_debug_sql(db, stmt, nts)
     db.loader.execute(db.conn, prepared, nts)
@@ -378,12 +364,12 @@ function do_insert(block, a, returning::Union{Nothing,Symbol,Vector}, db::Connec
 end
 
 """
-    Repo.insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Symbol,Vector}=[:id], db::Connection=current_connection())
+    Repo.insert!(M::Type, nts::Vector{<:NamedTuple}; db::Connection=current_connection(), returning::Union{Nothing,Symbol,Vector}=get_primary_key(db, M))
 """
-function insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Symbol,Vector}=get_primary_key(M), db::Connection=current_connection())
+function insert!(M::Type, nts::Vector{<:NamedTuple}; db::Connection=current_connection(), returning::Union{Nothing,Symbol,Vector}=get_primary_key(db, M))
     if !isempty(nts)
         Schema.validates.(M, nts) # throw InvalidChangesetError
-        a = current_adapter()
+        a = db.adapter
         table = a.from(M)
         nt = first(nts)
         fieldnames = a.Enclosed(collect(keys(nt)))
@@ -397,11 +383,11 @@ function insert!(M::Type, nts::Vector{<:NamedTuple}; returning::Union{Nothing,Sy
 end
 
 """
-    Repo.insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Symbol,Vector}=[:id], db::Connection=current_connection())
+    Repo.insert!(M::Type, vals::Vector{<:Tuple}; db::Connection=current_connection(), returning::Union{Nothing,Symbol,Vector}=get_primary_key(db, M))
 """
-function insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Symbol,Vector}=get_primary_key(M), db::Connection=current_connection())
+function insert!(M::Type, vals::Vector{<:Tuple}; db::Connection=current_connection(), returning::Union{Nothing,Symbol,Vector}=get_primary_key(db, M))
     if !isempty(vals)
-        a = current_adapter()
+        a = db.adapter
         table = a.from(M)
         do_insert(a, returning, db) do extra
             execute([a.INSERT a.INTO table a.VALUES a.VectorOfTuples(vals) extra...]; db=db)
@@ -412,7 +398,7 @@ function insert!(M::Type, vals::Vector{<:Tuple}; returning::Union{Nothing,Symbol
 end
 
 """
-    Repo.insert!(M, nt::NamedTuple; returning::Union{Noting,Symbol,Vector}=[:id], db::Connection=current_connection())
+    Repo.insert!(M, nt::NamedTuple; kwargs...)
 """
 function insert!(M, nt::NamedTuple; kwargs...)
     insert!(M, [nt]; kwargs...)
@@ -431,8 +417,8 @@ end
 """
 function update!(M::Type, nt::NamedTuple; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     Schema.validates(M, nt) # throw InvalidChangesetError
-    a = current_adapter()
-    (key, pk) = _field_for_primary_key(M, nt)
+    a = db.adapter
+    (key, pk) = _field_for_primary_key(db, M, nt)
     table = a.from(M)
     rest = filter(kv -> kv.first != key.name, pairs(nt))
     v = Any[a.UPDATE, table, a.SET]
@@ -480,7 +466,7 @@ end
     Repo.delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
 """
 function delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
-    a = current_adapter()
+    a = db.adapter
     table = a.from(M)
     do_delete(a, db) do
         execute(hcat([a.DELETE a.FROM table a.WHERE], vecjoin([a.Field(table, k) == v for (k, v) in pairs(nt)], a.AND)...); db=db)
@@ -491,9 +477,9 @@ end
     Repo.delete!(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection())
 """
 function delete!(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    a = current_adapter()
+    a = db.adapter
     table = a.from(M)
-    key = _field_for_primary_key(M)
+    key = _field_for_primary_key(db, M)
     do_delete(a, db) do
         execute([a.DELETE a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop]; db=db)
     end

@@ -1,11 +1,12 @@
 module ODBCLoader
 
-using Octo.Repo: SQLKeyword, ExecuteResult
-
 # https://github.com/JuliaDatabases/ODBC.jl
 using ODBC # 1.0
 using .ODBC.DBInterface
 using .ODBC.Tables
+
+using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
+using .Repo: SQLKeyword, ExecuteResult
 
 # db_dbname
 function db_dbname(nt::NamedTuple)::String
@@ -58,6 +59,11 @@ end
 # execute_result
 function execute_result(conn, command::SQLKeyword)::NamedTuple
     NamedTuple()
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
+    dbms = DBMS.SQL()
+    AdapterBase._show(io, mime, dbms, element)
 end
 
 end # module Octo.Backends.ODBCLoader

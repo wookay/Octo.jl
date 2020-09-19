@@ -3,7 +3,9 @@ module JDBCLoader
 # https://github.com/JuliaDatabases/JDBC.jl
 using JDBC # v0.5.0
 using DataFrames: DataFrame
-using Octo.Repo: SQLKeyword, ExecuteResult
+
+using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
+using .Repo: SQLKeyword, ExecuteResult
 using Octo.Backends: UnsupportedError
 
 # db_dbname
@@ -102,6 +104,11 @@ end
 # execute_result
 function execute_result(conn, command::SQLKeyword)::NamedTuple
     NamedTuple()
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
+    dbms = DBMS.SQL()
+    AdapterBase._show(io, mime, dbms, element)
 end
 
 end # module Octo.Backends.JDBCLoader

@@ -4,9 +4,10 @@ module MySQLLoader
 using MySQL # MySQL.jl 1.1
 using .MySQL.DBInterface
 using .MySQL.Tables
-using Octo.Repo: SQLKeyword, ExecuteResult
-using Octo.AdapterBase: INSERT, DELETE
-using Octo.Backends: UnsupportedError
+
+using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
+using .Repo: SQLKeyword, ExecuteResult
+using .AdapterBase: INSERT, DELETE
 
 # db_dbname
 function db_dbname(nt::NamedTuple)::String
@@ -74,6 +75,11 @@ function execute_result(conn, command::SQLKeyword)::NamedTuple
     else
         NamedTuple()
     end
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
+    dbms = DBMS.MySQL()
+    AdapterBase._show(io, mime, dbms, element)
 end
 
 end # module Octo.Backends.MySQLLoader

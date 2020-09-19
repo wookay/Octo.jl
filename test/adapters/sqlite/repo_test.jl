@@ -13,7 +13,7 @@ chmod(dbfile2, 0o666)
 
 Repo.debug_sql()
 
-repo = Repo.connect(
+Repo.connect(
     adapter = Octo.Adapters.SQLite,
     dbfile = dbfile2
 )
@@ -63,7 +63,7 @@ chmod(dbfile2, 0o666)
 
 Repo.debug_sql()
 
-repo = Repo.connect(
+Repo.connect(
     adapter = Octo.Adapters.SQLite,
     dbfile = dbfile2
 )

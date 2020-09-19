@@ -2,7 +2,9 @@ module HiveLoader
 
 # https://github.com/JuliaDatabases/Hive.jl v0.3.0
 using Hive # HiveSession HiveAuth
-using Octo.Repo: SQLKeyword, ExecuteResult
+
+using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
+using .Repo: SQLKeyword, ExecuteResult
 
 # db_dbname
 function db_dbname(nt::NamedTuple)::String
@@ -54,6 +56,11 @@ end
 # execute_result
 function execute_result(sess, command::SQLKeyword)::NamedTuple
     NamedTuple()
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
+    dbms = DBMS.Hive()
+    AdapterBase._show(io, mime, dbms, element)
 end
 
 end # module Octo.Backends.HiveLoader

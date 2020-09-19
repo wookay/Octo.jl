@@ -18,4 +18,11 @@ to_sql(subquery::SubQuery)::String = _to_sql(DatabaseID(), subquery)
 placeholder(nth::Int) = _placeholder(DatabaseID(), nth)
 placeholders(dims::Int) = _placeholders(DatabaseID(), dims)
 
+using ...AdapterBase: AdapterBase, SQLElement
+
+function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
+    dbms = DatabaseID()
+    AdapterBase._show(io, mime, dbms, element)
+end
+
 end # Octo.Adapters.SQL

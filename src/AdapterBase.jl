@@ -9,10 +9,6 @@ using .Octo.DBMS: AbstractDatabase
 using .Octo: Year, Month, Day, Hour, Minute, Second, CompoundPeriod, DatePeriod, TimePeriod, DateTime, format
 using .Octo: @sql_keywords, @sql_functions, db_keywords, db_functionnames
 
-const current = Dict{Symbol,AbstractDatabase}(
-    :database => DBMS.SQL()
-)
-
 @sql_keywords  ADD ALL ALTER AND AS ASC BEGIN BETWEEN BIGINT BY COMMIT COLUMN CONSTRAINT CREATE DATABASE DEFAULT DELETE DESC DISTINCT DROP EXCEPT EXECUTE EXISTS FOREIGN FROM FULL GROUP
 @sql_keywords  HAVING IF IN INDEX INNER INSERT INTERSECT INTO IS JOIN KEY LEFT LIKE LIMIT NULL OFF OFFSET ON OR ORDER OUTER OVER
 @sql_keywords  PARTITION PREPARE PRIMARY RECURSIVE REFERENCES RELEASE RIGHT ROLLBACK SAVEPOINT SELECT SET TABLE TO TRANSACTION TRIGGER UNION UPDATE USE USING VALUES WHERE WITH
@@ -413,11 +409,6 @@ function _placeholders(db::DB where DB<:AbstractDatabase, dims::Int)
 end
 
 # _show
-
-function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
-    db = current[:database]    # to be changed by Repo.connect
-    _show(io, mime, db, element)
-end
 
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
     printstyled(io, nameof(typeof(element)), color=:underline)
