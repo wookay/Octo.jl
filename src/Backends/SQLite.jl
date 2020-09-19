@@ -21,6 +21,7 @@ end
 
 # db_disconnect
 function db_disconnect(db)
+    DBInterface.close!(db)
 end
 
 # query
