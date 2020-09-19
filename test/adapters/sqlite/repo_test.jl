@@ -97,7 +97,9 @@ df = Repo.query(Temp)
 @test size(df) == (347,)
 
 changes = (AlbumId=0, Title="Test Album", ArtistId=0)
-Repo.insert!(Temp, changes)
+result = Repo.insert!(Temp, changes)
+@test result.num_affected_rows == 1
+
 df = Repo.query(Temp)
 @test size(df) == (348,)
 
@@ -108,11 +110,15 @@ df = Repo.get(Temp, (Title="Jagged Little Pill",))
 @test df[1].Title == "Jagged Little Pill"
 
 changes = (AlbumId=6, Title="Texas")
-Repo.update!(Temp, changes)
+result = Repo.update!(Temp, changes)
+@test result.num_affected_rows == 1
+
 df = Repo.get(Temp, 6)
 @test df[1].Title == "Texas"
 
-Repo.delete!(Temp, changes)
+result = Repo.delete!(Temp, changes)
+@test result.num_affected_rows == 1
+
 df = Repo.get(Temp, 6)
 @test size(df) == (0,)
 

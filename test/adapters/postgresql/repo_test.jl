@@ -27,7 +27,8 @@ Repo.execute(Raw("""
     )"""))
 
 changes = (Name="John", Salary=10000.50)
-Repo.insert!(Employee, changes)
+result = Repo.insert!(Employee, changes)
+@test result.num_affected_rows == 1
 
 Repo.execute(Raw("""INSERT INTO Employee (Name, Salary) VALUES (\$1, \$2)"""), changes)
 
@@ -35,9 +36,11 @@ multiple_changes = [
     (Name="Tom", Salary=20000.25),
     (Name="Jim", Salary=30000.00),
 ]
-Repo.insert!(Employee, multiple_changes)
+result = Repo.insert!(Employee, multiple_changes)
+@test result.num_affected_rows == 2
 
-Repo.execute(Raw("""INSERT INTO Employee (Name, Salary) VALUES (\$1, \$2)"""), multiple_changes)
+result = Repo.execute(Raw("""INSERT INTO Employee (Name, Salary) VALUES (\$1, \$2)"""), multiple_changes)
+@test result.num_affected_rows == 2
 
 df = Repo.query(Employee)
 @test size(df,) == (6,)
@@ -51,7 +54,9 @@ df = Repo.get(Employee, (Name="Tom",))
 @test df[1].name == "Tom"
 
 changes = (Name="Tim", Salary=15000.50)
-Repo.insert!(Employee, changes)
+result = Repo.insert!(Employee, changes)
+@test result.num_affected_rows == 1
+
 df = Repo.query(Employee)
 @test size(df) == (7,)
 df = Repo.get(Employee, (Name="Tim",))
@@ -59,12 +64,16 @@ df = Repo.get(Employee, (Name="Tim",))
 @test df[1].salary == 15000.50
 
 changes = (ID=2, Name="Chloe", Salary=15000.50)
-Repo.update!(Employee, changes)
+result = Repo.update!(Employee, changes)
+@test result.num_affected_rows == 1
+
 df = Repo.get(Employee, 2)
 @test df[1].name == "Chloe"
 
 changes = (ID=2, Name="Chloe")
-Repo.delete!(Employee, changes)
+result = Repo.delete!(Employee, changes)
+@test result.num_affected_rows == 1
+
 df = Repo.get(Employee, 2)
 @test size(df) == (0,)
 
