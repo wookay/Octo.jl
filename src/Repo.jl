@@ -16,7 +16,7 @@ end
     Connection
 """
 struct Connection
-    use_multiple_databases::Bool
+    use_multiple_connections::Bool
     dbname::String
     loader::Module
     conn
@@ -70,7 +70,7 @@ function print_debug_sql(db::Connection, stmt::Structured, params = nothing)
     if current[:log_level] <= LogLevelDebugSQL
         buf = IOBuffer()
         io = IOContext(buf, :color=>true)
-        if db.use_multiple_databases
+        if db.use_multiple_connections
             printstyled(io, string('(', db.dbname, ')'); color_multiple_database...)
             print(io, ' ')
         end
@@ -84,9 +84,9 @@ end
 
 # Repo.connect
 """
-    Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, use_multiple_databases::Bool=false, kwargs...)::Connection
+    Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, use_multiple_connections::Bool=false, kwargs...)::Connection
 """
-function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, use_multiple_databases::Bool=false, kwargs...)::Connection
+function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, use_multiple_connections::Bool=false, kwargs...)::Connection
     if database !== nothing
         adapter.Database[:ID] = database
     end
@@ -95,8 +95,8 @@ function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: 
     loader = Backends.backend(adapter)
     conn = Base.invokelatest(loader.db_connect; kwargs...)
     dbname = Base.invokelatest(loader.db_dbname, (; kwargs...))
-    connection = Connection(use_multiple_databases, dbname, loader, conn)
-    if !use_multiple_databases
+    connection = Connection(use_multiple_connections, dbname, loader, conn)
+    if !use_multiple_connections
         current[:connection] = connection
     end
     connection
@@ -187,6 +187,13 @@ end
 """
 function query(rawquery::Raw; db::Connection=current_connection())
     query([rawquery]; db=db)
+end
+
+"""
+    Repo.query(str::AbstractString; db::Connection=current_connection())
+"""
+function query(str::AbstractString; db::Connection=current_connection())
+    query(Raw(str); db=db)
 end
 
 ### Repo.query - vals::Vector
@@ -342,10 +349,12 @@ function execute(stmt::Structured, nts::Vector{<:NamedTuple}; db::Connection=cur
     db.loader.execute(db.conn, prepared, nts)
 end
 
-execute(raw::AdapterBase.Raw; db::Connection=current_connection())                            = execute([raw]; db=db)
-execute(raw::AdapterBase.Raw, nt::NamedTuple; db::Connection=current_connection())            = execute([raw], [nt]; db=db)
-execute(raw::AdapterBase.Raw, nts::Vector{<:NamedTuple}; db::Connection=current_connection()) = execute([raw], nts; db=db)
-execute(raw::AdapterBase.Raw, vals::Vector; db::Connection=current_connection())              = execute([raw], vals; db=db)
+execute(raw::Raw; db::Connection=current_connection())                            = execute([raw]; db=db)
+execute(raw::Raw, nt::NamedTuple; db::Connection=current_connection())            = execute([raw], [nt]; db=db)
+execute(raw::Raw, nts::Vector{<:NamedTuple}; db::Connection=current_connection()) = execute([raw], nts; db=db)
+execute(raw::Raw, vals::Vector; db::Connection=current_connection())              = execute([raw], vals; db=db)
+
+execute(str::AbstractString; db::Connection=current_connection())                 = execute(Raw(str); db=db)
 
 
 # Repo.insert!
@@ -406,7 +415,6 @@ end
 
 
 # Repo.execute_result
-
 function execute_result(command::SQLKeyword; db::Connection=current_connection())::ExecuteResult
     db.loader.execute_result(db.conn, command)
 end
