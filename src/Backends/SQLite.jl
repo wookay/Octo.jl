@@ -52,10 +52,12 @@ function execute(db, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
 end
 
 # execute_result
-function execute_result(db, command::SQLKeyword)::ExecuteResult
+function execute_result(db, command::SQLKeyword)::NamedTuple
     if INSERT === command
         last_insert_id = SQLite.last_insert_rowid(db)
         (id=last_insert_id,)
+    else
+        NamedTuple()
     end
 end
 

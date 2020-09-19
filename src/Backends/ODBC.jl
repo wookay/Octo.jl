@@ -56,8 +56,8 @@ function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResu
 end
 
 # execute_result
-function execute_result(conn, command::SQLKeyword)::ExecuteResult
-    nothing
+function execute_result(conn, command::SQLKeyword)::NamedTuple
+    NamedTuple()
 end
 
 end # module Octo.Backends.ODBCLoader

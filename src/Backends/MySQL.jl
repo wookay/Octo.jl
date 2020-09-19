@@ -45,22 +45,31 @@ end
 function execute(conn, prepared::String, vals::Vector)::ExecuteResult
     stmt = DBInterface.prepare(conn, prepared)
     DBInterface.execute(stmt, vals)
-    nothing
+    num_affected_rows = get_num_affected_rows(conn)
+    (num_affected_rows=num_affected_rows,)
 end
 
 function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     stmt = DBInterface.prepare(conn, prepared)
+    num_affected_rows = 0
     for nt in nts
         DBInterface.execute(stmt, values(nt))
+        num_affected_rows += get_num_affected_rows(conn)
     end
-    nothing
+    (num_affected_rows=num_affected_rows,)
+end
+
+function get_num_affected_rows(conn)::Int
+    MySQL.API.affectedrows(conn.mysql)
 end
 
 # execute_result
-function execute_result(conn, command::SQLKeyword)::ExecuteResult
+function execute_result(conn, command::SQLKeyword)::NamedTuple
     if INSERT === command
         last_insert_id = MySQL.API.insertid(conn.mysql)
         (id=last_insert_id,)
+    else
+        NamedTuple()
     end
 end
 

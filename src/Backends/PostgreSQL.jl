@@ -95,8 +95,8 @@ function get_num_affected_rows(result)::Union{Nothing, Int}
 end
 
 # execute_result
-function execute_result(conn, command::SQLKeyword)::ExecuteResult
-    nothing
+function execute_result(conn, command::SQLKeyword)::NamedTuple
+    NamedTuple()
 end
 
 end # module Octo.Backends.PostgreSQLLoader
