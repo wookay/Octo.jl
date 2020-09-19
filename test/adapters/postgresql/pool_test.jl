@@ -19,7 +19,7 @@ pool2 = Repo.connect(
     adapter = Octo.Adapters.PostgreSQL,
     dbname = "postgresqltest2",
     user = "postgres",
-    use_multiple_databases = true,
+    use_multiple_connections = true,
 )
 
 for pool in (pool1, pool2)
