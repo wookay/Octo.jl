@@ -35,6 +35,10 @@ env:
 cache:
   directories:
   - $HOME/.julia/artifacts
+  - $HOME/Library/Caches/Homebrew
+
+# before_cache:
+#  - brew cleanup
 
 before_install:
   - psql --version
