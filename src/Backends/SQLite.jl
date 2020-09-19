@@ -36,7 +36,8 @@ end
 # execute
 function execute(db, sql::String)::ExecuteResult
     DBInterface.execute(db, sql)
-    nothing
+    num_affected_rows = get_num_affected_rows(db)
+    num_affected_rows > 0 ? (num_affected_rows=num_affected_rows,) : nothing
 end
 
 function execute(db, prepared::String, vals::Vector)::ExecuteResult

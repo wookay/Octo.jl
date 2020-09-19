@@ -40,7 +40,8 @@ end
 # execute
 function execute(conn, sql::String)::ExecuteResult
     DBInterface.execute(conn, sql)
-    nothing
+    num_affected_rows = get_num_affected_rows(conn)
+    num_affected_rows > 0 ? (num_affected_rows=num_affected_rows,) : nothing
 end
 
 function execute(conn, prepared::String, vals::Vector)::ExecuteResult

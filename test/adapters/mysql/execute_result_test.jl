@@ -16,7 +16,7 @@ end
 Schema.model(Employee, table_name="Employee", primary_key="ID")
 
 Repo.execute([DROP TABLE IF EXISTS Employee])
-Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS Employee
+result = Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS Employee
                  (
                      ID INT NOT NULL AUTO_INCREMENT,
                      Name VARCHAR(255),
@@ -30,19 +30,28 @@ Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS Employee
                      empno SMALLINT,
                      PRIMARY KEY (ID)
                  );"""))
+@test result === nothing
 
-Repo.execute(Raw("""INSERT INTO Employee (Name, Salary, JoinDate, LastLogin, LunchTime, OfficeNo, JobType, Senior, empno)
+result = Repo.execute(Raw("""INSERT INTO Employee (Name, Salary, JoinDate, LastLogin, LunchTime, OfficeNo, JobType, Senior, empno)
                  VALUES
                  ('John', 10000.50, '2015-8-3', '2015-9-5 12:31:30', '12:00:00', 1, 'HR', b'1', 1301),
                  ('Tom', 20000.25, '2015-8-4', '2015-10-12 13:12:14', '13:00:00', 12, 'HR', b'1', 1422),
                  ('Jim', 30000.00, '2015-6-2', '2015-9-5 10:05:10', '12:30:00', 45, 'Management', b'0', 1567);
               """))
+@test result.num_affected_rows == 3
 inserted = Repo.execute_result(INSERT)
 @test inserted.id == 1
 
 changes = (Name="Tim", Salary=15000.50, JoinDate="2015-7-25", LastLogin="2015-10-10 12:12:25", LunchTime="12:30:00", OfficeNo=56, JobType="Accounts", empno=3200)
 inserted = Repo.insert!(Employee, changes)
 @test inserted.id == 4
+@test inserted.num_affected_rows == 1
+
+result = Repo.delete!(Employee, 1:5)
+@test result.num_affected_rows == 4
+
+result = Repo.execute("delete from Employee")
+@test result === nothing
 
 Repo.disconnect()
 

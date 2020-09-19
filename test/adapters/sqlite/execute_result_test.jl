@@ -29,11 +29,17 @@ struct Temp
 end
 Schema.model(Temp, table_name="temp", primary_key="AlbumId")
 
-Repo.query([DELETE FROM Temp])
+result = Repo.query([DELETE FROM Temp])
+
+result = Repo.execute([DELETE FROM Temp])
+@test result === nothing
 
 changes = (AlbumId=0, Title="Test Album", ArtistId=0)
 inserted = Repo.insert!(Temp, changes)
 @test inserted.id == 1
+
+result = Repo.execute("delete from Temp")
+@test result.num_affected_rows == 1
 
 Repo.disconnect()
 
