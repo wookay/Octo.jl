@@ -44,8 +44,10 @@ Repo.execute(Raw("""
     )"""), db=pgc)
 
 result = Repo.insert!(Price, (name = "Jessica", price = 70000.50); db=myc)
+@test keys(result) == (:id, :num_affected_rows)
 @test result.num_affected_rows == 1
 result = Repo.insert!(Price, (name = "Jessica", price = 70000.50); db=pgc)
+@test keys(result) == (:id, :num_affected_rows)
 @test result.num_affected_rows == 1
 
 df = Repo.query(Price, db=myc)

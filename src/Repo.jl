@@ -358,7 +358,7 @@ function do_insert(block, a, returning::Union{Nothing,Symbol,Vector}, db::Connec
         if result === nothing
             nt
         else
-            merge(result, nt)
+            merge(nt, result)
         end
     end
 end

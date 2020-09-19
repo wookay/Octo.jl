@@ -30,7 +30,15 @@ struct Employee
 end
 Schema.model(Employee, table_name="Employee", primary_key="ID")
 
-Repo.execute([DROP TABLE IF EXISTS Employee], db=pg_connector)
+for c in (sqlite_connector, pg_connector)
+    Repo.execute([DROP TABLE IF EXISTS Employee], db=c)
+end
+Repo.execute(Raw("""
+    CREATE TABLE Employee (
+        ID INTEGER PRIMARY KEY,
+        Name TEXT NOT NULL,
+        Salary NUMERIC NOT NULL
+    )"""), db=sqlite_connector)
 Repo.execute(Raw("""
     CREATE TABLE Employee (
         ID SERIAL,
@@ -38,6 +46,13 @@ Repo.execute(Raw("""
         Salary FLOAT(8),
         PRIMARY KEY (ID)
     )"""), db=pg_connector)
+
+result = Repo.insert!(Employee, (Name = "Jessica", Salary= 70000.50); db=sqlite_connector)
+@test keys(result) == (:id, :num_affected_rows)
+@test result.num_affected_rows == 1
+result = Repo.insert!(Employee, (Name = "Jessica", Salary= 70000.50); db=pg_connector)
+@test keys(result) == (:id, :num_affected_rows)
+@test result.num_affected_rows == 1
 
 Repo.query(Employee, db=sqlite_connector)
 Repo.query(Employee, db=pg_connector)
