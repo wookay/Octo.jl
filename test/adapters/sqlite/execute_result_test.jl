@@ -38,6 +38,10 @@ changes = (AlbumId=0, Title="Test Album", ArtistId=0)
 inserted = Repo.insert!(Temp, changes)
 @test inserted.id == 1
 
+# TODO
+# result = Repo.execute("update Temp set Title = 'New Title' where AlbumId > 100")
+# @test result.num_affected_rows == 0
+
 result = Repo.execute("delete from Temp")
 @test result.num_affected_rows == 1
 
