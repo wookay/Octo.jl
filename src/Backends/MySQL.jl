@@ -5,7 +5,7 @@ using MySQL # MySQL.jl 1.1
 using .MySQL.DBInterface
 using .MySQL.Tables
 using Octo.Repo: SQLKeyword, ExecuteResult
-using Octo.AdapterBase: INSERT
+using Octo.AdapterBase: INSERT, DELETE
 using Octo.Backends: UnsupportedError
 
 # db_dbname
@@ -68,6 +68,9 @@ function execute_result(conn, command::SQLKeyword)::NamedTuple
     if INSERT === command
         last_insert_id = MySQL.API.insertid(conn.mysql)
         (id=last_insert_id,)
+    elseif DELETE === command
+        num_affected_rows = get_num_affected_rows(conn)
+        (num_affected_rows=num_affected_rows,)
     else
         NamedTuple()
     end

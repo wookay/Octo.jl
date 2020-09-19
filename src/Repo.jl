@@ -461,13 +461,30 @@ function vecjoin(elements::Array{E, N}, delim::D)::Vector{Union{E, D}} where  {E
 end
 
 # Repo.delete!
+
+function do_delete(block, a, db::Connection)
+    result = block()
+    if a.DatabaseID === DBMS.PostgreSQL
+        result
+    else
+        nt = execute_result(a.DELETE; db=db)
+        if result === nothing
+            nt
+        else
+            merge(result, nt)
+        end
+    end
+end
+
 """
     Repo.delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
 """
 function delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
     a = current_adapter()
     table = a.from(M)
-    execute(hcat([a.DELETE a.FROM table a.WHERE], vecjoin([a.Field(table, k) == v for (k, v) in pairs(nt)], a.AND)...); db=db)
+    do_delete(a, db) do
+        execute(hcat([a.DELETE a.FROM table a.WHERE], vecjoin([a.Field(table, k) == v for (k, v) in pairs(nt)], a.AND)...); db=db)
+    end
 end
 
 """
@@ -477,7 +494,9 @@ function delete!(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_con
     a = current_adapter()
     table = a.from(M)
     key = _field_for_primary_key(M)
-    execute([a.DELETE a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop]; db=db)
+    do_delete(a, db) do
+        execute([a.DELETE a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop]; db=db)
+    end
 end
 
 end # module Octo.Repo

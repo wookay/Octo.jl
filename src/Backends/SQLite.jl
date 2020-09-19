@@ -4,7 +4,7 @@ module SQLiteLoader
 using SQLite # SQLite.jl 1.0
 using .SQLite: Tables, DBInterface
 using Octo.Repo: SQLKeyword, ExecuteResult
-using Octo.AdapterBase: INSERT
+using Octo.AdapterBase: INSERT, DELETE
 
 # db_dbname
 function db_dbname(nt::NamedTuple)::String
@@ -40,15 +40,22 @@ end
 function execute(db, prepared::String, vals::Vector)::ExecuteResult
     stmt = DBInterface.prepare(db, prepared)
     DBInterface.execute(stmt, vals)
-    nothing
+    num_affected_rows = get_num_affected_rows(db)
+    (num_affected_rows=num_affected_rows,)
 end
 
 function execute(db, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     stmt = DBInterface.prepare(db, prepared)
+    num_affected_rows = 0
     for nt in nts
         DBInterface.execute(stmt, values(nt))
+        num_affected_rows += get_num_affected_rows(db)
     end
-    nothing
+    (num_affected_rows=num_affected_rows,)
+end
+
+function get_num_affected_rows(db)::Int
+    SQLite.sqlite3_total_changes(db.handle)
 end
 
 # execute_result
@@ -56,6 +63,9 @@ function execute_result(db, command::SQLKeyword)::NamedTuple
     if INSERT === command
         last_insert_id = SQLite.last_insert_rowid(db)
         (id=last_insert_id,)
+    elseif DELETE === command
+        num_affected_rows = get_num_affected_rows(db)
+        (num_affected_rows=num_affected_rows,)
     else
         NamedTuple()
     end
