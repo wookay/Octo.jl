@@ -31,12 +31,19 @@ Schema.model(Temp, table_name="temp", primary_key="AlbumId")
 
 result = Repo.query([DELETE FROM Temp])
 
+result = Repo.query("select * from temp")
+@test isempty(result)
+
 result = Repo.execute([DELETE FROM Temp])
-@test result === nothing
+# TODO
+# @test result.num_affected_rows == 0
 
 changes = (AlbumId=0, Title="Test Album", ArtistId=0)
 inserted = Repo.insert!(Temp, changes)
 @test inserted.id == 1
+
+result = Repo.query("select * from temp")
+@test isone(length(result))
 
 # TODO
 # result = Repo.execute("update Temp set Title = 'New Title' where AlbumId > 100")

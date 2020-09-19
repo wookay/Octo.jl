@@ -25,13 +25,24 @@ function db_disconnect(db)
 end
 
 # query
+function get_query_result(q::SQLite.Query)
+    cnt = SQLite.sqlite3_column_count(q.stmt.handle)
+    if iszero(cnt)
+        NamedTuple[]
+    else
+        Tables.rowtable(q)
+    end
+end
+
 function query(db, sql::String)
-    (Tables.rowtable ∘ DBInterface.execute)(db, sql)
+    q = DBInterface.execute(db, sql)
+    get_query_result(q)
 end
 
 function query(db, prepared::String, vals::Vector)
     stmt = DBInterface.prepare(db, prepared)
-    (Tables.rowtable ∘ DBInterface.execute)(stmt, vals)
+    q = DBInterface.execute(stmt, vals)
+    get_query_result(q)
 end
 
 # execute
