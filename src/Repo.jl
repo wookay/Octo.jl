@@ -16,7 +16,7 @@ end
     Connection
 """
 struct Connection
-    use_multiple_connections::Bool
+    multiple::Bool
     dbname::String
     loader::Module
     conn
@@ -70,7 +70,7 @@ function print_debug_sql(db::Connection, stmt::Structured, params = nothing)
     if current[:log_level] <= LogLevelDebugSQL
         buf = IOBuffer()
         io = IOContext(buf, :color=>true)
-        if db.use_multiple_connections
+        if db.multiple
             printstyled(io, string('(', db.dbname, ')'); color_multiple_database...)
             print(io, ' ')
         end
@@ -84,9 +84,9 @@ end
 
 # Repo.connect
 """
-    Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, use_multiple_connections::Bool=false, kwargs...)::Connection
+    Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
 """
-function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, use_multiple_connections::Bool=false, kwargs...)::Connection
+function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
     if database !== nothing
         adapter.Database[:ID] = database
     end
@@ -95,8 +95,8 @@ function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: 
     loader = Backends.backend(adapter)
     conn = Base.invokelatest(loader.db_connect; kwargs...)
     dbname = Base.invokelatest(loader.db_dbname, (; kwargs...))
-    connection = Connection(use_multiple_connections, dbname, loader, conn)
-    if !use_multiple_connections
+    connection = Connection(multiple, dbname, loader, conn)
+    if !multiple
         current[:connection] = connection
     end
     connection
