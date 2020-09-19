@@ -37,7 +37,7 @@ end
 
 # execute_result
 function execute_result(conn, command::SQLKeyword)::NamedTuple
-    NamedTuple
+    NamedTuple()
 end
 
 end # module Octo.Backends.SQLLoader
