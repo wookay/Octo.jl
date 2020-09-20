@@ -15,7 +15,9 @@ struct Employee
 end
 Schema.model(Employee, table_name="Employee", primary_key="ID")
 
-Repo.execute([DROP TABLE IF EXISTS Employee])
+result = Repo.execute([DROP TABLE IF EXISTS Employee])
+@test result === nothing
+
 result = Repo.execute(Raw("""CREATE TABLE IF NOT EXISTS Employee
                  (
                      ID INT NOT NULL AUTO_INCREMENT,
@@ -50,12 +52,11 @@ inserted = Repo.insert!(Employee, changes)
 result = Repo.delete!(Employee, 1:5)
 @test result.num_affected_rows == 4
 
-# TODO
-# result = Repo.execute("update Employee set Name = 'New Name' where ID > 100")
-# @test result.num_affected_rows == 0
+result = Repo.execute("update Employee set Name = 'New Name' where ID > 100")
+@test result.num_affected_rows == 0
 
 result = Repo.execute("delete from Employee")
-@test result === nothing
+@test result.num_affected_rows == 0
 
 Repo.disconnect()
 
