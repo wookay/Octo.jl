@@ -5,8 +5,8 @@ using SQLite # SQLite.jl 1.0
 using .SQLite: Tables, DBInterface
 
 using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
-using .Repo: SQLKeyword, ExecuteResult
-using .AdapterBase: INSERT, DELETE
+using .Repo: SQLKeyword, ExecuteResult, sql_startswith_insert_update_delete
+using .AdapterBase: INSERT
 
 # db_dbname
 function db_dbname(nt::NamedTuple)::String
@@ -48,15 +48,13 @@ end
 # execute
 function execute(db, sql::String)::ExecuteResult
     DBInterface.execute(db, sql)
-    num_affected_rows = get_num_affected_rows(db)
-    num_affected_rows > 0 ? (num_affected_rows=num_affected_rows,) : nothing
+    sql_startswith_insert_update_delete_then_get_num_affected_rows(sql, db)
 end
 
 function execute(db, prepared::String, vals::Vector)::ExecuteResult
     stmt = DBInterface.prepare(db, prepared)
     DBInterface.execute(stmt, vals)
-    num_affected_rows = get_num_affected_rows(db)
-    (num_affected_rows=num_affected_rows,)
+    sql_startswith_insert_update_delete_then_get_num_affected_rows(prepared, db)
 end
 
 function execute(db, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
@@ -69,6 +67,15 @@ function execute(db, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
     (num_affected_rows=num_affected_rows,)
 end
 
+function sql_startswith_insert_update_delete_then_get_num_affected_rows(sql::String, db)
+    if sql_startswith_insert_update_delete(sql)
+        num_affected_rows = get_num_affected_rows(db)
+        (num_affected_rows=num_affected_rows,)
+    else
+        nothing
+    end
+end
+
 function get_num_affected_rows(db)::Int
     SQLite.sqlite3_total_changes(db.handle)
 end
@@ -78,9 +85,6 @@ function execute_result(db, command::SQLKeyword)::NamedTuple
     if INSERT === command
         last_insert_id = SQLite.last_insert_rowid(db)
         (id=last_insert_id,)
-    elseif DELETE === command
-        num_affected_rows = get_num_affected_rows(db)
-        (num_affected_rows=num_affected_rows,)
     else
         NamedTuple()
     end

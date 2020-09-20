@@ -6,8 +6,8 @@ using .MySQL.DBInterface
 using .MySQL.Tables
 
 using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
-using .Repo: SQLKeyword, ExecuteResult
-using .AdapterBase: INSERT, DELETE
+using .Repo: SQLKeyword, ExecuteResult, sql_startswith_insert_update_delete
+using .AdapterBase: INSERT
 
 # db_dbname
 function db_dbname(nt::NamedTuple)::String
@@ -38,17 +38,16 @@ function query(conn, prepared::String, vals::Vector)
 end
 
 # execute
+
 function execute(conn, sql::String)::ExecuteResult
-    DBInterface.execute(conn, sql)
-    num_affected_rows = get_num_affected_rows(conn)
-    num_affected_rows > 0 ? (num_affected_rows=num_affected_rows,) : nothing
+    q = DBInterface.execute(conn, sql)
+    sql_startswith_insert_update_delete_then_get_num_affected_rows(q.sql, conn)
 end
 
 function execute(conn, prepared::String, vals::Vector)::ExecuteResult
     stmt = DBInterface.prepare(conn, prepared)
     DBInterface.execute(stmt, vals)
-    num_affected_rows = get_num_affected_rows(conn)
-    (num_affected_rows=num_affected_rows,)
+    sql_startswith_insert_update_delete_then_get_num_affected_rows(prepared, conn)
 end
 
 function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
@@ -61,6 +60,15 @@ function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResu
     (num_affected_rows=num_affected_rows,)
 end
 
+function sql_startswith_insert_update_delete_then_get_num_affected_rows(sql::String, conn)
+    if sql_startswith_insert_update_delete(sql)
+        num_affected_rows = get_num_affected_rows(conn)
+        (num_affected_rows=num_affected_rows,)
+    else
+        nothing
+    end
+end
+
 function get_num_affected_rows(conn)::Int
     MySQL.API.affectedrows(conn.mysql)
 end
@@ -70,9 +78,6 @@ function execute_result(conn, command::SQLKeyword)::NamedTuple
     if INSERT === command
         last_insert_id = MySQL.API.insertid(conn.mysql)
         (id=last_insert_id,)
-    elseif DELETE === command
-        num_affected_rows = get_num_affected_rows(conn)
-        (num_affected_rows=num_affected_rows,)
     else
         NamedTuple()
     end

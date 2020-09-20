@@ -4,7 +4,7 @@ module Options
 
 arguments = (
     username = "root",
-    password = "",
+    password = get(ENV, "MYSQL_ROOT_PASWORD", ""),
     hostname = "localhost",
     port = 3306,
     db = "mysqltest",

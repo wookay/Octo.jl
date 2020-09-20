@@ -1,7 +1,7 @@
 module PostgreSQLLoader
 
 # https://github.com/invenia/LibPQ.jl
-using LibPQ # 1.2
+using LibPQ: LibPQ # 1.2
 using .LibPQ.Tables
 
 using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured

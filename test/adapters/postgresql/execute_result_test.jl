@@ -15,14 +15,17 @@ Repo.connect(
     user = "postgres",
 )
 
-Repo.execute([DROP TABLE IF EXISTS Employee])
-Repo.execute(Raw("""
+result = Repo.execute([DROP TABLE IF EXISTS Employee])
+@test result === nothing
+
+result = Repo.execute(Raw("""
     CREATE TABLE Employee (
         ID SERIAL,
         Name VARCHAR(255),
         Salary FLOAT(8),
         PRIMARY KEY (ID)
     )"""))
+@test result === nothing
 
 changes = (Name="John", Salary=10000.50)
 @test Repo.insert!(Employee, changes).id == 1
@@ -33,10 +36,14 @@ changes = (Salary=3000, Name="Mike")
 struct Test1
 end
 Schema.model(Test1, table_name="test1", primary_key=nothing)
-Repo.execute([DROP TABLE IF EXISTS Test1])
-Repo.execute(Raw("""
+result = Repo.execute([DROP TABLE IF EXISTS Test1])
+@test result === nothing
+
+result = Repo.execute(Raw("""
 CREATE TABLE IF NOT EXISTS test1 (a boolean, b text)
 """))
+@test result === nothing
+
 result = Repo.insert!(Test1, (a=true, b="sic est"))
 @test result == (num_affected_rows = 1,)
 result = Repo.insert!(Test1, (a=true, b="sic est"); returning=nothing)
