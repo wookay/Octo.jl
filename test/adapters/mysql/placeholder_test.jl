@@ -7,9 +7,10 @@ using Octo.Backends: UnsupportedError
 Repo.debug_sql()
 
 include("options.jl")
+
 Repo.connect(;
     adapter = Octo.Adapters.MySQL,
-    Options.arguments...
+    Options.for_mysql...
 )
 
 struct User

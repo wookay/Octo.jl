@@ -9,17 +9,17 @@ Schema.model(Employee, table_name="Employee", primary_key="ID")
 
 Repo.debug_sql()
 
-pool1 = Repo.connect(
+include("options.jl")
+
+pool1 = Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    dbname = "postgresqltest",
-    user = "postgres",
+    Options.for_postgresql...
 )
 
-pool2 = Repo.connect(
+pool2 = Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    dbname = "postgresqltest2",
-    user = "postgres",
     multiple = true,
+    merge(Options.for_postgresql, (dbname = "postgresqltest2",))...
 )
 
 for pool in (pool1, pool2)

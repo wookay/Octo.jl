@@ -2,6 +2,7 @@
 
 <https://github.com/wookay/Octo.jl>
 
+
 `Octo.jl` is an SQL Query DSL in [Julia](https://julialang.org).
 It also comes with a very useful tool called [Repo](https://github.com/wookay/Octo.jl#repo).
 You could `Repo.get`, `Repo.insert!` `Repo.update!` `Repo.delete!` for many database drivers without hand-written SQL.
@@ -47,10 +48,8 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 
 Current supported database drivers:
   - PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl))
-  - MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
   - SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl)
-  - ODBC(via [ODBC.jl](https://github.com/JuliaDatabases/ODBC.jl))
-  - JDBC(via [JDBC.jl](https://github.com/JuliaDatabases/JDBC.jl))
+  - MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
 
 ```julia-repl
 julia> using Octo.Adapters.PostgreSQL
@@ -242,7 +241,7 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 
 ![colored_sql_statements.png](https://raw.github.com/wookay/Octo.jl/master/docs/images/colored_sql_statements.png)
 
- * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691](https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691).
+ * See the CI logs  [https://github.com/wookay/Octo.jl/runs/1360221164](https://github.com/wookay/Octo.jl/runs/1360221164?check_suite_focus=true#step:6:127).
 
 
 ## Requirements
@@ -256,9 +255,7 @@ You need [Julia](https://julialang.org/downloads/).
 ```
 
 ```julia-repl
-(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.1, 1.2)
-(v1.0) pkg> add SQLite  # for SQLite (depends on SQLite.jl 1.0)
-(v1.0) pkg> add MySQL   # for MySQL (depends on MySQL.jl 1.0, 1.1)
-(v1.0) pkg> add ODBC    # for ODBC (depends on ODBC.jl 1.0)
-(v1.0) pkg> add JDBC    # for JDBC (depends on JDBC.jl ≥ 0.5.0)
+(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.4, 1.6)
+(v1.0) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.0)
+(v1.0) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.0, 1.1)
 ```

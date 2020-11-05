@@ -5,9 +5,11 @@ using Octo.Adapters.PostgreSQL # Repo
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+
+Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    user = "postgres",
+    Options.for_postgresql...
 )
 
 # https://discourse.julialang.org/t/postgresql-in-julia-libpq-jl/9379/4

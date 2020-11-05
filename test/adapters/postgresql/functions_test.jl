@@ -5,9 +5,11 @@ using Octo.Adapters.PostgreSQL # Repo Schema SELECT AVG FROM
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+
+Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    user = "postgres",
+    Options.for_postgresql...
 )
 
 struct User

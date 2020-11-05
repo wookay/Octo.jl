@@ -5,10 +5,11 @@ using Octo.Adapters.PostgreSQL # Repo Raw Schema.model DROP TABLE IF EXISTS
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+
+Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    dbname = "postgresqltest",
-    user = "postgres",
+    Options.for_postgresql...
 )
 
 struct Post

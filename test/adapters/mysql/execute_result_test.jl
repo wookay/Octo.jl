@@ -6,9 +6,10 @@ using Octo.Adapters.MySQL # Repo Schema Raw USE INSERT
 Repo.debug_sql()
 
 include("options.jl")
+
 Repo.connect(;
     adapter = Octo.Adapters.MySQL,
-    Options.arguments...
+    Options.for_mysql...
 )
 
 struct Employee

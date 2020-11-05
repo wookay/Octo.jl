@@ -1,8 +1,8 @@
 # Octo.jl
 
-|  **Documentation**                        |  **Build Status**                                                |
-|:-----------------------------------------:|:----------------------------------------------------------------:|
-|  [![][docs-latest-img]][docs-latest-url]  |  [![][travis-img]][travis-url]  [![][codecov-img]][codecov-url]  |
+|  **Documentation**                        |  **Build Status**                                                  |
+|:-----------------------------------------:|:------------------------------------------------------------------:|
+|  [![][docs-latest-img]][docs-latest-url]  |  [![][actions-img]][actions-url]  [![][codecov-img]][codecov-url]  |
 
 
 `Octo.jl` is an SQL Query DSL in [Julia](https://julialang.org).
@@ -50,10 +50,8 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 
 Current supported database drivers:
   - PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl))
-  - MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
   - SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl)
-  - ODBC(via [ODBC.jl](https://github.com/JuliaDatabases/ODBC.jl))
-  - JDBC(via [JDBC.jl](https://github.com/JuliaDatabases/JDBC.jl))
+  - MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
 
 ```julia
 julia> using Octo.Adapters.PostgreSQL
@@ -245,7 +243,7 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 
 ![colored_sql_statements.png](https://raw.github.com/wookay/Octo.jl/master/docs/images/colored_sql_statements.png)
 
- * See the CI logs  [https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691](https://travis-ci.org/wookay/Octo.jl/jobs/388090148#L691).
+ * See the CI logs  [https://github.com/wookay/Octo.jl/runs/1360221164](https://github.com/wookay/Octo.jl/runs/1360221164?check_suite_focus=true#step:6:127).
 
 
 ## Requirements
@@ -259,19 +257,17 @@ You need [Julia](https://julialang.org/downloads/).
 ```
 
 ```julia
-(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.1, 1.2)
-(v1.0) pkg> add SQLite  # for SQLite (depends on SQLite.jl 1.0)
-(v1.0) pkg> add MySQL   # for MySQL (depends on MySQL.jl 1.0, 1.1)
-(v1.0) pkg> add ODBC    # for ODBC (depends on ODBC.jl 1.0)
-(v1.0) pkg> add JDBC    # for JDBC (depends on JDBC.jl ≥ 0.5.0)
+(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.4, 1.6)
+(v1.0) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.0)
+(v1.0) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.0, 1.1)
 ```
 
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://wookay.github.io/docs/Octo.jl/
 
-[travis-img]: https://api.travis-ci.org/wookay/Octo.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/wookay/Octo.jl
+[actions-img]: https://github.com/wookay/Octo.jl/workflows/CI/badge.svg
+[actions-url]: https://github.com/wookay/Octo.jl/actions
 
 [codecov-img]: https://codecov.io/gh/wookay/Octo.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/wookay/Octo.jl

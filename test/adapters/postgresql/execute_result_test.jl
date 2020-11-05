@@ -9,10 +9,11 @@ Schema.model(Employee, table_name="Employee", primary_key="ID")
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+
+Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    dbname = "postgresqltest",
-    user = "postgres",
+    Options.for_postgresql...
 )
 
 result = Repo.execute([DROP TABLE IF EXISTS Employee])

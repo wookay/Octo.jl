@@ -1,0 +1,66 @@
+name: CI
+
+on: [pull_request, push]
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: mysqltest
+        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Setup PostgreSQL
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          PGPASSWORD: postgres
+        run: |
+             psql --version
+             netstat -nlp | grep 5432
+             psql -h localhost -U postgres -tc 'SHOW server_version'
+             psql -h localhost -U postgres -c '\conninfo'
+             psql -h localhost -U postgres -c "CREATE DATABASE postgresqltest;"
+             psql -h localhost -U postgres -c "CREATE DATABASE postgresqltest2;"
+
+      - name: Setup MySQL
+        run: |
+             mysql --version
+             mysqladmin -h 127.0.0.1 -uroot variables | grep socket
+             mysql -h 127.0.0.1 -uroot -e 'show variables like "socket";'
+             mysql -h 127.0.0.1 -uroot -e 'CREATE DATABASE IF NOT EXISTS mysqltest;'
+             mysql -h 127.0.0.1 -uroot -e 'GRANT ALL PRIVILEGES ON mysqltest.* TO "root"@"localhost"'
+
+      - uses: actions/checkout@master
+
+      - name: runtests
+        env:
+          PGPASSWORD: postgres
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_ROOT_PASWORD:
+        run: |
+             julia --project=. -e 'using Pkg; Pkg.test(coverage=true)'
+
+      - name: Coverage
+        if: github.event.ref == 'refs/heads/master'
+        run: |
+             julia --project=. -e 'using Pkg; Pkg.add("Coverage"); using Coverage; cov = Coverage.process_folder(); mkdir("coverage"); Coverage.LCOV.writefile("coverage/lcov.info", cov)'
+
+      - uses: codecov/codecov-action@v1
+        if: github.event.ref == 'refs/heads/master'

@@ -2,13 +2,19 @@
 
 module Options
 
-arguments = (
+for_mysql = (
+    hostname = get(ENV, "MYSQL_HOST", "localhost"),
     username = "root",
     password = get(ENV, "MYSQL_ROOT_PASWORD", ""),
-    hostname = "localhost",
     port = 3306,
     db = "mysqltest",
-    unix_socket = Sys.islinux() ? "/var/run/mysqld/mysqld.sock" : "/tmp/mysql.sock",
+)
+
+for_postgresql = (
+    host = "localhost",
+    dbname = "postgresqltest",
+    user = "postgres",
+    password = get(ENV, "PGPASSWORD", ""),
 )
 
 end # module Options

@@ -19,11 +19,12 @@ sqlite_connector = Repo.connect(
 
 using Octo.Adapters.PostgreSQL # Repo Schema Raw
 
-pg_connector = Repo.connect(
+include("options.jl")
+
+pg_connector = Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    dbname = "postgresqltest2",
-    user = "postgres",
     multiple = true,
+    Options.for_postgresql... 
 )
 
 struct Employee

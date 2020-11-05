@@ -5,10 +5,11 @@ using Octo.Adapters.PostgreSQL
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+
+Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    dbname = "postgresqltest",
-    user = "postgres",
+    Options.for_postgresql...
 )
 
 struct Book

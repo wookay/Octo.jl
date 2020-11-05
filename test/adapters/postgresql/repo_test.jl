@@ -9,12 +9,13 @@ Schema.model(Employee, table_name="Employee", primary_key="ID")
 
 Repo.debug_sql()
 
+include("options.jl")
+
 # @test_throws Repo.NeedsConnectError Repo.get(Employee, 2)
 
-Repo.connect(
+Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    dbname = "postgresqltest",
-    user = "postgres",
+    Options.for_postgresql...
 )
 
 Repo.execute([DROP TABLE IF EXISTS Employee])
@@ -105,10 +106,11 @@ Schema.model(Role, table_name="roles")
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+
+Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    dbname = "postgresqltest",
-    user = "postgres",
+    Options.for_postgresql...
 )
 
 Repo.execute([DROP TABLE IF EXISTS Role])

@@ -16,9 +16,11 @@ w = from([PARTITION BY :depname ORDER BY :salary DESC], :w)
 
 Repo.debug_sql()
 
-Repo.connect(
+include("options.jl")
+
+Repo.connect(;
     adapter = Octo.Adapters.PostgreSQL,
-    user = "postgres",
+    Options.for_postgresql...
 )
 
 
