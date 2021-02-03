@@ -241,8 +241,6 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 
 ![colored_sql_statements.png](https://raw.github.com/wookay/Octo.jl/master/docs/images/colored_sql_statements.png)
 
- * See the CI logs  [https://github.com/wookay/Octo.jl/runs/1360221164](https://github.com/wookay/Octo.jl/runs/1360221164?check_suite_focus=true#step:6:127).
-
 
 ## Requirements
 
