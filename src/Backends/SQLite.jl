@@ -1,7 +1,7 @@
 module SQLiteLoader
 
 # https://github.com/JuliaDatabases/SQLite.jl
-using SQLite # SQLite.jl 1.0
+using SQLite # SQLite.jl 1.1.14
 using .SQLite: Tables, DBInterface
 
 using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
@@ -26,7 +26,8 @@ end
 
 # query
 function get_query_result(q::SQLite.Query)
-    cnt = SQLite.sqlite3_column_count(q.stmt.handle)
+    _st = SQLite._stmt(q.stmt)
+    cnt = SQLite.sqlite3_column_count(_st.handle)
     if iszero(cnt)
         NamedTuple[]
     else
