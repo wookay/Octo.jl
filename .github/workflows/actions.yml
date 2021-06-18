@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        julia-version: [1.6.0]
+        julia-version: [1.6.1]
         julia-arch: [x64]
         os: [ubuntu-latest]
         include:
@@ -15,7 +15,7 @@ jobs:
             os: ubuntu-latest
           - julia-version: 1.5.4
             os: ubuntu-latest
-          - julia-version: 1.3.0
+          - julia-version: 1.3.1
             os: ubuntu-latest
 
     services:
@@ -70,9 +70,9 @@ jobs:
              julia --project=. -e 'using Pkg; Pkg.test(coverage=true)'
 
       - name: Coverage
-        if: matrix.julia-version == '1.6.0' && github.event.ref == 'refs/heads/master'
+        if: matrix.julia-version == '1.6.1' && github.event.ref == 'refs/heads/master'
         run: |
              julia --project=. -e 'using Pkg; Pkg.add("Coverage"); using Coverage; cov = Coverage.process_folder(); mkdir("coverage"); Coverage.LCOV.writefile("coverage/lcov.info", cov)'
 
       - uses: codecov/codecov-action@v1
-        if: matrix.julia-version == '1.6.0' && github.event.ref == 'refs/heads/master'
+        if: matrix.julia-version == '1.6.1' && github.event.ref == 'refs/heads/master'
