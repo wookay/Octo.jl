@@ -12,5 +12,6 @@ df = DataFrame(result, copycols=false)
 @test df.id == [1, 2]
 @test df.title == ["Hello", "World"]
 @test size(df) == (2, 2)
+@test result == NamedTuple.(eachrow(df))
 
 end # module test_dataframes_df
