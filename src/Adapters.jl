@@ -7,5 +7,6 @@ include(joinpath("Adapters", "SQL.jl"))
 include(joinpath("Adapters", "ODBC.jl"))
 include(joinpath("Adapters", "JDBC.jl"))
 include(joinpath("Adapters", "Hive.jl"))
+include(joinpath("Adapters", "DuckDB.jl"))
 
 end # module Octo.Adapters

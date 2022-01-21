@@ -7,5 +7,6 @@ struct SQLite <: AbstractDatabase end
 struct MySQL <: AbstractDatabase end
 struct PostgreSQL <: AbstractDatabase end
 struct Hive <: AbstractDatabase end
+struct DuckDB <: AbstractDatabase end
 
 end # module Octo.DBMS
