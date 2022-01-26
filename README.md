@@ -260,6 +260,8 @@ You need [Julia](https://julialang.org/downloads/).
 (v1.0) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.0, 1.1)
 ```
 
+See also [DBInterface.jl](https://github.com/JuliaDatabases/DBInterface.jl).
+
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://wookay.github.io/docs/Octo.jl/
