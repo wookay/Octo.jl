@@ -50,7 +50,7 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 
 Current supported database drivers:
   - PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl))
-  - SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl)
+  - SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
   - MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
 
 ```julia
