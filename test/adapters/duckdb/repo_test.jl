@@ -18,12 +18,24 @@ Repo.execute(Raw("""
 
 changes = [(item="Jeans", value=20.0, count=1),
            (item="hammer", value=42.2, count=2)]
-# Repo.insert!(Item, changes)
-
-res = Repo.execute("INSERT INTO items VALUES ('jeans', 20.0, 1), ('hammer', 42.2, 2)")
+inserted = Repo.insert!(Item, changes)
+@test inserted == (Count = 2,)
 
 df = Repo.query(Item)
-@test size(df) == (2, 2)
+@test size(df) == (2, 3)
+
+df = Repo.get(Item, (item="Jeans",))
+@test size(df) == (1, 3)
+@test df[!, :item] == ["Jeans"]
+
+changes = (item="Jeans",)
+result = Repo.delete!(Item, changes)
+@test result == (Count = 1,)
+result = Repo.delete!(Item, changes)
+@test result == (Count = 0,)
+
+df = Repo.query(Item)
+@test size(df) == (1, 3)
 
 Repo.disconnect()
 

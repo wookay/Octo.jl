@@ -351,15 +351,16 @@ function do_insert(block, a, returning::Union{Nothing,Symbol,Vector}, db::Connec
         extra = vcat(a.RETURNING, returning isa Symbol ? returning : tuple(Symbol.(returning)...))
     end
     result = block(extra)
-    if a.DatabaseID === DBMS.PostgreSQL
-        result
-    else
+    if a.DatabaseID === DBMS.MySQL ||
+       a.DatabaseID === DBMS.SQLite
         nt = execute_result(a.INSERT; db=db)
         if result === nothing
             nt
         else
             merge(nt, result)
         end
+    else
+        result
     end
 end
 

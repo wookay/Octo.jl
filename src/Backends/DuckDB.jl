@@ -1,45 +1,55 @@
 module DuckDBLoader
 
-# https://github.com/kimmolinna/DuckDB.jl
+# https://github.com/duckdb/duckdb/tree/master/tools/juliapkg
 using DuckDB
-using .DuckDB.DBInterface
+using .DuckDB: DBInterface
 
 using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
 using .Repo: SQLKeyword, ExecuteResult
 
 # db_dbname
 function db_dbname(nt::NamedTuple)::String
-    ""
+    "DuckDB"
 end
 
 # db_connect
 function db_connect(; file::String=":memory:")
-    DuckDB.DB(file)
+    DBInterface.connect(DuckDB.DB, file)
 end
 
 # db_disconnect
-function db_disconnect(db::DuckDB.DB)
-    DBInterface.close!(db::DuckDB.DB)
+function db_disconnect(con::DuckDB.DB)
+    DBInterface.close!(con)
 end
 
 # query
-function query(db::DuckDB.DB, sql::String)
-    res = DBInterface.execute(db, sql)
+function query(con::DuckDB.DB, sql::String)
+    res = DBInterface.execute(con, sql)
     DuckDB.toDataFrame(res)
 end
 
 # execute
-function execute(db::DuckDB.DB, sql::String)::ExecuteResult
-    result = DBInterface.execute(db, sql)
-    nothing
+function execute(con::DuckDB.DB, sql::String)::ExecuteResult
+    result = DBInterface.execute(con, sql)
+    if isempty(result)
+        nothing
+    else
+        df = DuckDB.toDataFrame(result)
+        (Count = only(df[!, :Count]),)
+    end
 end
 
-function execute(db::DuckDB.DB, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
-    # stmt = DBInterface.prepare(db, prepared)
-    # for tup in nts
-    #     result = DBInterface.execute(stmt, collect(tup))
-    # end
-    nothing
+function execute(con::DuckDB.DB, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
+    stmt = DBInterface.prepare(con, prepared)
+    cnt = 0
+    for tup in nts
+        result = DBInterface.execute(stmt, collect(tup))
+        if !isempty(result)
+            df = DuckDB.toDataFrame(result)
+            cnt += only(df[!, :Count])
+        end
+    end
+    (Count = cnt,)
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
