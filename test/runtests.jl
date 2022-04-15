@@ -2,7 +2,7 @@ using Jive
 
 ignores = Set()
 
-for db in ["hive", "jdbc", "odbc"]
+for db in ["hive", "jdbc", "odbc", "duckdb"]
     push!(ignores, joinpath("adapters", db))
 end
 
