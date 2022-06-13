@@ -2,8 +2,13 @@ using Jive
 
 ignores = Set()
 
-for db in ["hive", "jdbc", "odbc", "duckdb"]
+for db in ["hive", "jdbc", "odbc"]
     push!(ignores, joinpath("adapters", db))
+end
+
+# waiting updates  https://github.com/JuliaBinaryWrappers/DuckDB_jll.jl
+if haskey(ENV, "CI")
+    push!(ignores, "adapters/duckdb")
 end
 
 # LibPQ v0.11.1

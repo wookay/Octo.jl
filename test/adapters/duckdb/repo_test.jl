@@ -1,5 +1,14 @@
 module adapters_duckdb_repo_test
 
+pkgid = Base.identify_package("DuckDB")
+loc = Base.locate_package(pkgid)
+if loc !== nothing
+    dylib = normpath(loc, "../../../../build/release/src/libduckdb.dylib")
+    if isfile(dylib)
+        ENV["JULIA_DUCKDB_LIBRARY"] = dylib
+    end
+end
+
 using Test # @test
 using Octo.Adapters.DuckDB # Repo Schema Raw
 
