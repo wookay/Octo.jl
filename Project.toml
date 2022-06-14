@@ -13,7 +13,6 @@ SQLite = "1.1"
 MySQL = "1.0, 1.1"
 MariaDB_Connector_C_jll = "3.1"
 DataFrames = "1.1"
-DuckDB = "0.3"
 julia = "1"
 
 [extras]
@@ -24,7 +23,6 @@ SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
 MySQL = "39abe10b-433b-5dbd-92d4-e302a9df00cd"
 MariaDB_Connector_C_jll = "aabc7e14-95f1-5e66-9f32-aea603782360"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-DuckDB = "dc41c802-e0d0-4f5a-8bba-22eb8b17d8a4"
 
 [targets]
-test = ["Test", "Jive", "LibPQ", "SQLite", "MySQL", "MariaDB_Connector_C_jll", "DataFrames", "DuckDB"]
+test = ["Test", "Jive", "LibPQ", "SQLite", "MySQL", "MariaDB_Connector_C_jll", "DataFrames"]
