@@ -8,7 +8,7 @@ end
 
 # waiting updates  https://github.com/JuliaBinaryWrappers/DuckDB_jll.jl
 if haskey(ENV, "CI")
-    push!(ignores, "adapters/duckdb")
+#    push!(ignores, "adapters/duckdb")
 end
 
 # LibPQ v0.11.1
