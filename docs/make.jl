@@ -24,6 +24,7 @@ makedocs(
             "Adapters/PostgreSQL.md",
             "Adapters/MySQL.md",
             "Adapters/SQLite.md",
+            "Adapters/DuckDB.md",
             "Adapters/ODBC.md",
             "Adapters/JDBC.md",
             "Adapters/Hive.md",
