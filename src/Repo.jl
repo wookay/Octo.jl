@@ -96,11 +96,11 @@ end
 function disconnect(; db::Union{Nothing, Connection}=nothing)
     if db === nothing
         connection = current_connection()
-        disconnected = connection.loader.db_disconnect(connection.conn)
+        disconnected = Base.invokelatest(connection.loader.db_disconnect, connection.conn)
         current[:connection] = nothing
         disconnected
     else
-        db.loader.db_disconnect(db.conn)
+        Base.invokelatest(db.loader.db_disconnect, db.conn)
     end
 end
 
@@ -142,7 +142,7 @@ function query(stmt::Structured; db::Connection=current_connection())
     a = db.adapter
     sql = a.to_sql(stmt)
     print_debug_sql(db, stmt)
-    db.loader.query(db.conn, sql)
+    Base.invokelatest(db.loader.query, db.conn, sql)
 end
 
 """
@@ -190,7 +190,7 @@ function query(stmt::Structured, vals::Vector; db::Connection=current_connection
     a = db.adapter
     prepared = a.to_sql(stmt)
     print_debug_sql(db, stmt, vals)
-    db.loader.query(db.conn, prepared, vals)
+    Base.invokelatest(db.loader.query, db.conn, prepared, vals)
 end
 
 ### Repo.query - pk
@@ -312,7 +312,7 @@ function execute(stmt::Structured; db::Connection=current_connection())
     a = db.adapter
     sql = a.to_sql(stmt)
     print_debug_sql(db, stmt)
-    db.loader.execute(db.conn, sql)
+    Base.invokelatest(db.loader.execute, db.conn, sql)
 end
 
 """
@@ -322,7 +322,7 @@ function execute(stmt::Structured, vals::Vector; db::Connection=current_connecti
     a = db.adapter
     prepared = a.to_sql(stmt)
     print_debug_sql(db, stmt, vals)
-    db.loader.execute(db.conn, prepared, vals)
+    Base.invokelatest(db.loader.execute, db.conn, prepared, vals)
 end
 
 """
@@ -332,7 +332,7 @@ function execute(stmt::Structured, nts::Vector{<:NamedTuple}; db::Connection=cur
     a = db.adapter
     prepared = a.to_sql(stmt)
     print_debug_sql(db, stmt, nts)
-    db.loader.execute(db.conn, prepared, nts)
+    Base.invokelatest(db.loader.execute, db.conn, prepared, nts)
 end
 
 execute(raw::Raw; db::Connection=current_connection())                            = execute([raw]; db=db)
@@ -408,7 +408,7 @@ end
 
 # Repo.execute_result
 function execute_result(command::SQLKeyword; db::Connection=current_connection())::NamedTuple
-    db.loader.execute_result(db.conn, command)
+    Base.invokelatest(db.loader.execute_result, db.conn, command)
 end
 
 
