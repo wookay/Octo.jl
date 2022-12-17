@@ -9,7 +9,7 @@ Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 [compat]
 Jive = "0.2"
 LibPQ = "1.4, 1.6"
-SQLite = "1.1"
+SQLite = "1.6"
 MySQL = "1.0, 1.1"
 MariaDB_Connector_C_jll = "3.1"
 DuckDB = "0.4"
