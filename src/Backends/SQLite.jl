@@ -1,7 +1,7 @@
 module SQLiteLoader
 
 # https://github.com/JuliaDatabases/SQLite.jl
-using SQLite # SQLite.jl 1.1.14
+using SQLite # SQLite.jl 1.6
 using .SQLite: Tables, DBInterface
 
 using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
@@ -25,25 +25,15 @@ function db_disconnect(db)
 end
 
 # query
-function get_query_result(q::SQLite.Query)
-    _st = SQLite._stmt(q.stmt)
-    cnt = SQLite.sqlite3_column_count(_st.handle)
-    if iszero(cnt)
-        NamedTuple[]
-    else
-        Tables.rowtable(q)
-    end
-end
-
 function query(db, sql::String)
     q = DBInterface.execute(db, sql)
-    get_query_result(q)
+    Tables.rowtable(q)
 end
 
 function query(db, prepared::String, vals::Vector)
     stmt = DBInterface.prepare(db, prepared)
     q = DBInterface.execute(stmt, vals)
-    get_query_result(q)
+    Tables.rowtable(q)
 end
 
 # execute
@@ -78,7 +68,7 @@ function sql_startswith_insert_update_delete_then_get_num_affected_rows(sql::Str
 end
 
 function get_num_affected_rows(db)::Int
-    SQLite.sqlite3_total_changes(db.handle)
+    SQLite.C.sqlite3_changes(db.handle)
 end
 
 # execute_result

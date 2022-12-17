@@ -254,7 +254,7 @@ You need [Julia](https://julialang.org/downloads/).
 
 ```julia-repl
 (v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.4, 1.6)
-(v1.0) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.1)
+(v1.0) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.6)
 (v1.0) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.0, 1.1)
 (v1.0) pkg> add DuckDB  # for DuckDB     (depends on DuckDB.jl 0.4)
 ```
