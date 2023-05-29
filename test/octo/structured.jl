@@ -69,4 +69,16 @@ users = from(User, :users)
 @test to_sql([INSERT INTO users (users.name, users.email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (name, email) VALUES ('Jick', 'Jick@dd.com')"
 @test to_sql([INSERT INTO users (:name, :email) VALUES ("Jick", "Jick@dd.com")]) == "INSERT INTO users (name, email) VALUES ('Jick', 'Jick@dd.com')"
 
+# Issue #54
+struct MyTable
+end
+Schema.model(MyTable, table_name="mytable")
+e = from(MyTable)
+dataSource = "test"
+df = to_sql([
+    SELECT (e.name, e.age)
+    FROM MyTable
+    WHERE e.data_source==dataSource
+])
+
 end # module test_octo_structured
