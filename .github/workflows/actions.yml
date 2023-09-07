@@ -72,9 +72,9 @@ jobs:
              julia --project=. -e 'using Pkg; Pkg.test(coverage=true)'
 
       - name: Coverage
-        if: matrix.julia-version == '1.7.1' && github.event.ref == 'refs/heads/master'
+        if: matrix.julia-version == '1.9.3' && github.event.ref == 'refs/heads/master'
         run: |
              julia --project=. -e 'using Pkg; Pkg.add("Coverage"); using Coverage; cov = Coverage.process_folder(); mkdir("coverage"); Coverage.LCOV.writefile("coverage/lcov.info", cov)'
 
       - uses: codecov/codecov-action@v1
-        if: matrix.julia-version == '1.7.1' && github.event.ref == 'refs/heads/master'
+        if: matrix.julia-version == '1.9.3' && github.event.ref == 'refs/heads/master'
