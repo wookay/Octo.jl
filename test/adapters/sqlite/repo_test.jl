@@ -89,43 +89,54 @@ df = Repo.query([SELECT * FROM em WHERE em.EmployeeId == 2])
 # using Octo.Adapters.SQLite # CREATE TABLE IF NOT EXISTS
 Repo.query([CREATE TABLE IF NOT EXISTS :temp AS SELECT * FROM :Album])
 
-struct Temp
+struct Album
 end
-Schema.model(Temp, table_name="temp", primary_key="AlbumId")
+Schema.model(Album, table_name="temp", primary_key="AlbumId")
 
-df = Repo.query(Temp)
+df = Repo.query(Album)
 @test size(df) == (347,)
 
 changes = (AlbumId=0, Title="Test Album", ArtistId=0)
-result = Repo.insert!(Temp, changes)
+result = Repo.insert!(Album, changes)
 @test result.num_affected_rows == 1
 
-df = Repo.query(Temp)
+df = Repo.query(Album)
 @test size(df) == (348,)
 
-df = Repo.get(Temp, 6)
+df = Repo.get(Album, 6)
 @test df[1].Title == "Jagged Little Pill"
 
-df = Repo.get(Temp, (Title="Jagged Little Pill",))
+df = Repo.get(Album, (Title="Jagged Little Pill",))
 @test df[1].Title == "Jagged Little Pill"
 
 changes = (AlbumId=6, Title="Texas")
-result = Repo.update!(Temp, changes)
+result = Repo.update!(Album, changes)
 @test result.num_affected_rows == 1
 
-df = Repo.get(Temp, 6)
+df = Repo.get(Album, 6)
 @test df[1].Title == "Texas"
 
-result = Repo.delete!(Temp, changes)
+result = Repo.delete!(Album, changes)
 @test result.num_affected_rows == 1
 
-df = Repo.get(Temp, 6)
-@test size(df) == (0,)
+result = Repo.delete!(Album, [1, 2, 3])
+@test result.num_affected_rows == 3
 
+result = Repo.delete!(Album, (4, 5))
+@test result.num_affected_rows == 2
+
+result = Repo.delete!(Album, 11:15)
+@test result.num_affected_rows == 5
+
+df = Repo.query(Album)
+@test size(df) == (337,)
+
+df = Repo.get(Album, 6)
+@test size(df) == (0,)
 
 ❔  = Octo.PlaceHolder
 
-a = from(Temp)
+a = from(Album)
 df = Repo.query([SELECT * FROM a WHERE a.Title == ❔  AND a.ArtistId == ❔ ], ["The Doors", 140])
 @test size(df) == (1,)
 

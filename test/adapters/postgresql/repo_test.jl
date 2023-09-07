@@ -83,6 +83,18 @@ df = Repo.query([SELECT * FROM em WHERE em.Name == "Tim"])
 @test size(df) == (1,)
 @test df[1].name == "Tim"
 
+result = Repo.delete!(Employee, [1, 3])
+@test result.num_affected_rows == 2
+
+result = Repo.delete!(Employee, (4, 5))
+@test result.num_affected_rows == 2
+
+result = Repo.delete!(Employee, 6:7)
+@test result.num_affected_rows == 2
+
+df = Repo.query(Employee)
+@test size(df) == (0,)
+
 # coverage up
 Schema.tables[Base.typename(Employee)] = Dict(:table_name => "Employee")
 @test_throws Schema.PrimaryKeyError Repo.get(Employee, 2)

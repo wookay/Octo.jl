@@ -459,13 +459,30 @@ function delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
 end
 
 """
-    Repo.delete!(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection())
+    Repo.delete!(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection())
 """
-function delete!(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function delete!(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     a = db.adapter
     table = a.from(M)
     key = _field_for_primary_key(db, M)
     execute([a.DELETE a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop]; db=db)
+end
+
+"""
+    Repo.delete!(M::Type, pk_tuple::(Tuple{Vararg{Int, N}} where N); db::Connection=current_connection())
+"""
+function delete!(M::Type, pk_tuple::(Tuple{Vararg{Int, N}} where N); db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    delete!(M, collect(pk_tuple); db)
+end
+
+"""
+    Repo.delete!(M::Type, pk_vector::Vector{Int}; db::Connection=current_connection())
+"""
+function delete!(M::Type, pk_vector::Vector{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    a = db.adapter
+    table = a.from(M)
+    key = _field_for_primary_key(db, M)
+    execute([a.DELETE a.FROM table a.WHERE key a.IN a.Enclosed(pk_vector)]; db=db)
 end
 
 function sql_startswith_insert_update_delete(sql::String)::Bool
