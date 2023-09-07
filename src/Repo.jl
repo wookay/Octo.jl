@@ -8,6 +8,9 @@ using ..Octo: Raw, SQLKeyword
 using ..Schema # Schema.validates
 using ..Pretty: show
 
+const PrimaryKeyType    = Union{Int, String}
+const ExecuteResult     = Union{Nothing, NamedTuple}
+
 struct NeedsConnectError <: Exception
     msg
 end
@@ -23,7 +26,6 @@ struct Connection
     conn
 end
 
-const ExecuteResult = Union{Nothing, NamedTuple}
 
 @enum RepoLogLevel::Int32 begin
     LogLevelDebugSQL = -1
@@ -193,11 +195,12 @@ function query(stmt::Structured, vals::Vector; db::Connection=current_connection
     Base.invokelatest(db.loader.query, db.conn, prepared, vals)
 end
 
+
 ### Repo.query - pk
 """
-    Repo.query(M::Type, pk::Union{Int, String}; db::Connection=current_connection())
+    Repo.query(M::Type, pk::PrimaryKeyType; db::Connection=current_connection())
 """
-function query(M::Type, pk::Union{Int, String}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function query(M::Type, pk::PrimaryKeyType; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     a = db.adapter
     table = a.from(M)
     key = _field_for_primary_key(db, M)
@@ -205,17 +208,17 @@ function query(M::Type, pk::Union{Int, String}; db::Connection=current_connectio
 end
 
 """
-    Repo.query(from::FromItem, pk::Union{Int, String}; db::Connection=current_connection())
+    Repo.query(from::FromItem, pk::PrimaryKeyType; db::Connection=current_connection())
 """
-function query(from::FromItem, pk::Union{Int, String}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function query(from::FromItem, pk::PrimaryKeyType; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     query(from.__octo_model, pk; db=db)
 end
 
 ### Repo.query - pk_range
 """
-    Repo.query(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection())
+    Repo.query(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection())
 """
-function query(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function query(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     a = db.adapter
     table = a.from(M)
     key = _field_for_primary_key(db, M)
@@ -223,9 +226,9 @@ function query(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_conne
 end
 
 """
-    Repo.query(from::FromItem, pk_range::UnitRange{Int64}; db::Connection=current_connection())
+    Repo.query(from::FromItem, pk_range::UnitRange{Int}; db::Connection=current_connection())
 """
-function query(from::FromItem, pk_range::UnitRange{Int64}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function query(from::FromItem, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     query(from.__octo_model, pk_range; db=db)
 end
 
@@ -283,16 +286,16 @@ end
 
 # Repo.get
 """
-    Repo.get(M::Type, pk::Union{Int, String}; db::Connection=current_connection())
+    Repo.get(M::Type, pk::PrimaryKeyType; db::Connection=current_connection())
 """
-function get(M::Type, pk::Union{Int, String}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function get(M::Type, pk::PrimaryKeyType; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     query(M, pk; db=db)
 end
 
 """
-    Repo.get(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection())
+    Repo.get(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection())
 """
-function get(M::Type, pk_range::UnitRange{Int64}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function get(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     query(M, pk_range; db=db)
 end
 
@@ -469,16 +472,16 @@ function delete!(M::Type, pk_range::UnitRange{Int}; db::Connection=current_conne
 end
 
 """
-    Repo.delete!(M::Type, pk_tuple::(Tuple{Vararg{Int, N}} where N); db::Connection=current_connection())
+    Repo.delete!(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection())
 """
-function delete!(M::Type, pk_tuple::(Tuple{Vararg{Int, N}} where N); db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function delete!(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     delete!(M, collect(pk_tuple); db)
 end
 
 """
-    Repo.delete!(M::Type, pk_vector::Vector{Int}; db::Connection=current_connection())
+    Repo.delete!(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection())
 """
-function delete!(M::Type, pk_vector::Vector{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+function delete!(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     a = db.adapter
     table = a.from(M)
     key = _field_for_primary_key(db, M)
