@@ -15,10 +15,6 @@ jobs:
             os: ubuntu-latest
           - julia-version: 1.8.5
             os: ubuntu-latest
-          - julia-version: 1.7.3
-            os: ubuntu-latest
-          - julia-version: 1.6.7
-            os: ubuntu-latest
 
     services:
       postgres:
