@@ -25,6 +25,7 @@ MySQL = "39abe10b-433b-5dbd-92d4-e302a9df00cd"
 MariaDB_Connector_C_jll = "aabc7e14-95f1-5e66-9f32-aea603782360"
 DuckDB = "d2f5444f-75bc-4fdf-ac35-56f514c445e1"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [targets]
-test = ["Test", "Jive", "LibPQ", "SQLite", "MySQL", "MariaDB_Connector_C_jll", "DuckDB", "DataFrames"]
+test = ["Test", "Jive", "LibPQ", "SQLite", "MySQL", "MariaDB_Connector_C_jll", "DuckDB", "DataFrames", "UUIDs"]

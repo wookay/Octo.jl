@@ -29,6 +29,7 @@ Repo.execute(Raw("""
 
 changes = (Name="John", Salary=10000.50)
 result = Repo.insert!(Employee, changes)
+@test result.id == 1
 @test result.num_affected_rows == 1
 
 Repo.execute(Raw("""INSERT INTO Employee (Name, Salary) VALUES (\$1, \$2)"""), changes)

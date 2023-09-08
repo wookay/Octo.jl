@@ -27,6 +27,7 @@ df = Repo.query(Item)
 df = Repo.get(Item, (item="Jeans",))
 @test size(df) == (1, 3)
 @test df[!, :item] == ["Jeans"]
+@test df[1, :].item == "Jeans"
 
 changes = (item="Jeans",)
 result = Repo.delete!(Item, changes)
