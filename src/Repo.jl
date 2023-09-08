@@ -75,37 +75,6 @@ function print_debug_sql(db::Connection, stmt::Structured, params = nothing)
     end
 end
 
-
-# Repo.connect
-"""
-    Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
-"""
-function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
-    loader = Backends.backend(adapter)
-    conn = Base.invokelatest(loader.db_connect; kwargs...)
-    dbname = Base.invokelatest(loader.db_dbname, (; kwargs...))
-    connection = Connection(multiple, dbname, loader, adapter, conn)
-    if !multiple
-        current[:connection] = connection
-    end
-    connection
-end
-
-# Repo.disconnect
-"""
-    Repo.disconnect(; db::Union{Nothing, Connection}=nothing)
-"""
-function disconnect(; db::Union{Nothing, Connection}=nothing)
-    if db === nothing
-        connection = current_connection()
-        disconnected = Base.invokelatest(connection.loader.db_disconnect, connection.conn)
-        current[:connection] = nothing
-        disconnected
-    else
-        Base.invokelatest(db.loader.db_disconnect, db.conn)
-    end
-end
-
 function get_primary_key(db, M)::Union{Nothing,Symbol,Vector{Symbol}}
     Tname = Base.typename(M)
     tbl = Schema.tables[Tname]
@@ -134,9 +103,58 @@ function _field_for_primary_key(db, M, nt::NamedTuple) # throw Schema.PrimaryKey
     end
 end
 
+function sql_startswith_insert_update_delete(sql::String)::Bool
+    lowercase(first(split(lstrip(sql), ' '))) in ("insert", "update", "delete")
+end
+
+function vecjoin(elements::Array{E, N}, delim::D)::Vector{Union{E, D}} where  {E, N, D}
+    first = true
+    result = Vector{Union{E, D}}()
+    for el in elements
+        if first
+            first = false
+        else
+            push!(result, delim)
+        end
+        push!(result, el)
+    end
+    result
+end
+
+
+# Repo.connect
+"""
+    Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
+"""
+function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
+    loader = Backends.backend(adapter)
+    conn = Base.invokelatest(loader.db_connect; kwargs...)
+    dbname = Base.invokelatest(loader.db_dbname, (; kwargs...))
+    connection = Connection(multiple, dbname, loader, adapter, conn)
+    if !multiple
+        current[:connection] = connection
+    end
+    connection
+end
+
+
+# Repo.disconnect
+"""
+    Repo.disconnect(; db::Union{Nothing, Connection}=nothing)
+"""
+function disconnect(; db::Union{Nothing, Connection}=nothing)
+    if db === nothing
+        connection = current_connection()
+        disconnected = Base.invokelatest(connection.loader.db_disconnect, connection.conn)
+        current[:connection] = nothing
+        disconnected
+    else
+        Base.invokelatest(db.loader.db_disconnect, db.conn)
+    end
+end
+
 
 # Repo.query
-
 """
     Repo.query(stmt::Structured; db::Connection=current_connection())
 """
@@ -154,13 +172,6 @@ function query(M::Type; db::Connection=current_connection())
     a = db.adapter
     table = a.from(M)
     query([a.SELECT * a.FROM table]; db=db)
-end
-
-"""
-    Repo.query(from::FromItem; db::Connection=current_connection())
-"""
-function query(from::FromItem; db::Connection=current_connection())
-    query(from.__octo_model; db=db)
 end
 
 """
@@ -195,8 +206,6 @@ function query(stmt::Structured, vals::Vector; db::Connection=current_connection
     Base.invokelatest(db.loader.query, db.conn, prepared, vals)
 end
 
-
-### Repo.query - pk
 """
     Repo.query(M::Type, pk::PrimaryKeyType; db::Connection=current_connection())
 """
@@ -208,14 +217,6 @@ function query(M::Type, pk::PrimaryKeyType; db::Connection=current_connection())
 end
 
 """
-    Repo.query(from::FromItem, pk::PrimaryKeyType; db::Connection=current_connection())
-"""
-function query(from::FromItem, pk::PrimaryKeyType; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    query(from.__octo_model, pk; db=db)
-end
-
-### Repo.query - pk_range
-"""
     Repo.query(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection())
 """
 function query(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
@@ -226,13 +227,32 @@ function query(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connect
 end
 
 """
-    Repo.query(from::FromItem, pk_range::UnitRange{Int}; db::Connection=current_connection())
+    Repo.query(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection())
 """
-function query(from::FromItem, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    query(from.__octo_model, pk_range; db=db)
+function query(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    a = db.adapter
+    table = a.from(M)
+    key = _field_for_primary_key(db, M)
+    query([a.SELECT * a.FROM table a.WHERE key a.IN a.Enclosed(pk_vector)]; db=db)
 end
 
-### Repo.query - nt::NamedTuple
+"""
+    Repo.query(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection())
+"""
+function query(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    query(M, collect(pk_tuple); db=db)
+end
+
+### Repo.query ::FromItem, args...
+"""
+    Repo.query(from::FromItem, args...; db::Connection=current_connection())
+"""
+function query(from::FromItem, args...; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    query(from.__octo_model, args...; db=db)
+end
+
+
+### Repo.query arg, ::NamedTuple
 """
     Repo.query(stmt::Structured, nt::NamedTuple; db::Connection=current_connection())
 """
@@ -263,13 +283,6 @@ function query(M::Type, nt::NamedTuple; db::Connection=current_connection())
 end
 
 """
-    Repo.query(from::FromItem, nt::NamedTuple; db::Connection=current_connection())
-"""
-function query(from::FromItem, nt::NamedTuple; db::Connection=current_connection())
-    query(from.__octo_model, nt; db=db)
-end
-
-"""
     Repo.query(subquery::SubQuery, nt::NamedTuple; db::Connection=current_connection())
 """
 function query(subquery::SubQuery, nt::NamedTuple; db::Connection=current_connection())
@@ -284,26 +297,12 @@ function query(rawquery::Raw, nt::NamedTuple; db::Connection=current_connection(
 end
 
 
-# Repo.get
+# Repo.get (same as `Repo.query`)
 """
-    Repo.get(M::Type, pk::PrimaryKeyType; db::Connection=current_connection())
+    Repo.get(args...; db::Connection=current_connection())
 """
-function get(M::Type, pk::PrimaryKeyType; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    query(M, pk; db=db)
-end
-
-"""
-    Repo.get(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection())
-"""
-function get(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    query(M, pk_range; db=db)
-end
-
-"""
-    Repo.get(M::Type, nt::NamedTuple; db::Connection=current_connection())
-"""
-function get(M::Type, nt::NamedTuple; db::Connection=current_connection())
-    query(M, nt; db=db)
+function get(args...; db::Connection=current_connection())
+    query(args...; db=db)
 end
 
 
@@ -342,12 +341,16 @@ execute(raw::Raw; db::Connection=current_connection())                          
 execute(raw::Raw, nt::NamedTuple; db::Connection=current_connection())            = execute([raw], [nt]; db=db)
 execute(raw::Raw, nts::Vector{<:NamedTuple}; db::Connection=current_connection()) = execute([raw], nts; db=db)
 execute(raw::Raw, vals::Vector; db::Connection=current_connection())              = execute([raw], vals; db=db)
-
 execute(str::AbstractString; db::Connection=current_connection())                 = execute(Raw(str); db=db)
 
 
-# Repo.insert!
+# Repo.execute_result
+function execute_result(command::SQLKeyword; db::Connection=current_connection())::NamedTuple
+    Base.invokelatest(db.loader.execute_result, db.conn, command)
+end
 
+
+# Repo.insert!
 function do_insert(block, a, returning::Union{Nothing,Symbol,Vector}, db::Connection)
     extra = []
     if a.DatabaseID === DBMS.PostgreSQL && returning !== nothing
@@ -409,12 +412,6 @@ function insert!(M, nt::NamedTuple; kwargs...)
 end
 
 
-# Repo.execute_result
-function execute_result(command::SQLKeyword; db::Connection=current_connection())::NamedTuple
-    Base.invokelatest(db.loader.execute_result, db.conn, command)
-end
-
-
 # Repo.update!
 """
     Repo.update!(M::Type, nt::NamedTuple; db::Connection=current_connection())
@@ -436,29 +433,16 @@ function update!(M::Type, nt::NamedTuple; db::Connection=current_connection()) #
     execute(v, collect(values(rest)); db=db)
 end
 
-function vecjoin(elements::Array{E, N}, delim::D)::Vector{Union{E, D}} where  {E, N, D}
-    first = true
-    result = Vector{Union{E, D}}()
-    for el in elements
-        if first
-            first = false
-        else
-            push!(result, delim)
-        end
-        push!(result, el)
-    end
-    result
-end
 
 # Repo.delete!
-
 """
-    Repo.delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
+    Repo.delete!(M::Type, pk::PrimaryKeyType; db::Connection=current_connection())
 """
-function delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
+function delete!(M::Type, pk::PrimaryKeyType; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
     a = db.adapter
     table = a.from(M)
-    execute(hcat([a.DELETE a.FROM table a.WHERE], vecjoin([a.Field(table, k) == v for (k, v) in pairs(nt)], a.AND)...); db=db)
+    key = _field_for_primary_key(db, M)
+    execute([a.DELETE * a.FROM table a.WHERE key == pk]; db=db)
 end
 
 """
@@ -472,13 +456,6 @@ function delete!(M::Type, pk_range::UnitRange{Int}; db::Connection=current_conne
 end
 
 """
-    Repo.delete!(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection())
-"""
-function delete!(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    delete!(M, collect(pk_tuple); db)
-end
-
-"""
     Repo.delete!(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection())
 """
 function delete!(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
@@ -488,8 +465,20 @@ function delete!(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=cu
     execute([a.DELETE a.FROM table a.WHERE key a.IN a.Enclosed(pk_vector)]; db=db)
 end
 
-function sql_startswith_insert_update_delete(sql::String)::Bool
-    lowercase(first(split(lstrip(sql), ' '))) in ("insert", "update", "delete")
+"""
+    Repo.delete!(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection())
+"""
+function delete!(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    delete!(M, collect(pk_tuple); db=db)
+end
+
+"""
+    Repo.delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
+"""
+function delete!(M::Type, nt::NamedTuple; db::Connection=current_connection())
+    a = db.adapter
+    table = a.from(M)
+    execute(hcat([a.DELETE a.FROM table a.WHERE], vecjoin([a.Field(table, k) == v for (k, v) in pairs(nt)], a.AND)...); db=db)
 end
 
 end # module Octo.Repo

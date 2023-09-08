@@ -50,6 +50,12 @@ df = Repo.get(Employee, 2)
 @test size(df) == (1,)
 @test df[1].name == "John"
 
+df = Repo.get(Employee, [2, 3])
+@test df[1].name == "John"
+
+df = Repo.get(Employee, (2, 3))
+@test df[2].name == "Tom"
+
 df = Repo.get(Employee, (Name="Tom",))
 @test size(df) == (2,)
 @test df[1].name == "Tom"

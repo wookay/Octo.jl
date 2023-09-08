@@ -42,6 +42,13 @@ df = Repo.query(PinkFloyd)
 @test size(df) == (8,)
 
 pk_ids = map(x -> x.id, df[1:2])
+
+df = Repo.get(PinkFloyd, first(pk_ids))
+@test df[1].album_name == "The Wall"
+
+df = Repo.get(PinkFloyd, pk_ids)
+@test df[2].album_name == "The Dark Side of the Moon"
+
 Repo.delete!(PinkFloyd, pk_ids)
 
 df = Repo.query(PinkFloyd)
