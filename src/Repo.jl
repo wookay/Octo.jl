@@ -206,43 +206,6 @@ function query(stmt::Structured, vals::Vector; db::Connection=current_connection
     Base.invokelatest(db.loader.query, db.conn, prepared, vals)
 end
 
-"""
-    Repo.query(M::Type, pk::PrimaryKeyType; db::Connection=current_connection())
-"""
-function query(M::Type, pk::PrimaryKeyType; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    a = db.adapter
-    table = a.from(M)
-    key = _field_for_primary_key(db, M)
-    query([a.SELECT * a.FROM table a.WHERE key == pk]; db=db)
-end
-
-"""
-    Repo.query(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection())
-"""
-function query(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    a = db.adapter
-    table = a.from(M)
-    key = _field_for_primary_key(db, M)
-    query([a.SELECT * a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop]; db=db)
-end
-
-"""
-    Repo.query(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection())
-"""
-function query(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    a = db.adapter
-    table = a.from(M)
-    key = _field_for_primary_key(db, M)
-    query([a.SELECT * a.FROM table a.WHERE key a.IN a.Enclosed(pk_vector)]; db=db)
-end
-
-"""
-    Repo.query(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection())
-"""
-function query(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection()) # throw Schema.PrimaryKeyError
-    query(M, collect(pk_tuple); db=db)
-end
-
 ### Repo.query ::FromItem, args...
 """
     Repo.query(from::FromItem, args...; db::Connection=current_connection())
@@ -297,12 +260,49 @@ function query(rawquery::Raw, nt::NamedTuple; db::Connection=current_connection(
 end
 
 
-# Repo.get (same as `Repo.query`)
+### Repo.get (with primary key, namedtuple)
 """
-    Repo.get(args...; db::Connection=current_connection())
+    Repo.get(M::Type, pk::PrimaryKeyType; db::Connection=current_connection())
 """
-function get(args...; db::Connection=current_connection())
-    query(args...; db=db)
+function get(M::Type, pk::PrimaryKeyType; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    a = db.adapter
+    table = a.from(M)
+    key = _field_for_primary_key(db, M)
+    query([a.SELECT * a.FROM table a.WHERE key == pk]; db=db)
+end
+
+"""
+    Repo.get(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection())
+"""
+function get(M::Type, pk_range::UnitRange{Int}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    a = db.adapter
+    table = a.from(M)
+    key = _field_for_primary_key(db, M)
+    query([a.SELECT * a.FROM table a.WHERE key a.BETWEEN pk_range.start a.AND pk_range.stop]; db=db)
+end
+
+"""
+    Repo.get(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection())
+"""
+function get(M::Type, pk_vector::Vector{<:PrimaryKeyType}; db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    a = db.adapter
+    table = a.from(M)
+    key = _field_for_primary_key(db, M)
+    query([a.SELECT * a.FROM table a.WHERE key a.IN a.Enclosed(pk_vector)]; db=db)
+end
+
+"""
+    Repo.get(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection())
+"""
+function get(M::Type, pk_tuple::(Tuple{Vararg{PrimaryKeyType, N}} where N); db::Connection=current_connection()) # throw Schema.PrimaryKeyError
+    get(M, collect(pk_tuple); db=db)
+end
+
+"""
+    Repo.get(M::Type, nt::NamedTuple; db::Connection=current_connection())
+"""
+function get(M::Type, nt::NamedTuple; db::Connection=current_connection())
+    query(M, nt; db=db)
 end
 
 
