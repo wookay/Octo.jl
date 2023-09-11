@@ -8,6 +8,11 @@ using ..Octo: Raw, SQLKeyword
 using ..Schema # Schema.validates
 using ..Pretty: show
 
+"""
+    PrimaryKeyType
+
+`Union{Int, String}`
+"""
 const PrimaryKeyType    = Union{Int, String}
 const ExecuteResult     = Union{Nothing, NamedTuple}
 
@@ -36,6 +41,11 @@ const current = Dict{Symbol, Union{Nothing, Connection, RepoLogLevel}}(
     :connection => nothing,
     :log_level => LogLevelInfo,
 )
+""""
+    Repo.current_connection()
+
+something about the connection by `Repo.connect()`
+"""
 current_connection() = current[:connection]
 
 const color_params = (; color=:yellow,)

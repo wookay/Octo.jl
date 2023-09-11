@@ -1,8 +1,10 @@
 # Repo
 
 ```@docs
+Repo.PrimaryKeyType
 Repo.Connection
 Repo.connect
+Repo.current_connection
 Repo.get
 Repo.insert!
 Repo.update!
