@@ -41,7 +41,7 @@ const current = Dict{Symbol, Union{Nothing, Connection, RepoLogLevel}}(
     :connection => nothing,
     :log_level => LogLevelInfo,
 )
-""""
+"""
     Repo.current_connection()
 
 something about the connection by `Repo.connect()`

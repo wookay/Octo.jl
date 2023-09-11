@@ -49,9 +49,10 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 ## Repo
 
 Current supported database drivers:
-  - PostgreSQL(via [LibPQ.jl](https://github.com/invenia/LibPQ.jl))
-  - SQLite(via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
-  - MySQL(via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
+  - PostgreSQL (via [LibPQ.jl](https://github.com/invenia/LibPQ.jl))
+  - SQLite (via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
+  - MySQL (via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
+  - DuckDB (via [duckdb/tools/juliapkg](https://github.com/duckdb/duckdb/tree/main/tools/juliapkg))
 
 ```julia
 julia> using Octo.Adapters.PostgreSQL
@@ -251,14 +252,14 @@ You need [Julia](https://julialang.org/downloads/).
 `julia>` type `]` key
 
 ```julia
-(v1.0) pkg> add Octo
+(v1.8) pkg> add Octo
 ```
 
 ```julia
-(v1.0) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.4, 1.6)
-(v1.0) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.6)
-(v1.0) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.0, 1.1)
-(v1.0) pkg> add DuckDB  # for DuckDB     (depends on DuckDB.jl 0.4)
+(v1.8) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.6, 1.7)
+(v1.8) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.6)
+(v1.8) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.1, 1.4)
+(v1.8) pkg> add DuckDB  # for DuckDB     (depends on DuckDB.jl 0.4, 0.8)
 ```
 
 See also [DBInterface.jl](https://github.com/JuliaDatabases/DBInterface.jl).
