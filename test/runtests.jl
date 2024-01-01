@@ -7,6 +7,11 @@ for db in ["hive", "jdbc", "odbc"]
 end
 
 if haskey(ENV, "CI")
+    if Sys.isapple() || Sys.iswindows()
+        for db in ["mysql", "postgresql"]
+            push!(ignores, joinpath("adapters", db))
+        end
+    end
 end
 
 # LibPQ v0.11.1

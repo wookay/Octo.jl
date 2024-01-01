@@ -2,19 +2,22 @@ name: CI
 
 on: [pull_request, push]
 
+env:
+    PGPASSWORD: postgres
+    MYSQL_HOST: 127.0.0.1
+    MYSQL_ROOT_PASWORD:
+
 jobs:
   Test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        julia-version: [1.9.3]
+        julia-version: [nightly, 1.6.7]
+        runtests_with_coverage: [false]
         julia-arch: [x64]
-        os: [ubuntu-latest]
         include:
-          - julia-version: nightly
-            os: ubuntu-latest
-          - julia-version: 1.8.5
-            os: ubuntu-latest
+          - julia-version: 1.10.0
+            runtests_with_coverage: true
 
     services:
       postgres:
@@ -22,8 +25,8 @@ jobs:
         ports:
           - 5432:5432
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
       mysql:
@@ -31,16 +34,15 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: mysqltest
+            MYSQL_ALLOW_EMPTY_PASSWORD: yes
+            MYSQL_DATABASE: mysqltest
         options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       - name: Setup PostgreSQL
         env:
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          PGPASSWORD: postgres
+            POSTGRES_HOST: localhost
+            POSTGRES_PORT: 5432
         run: |
              psql --version
              netstat -nlp | grep 5432
@@ -59,18 +61,34 @@ jobs:
 
       - uses: actions/checkout@master
 
-      - name: runtests
-        env:
-          PGPASSWORD: postgres
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_ROOT_PASWORD:
+      - name: runtests without coverage
+        if: matrix.runtests_with_coverage == false
+        run: |
+             julia --project=. -e 'using Pkg; Pkg.test()'
+
+      - name: runtests with coverage
+        if: matrix.runtests_with_coverage
         run: |
              julia --project=. -e 'using Pkg; Pkg.test(coverage=true)'
-
-      - name: Coverage
-        if: matrix.julia-version == '1.9.3' && github.event.ref == 'refs/heads/master'
-        run: |
              julia --project=. -e 'using Pkg; Pkg.add("Coverage"); using Coverage; cov = Coverage.process_folder(); mkdir("coverage"); Coverage.LCOV.writefile("coverage/lcov.info", cov)'
-
       - uses: codecov/codecov-action@v1
-        if: matrix.julia-version == '1.9.3' && github.event.ref == 'refs/heads/master'
+
+  RunForMacOS:
+    needs: Test
+    if: github.event.ref == 'refs/heads/master'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: runtests
+        run: |
+             julia --project=. -e 'using Pkg; Pkg.test()'
+
+  RunForWindows:
+    needs: Test
+    if: github.event.ref == 'refs/heads/master'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: runtests
+        run: |
+             julia --project=. -e 'using Pkg; Pkg.test()'
