@@ -81,6 +81,7 @@ jobs:
            julia --project=. -e 'using Pkg; Pkg.test(coverage=true)'
            julia --project=. -e 'using Pkg; Pkg.add("Coverage"); using Coverage; cov = Coverage.process_folder(); mkdir("coverage"); Coverage.LCOV.writefile("coverage/lcov.info", cov)'
     - uses: codecov/codecov-action@v1
+      if: matrix.runtests_with_coverage
 
   ###
   ### stuck on Precompiling LibPQ, DataFrames
