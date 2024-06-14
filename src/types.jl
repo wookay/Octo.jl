@@ -18,7 +18,7 @@ end
 struct SQLFunction <: SQLElement
     name::Symbol
     args::Tuple
-    kwargs::Base.Pairs
+    kwargs::Base.Iterators.Pairs
 end
 
 struct SQLFunctionName <: SQLElement
