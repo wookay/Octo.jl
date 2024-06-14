@@ -3,6 +3,7 @@ module DuckDBLoader
 # https://github.com/duckdb/duckdb/tree/master/tools/juliapkg
 using DuckDB
 using .DuckDB: DBInterface
+using DataFrames: DataFrame
 
 using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
 using .Repo: SQLKeyword, ExecuteResult
@@ -24,8 +25,8 @@ end
 
 # query
 function query(con::DuckDB.DB, sql::String)
-    res = DBInterface.execute(con, sql)
-    DuckDB.toDataFrame(res)
+    result = DBInterface.execute(con, sql)
+    DataFrame(result)
 end
 
 # execute
@@ -34,8 +35,9 @@ function execute(con::DuckDB.DB, sql::String)::ExecuteResult
     if isempty(result)
         nothing
     else
-        df = DuckDB.toDataFrame(result)
-        (Count = only(df[!, :Count]),)
+        df = DataFrame(result)
+        n = only(df[!, :Count])
+        (Count = n,)
     end
 end
 
@@ -45,8 +47,9 @@ function execute(con::DuckDB.DB, prepared::String, nts::Vector{<:NamedTuple})::E
     for tup in nts
         result = DBInterface.execute(stmt, collect(tup))
         if !isempty(result)
-            df = DuckDB.toDataFrame(result)
-            cnt += only(df[!, :Count])
+            df = DataFrame(result)
+            n = only(df[!, :Count])
+            cnt += n
         end
     end
     (Count = cnt,)

@@ -57,6 +57,9 @@ const style_placeholder             = ElementStyle(:green, true)
 const style_keyword                 = ElementStyle(:cyan)
 const style_functionname            = ElementStyle(:cyan)
 const style_function                = ElementStyle(:yellow)
+const style_symbol                  = ElementStyle(:normal)
+const style_bool                    = ElementStyle(:magenta)
+const style_number                  = ElementStyle(:green)
 const style_string                  = ElementStyle(:light_magenta)
 const style_dates                   = ElementStyle(:light_green)
 const style_predicate_enclosed      = ElementStyle(:normal)
@@ -72,8 +75,9 @@ const style_vector_of_tuples        = ElementStyle(:yellow)
 
 # sqlrepr -> SqlPartElement
 
-sqlrepr(::DB where DB<:AbstractDatabase, sym::Symbol)::SqlPartElement        = SqlPartElement(style_normal, sym)
-sqlrepr(::DB where DB<:AbstractDatabase, num::Number)::SqlPartElement        = SqlPartElement(style_normal, num)
+sqlrepr(::DB where DB<:AbstractDatabase, sym::Symbol)::SqlPartElement        = SqlPartElement(style_symbol, sym)
+sqlrepr(::DB where DB<:AbstractDatabase, boolean::Bool)::SqlPartElement      = SqlPartElement(style_bool, boolean)
+sqlrepr(::DB where DB<:AbstractDatabase, num::Number)::SqlPartElement        = SqlPartElement(style_number, num)
 sqlrepr(::DB where DB<:AbstractDatabase, f::Function)::SqlPartElement        = SqlPartElement(style_normal, f)
 sqlrepr(::DB where DB<:AbstractDatabase, h::PlaceHolder)::SqlPartElement     = SqlPartElement(style_placeholder, h.body)
 sqlrepr(::DB where DB<:AbstractDatabase, el::SQLKeyword)::SqlPartElement     = SqlPartElement(style_keyword, el.name)
@@ -315,7 +319,8 @@ end
 function sqlrepr(db::DB where DB<:AbstractDatabase, f::SQLFunction)::SqlPart
     SqlPart([
         SqlPartElement(style_function, f.name),
-        sqlrepr(db, Enclosed(collect(f.fields))),
+        sqlrepr(db, Enclosed(collect(f.args))),
+        # FIXME: need to check f.kwargs
         ], "")
 end
 

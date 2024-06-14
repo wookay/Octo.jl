@@ -17,13 +17,14 @@ end
 
 struct SQLFunction <: SQLElement
     name::Symbol
-    fields::Tuple
+    args::Tuple
+    kwargs::Base.Pairs
 end
 
 struct SQLFunctionName <: SQLElement
     name::Symbol
 end
-(f::SQLFunctionName)(args...) = SQLFunction(f.name, args)
+(f::SQLFunctionName)(args...; kwargs...) = SQLFunction(f.name, args, kwargs)
 
 struct Field <: SQLElement
     clause::Union{FromItem, SubQuery, Nothing}
