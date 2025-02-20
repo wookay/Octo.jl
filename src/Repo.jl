@@ -131,15 +131,19 @@ function vecjoin(elements::Array{E, N}, delim::D)::Vector{Union{E, D}} where  {E
     result
 end
 
-
+VERSION < v"1.9" && using Base: invokelatest
 # Repo.connect
 """
     Repo.connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
 """
 function connect(; adapter::Module, database::Union{Nothing,Type{D} where {D <: DBMS.AbstractDatabase}}=nothing, multiple::Bool=false, kwargs...)::Connection
     loader = Backends.backend(adapter)
-    conn = Base.invokelatest(loader.db_connect; kwargs...)
-    dbname = Base.invokelatest(loader.db_dbname, (; kwargs...))
+    conn = invokelatest() do
+        loader.db_connect(; kwargs...)
+    end
+    dbname = invokelatest() do
+        loader.db_dbname((; kwargs...))
+    end
     connection = Connection(multiple, dbname, loader, adapter, conn)
     if !multiple
         current[:connection] = connection
