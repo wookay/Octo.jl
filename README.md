@@ -252,14 +252,14 @@ You need [Julia](https://julialang.org/downloads/).
 `julia>` type `]` key
 
 ```julia
-(v1.8) pkg> add Octo
+(v1.11) pkg> add Octo
 ```
 
 ```julia
-(v1.8) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.6, 1.7)
-(v1.8) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.6)
-(v1.8) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.1, 1.4)
-(v1.8) pkg> add DuckDB  # for DuckDB     (depends on DuckDB.jl 1.0)
+(v1.11) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.18)
+(v1.11) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.6)
+(v1.11) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.4)
+(v1.11) pkg> add DuckDB  # for DuckDB     (depends on DuckDB.jl 1.2)
 ```
 
 See also [DBInterface.jl](https://github.com/JuliaDatabases/DBInterface.jl).

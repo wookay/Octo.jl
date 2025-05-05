@@ -1,7 +1,7 @@
 module MySQLLoader
 
 # https://github.com/JuliaDatabases/MySQL.jl
-using MySQL # MySQL.jl 1.1
+using MySQL # MySQL.jl 1.4
 using .MySQL.DBInterface
 using .MySQL.Tables
 
