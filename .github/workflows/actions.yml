@@ -1,7 +1,12 @@
 # https://github.com/julia-actions/cache#usage
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - README.md
+      - 'docs/**'
+  pull_request:
 
 # needed to allow julia-actions/cache to delete old caches that it has created
 permissions:
@@ -18,19 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        julia-version: [1.11.5]         # April 4, 2025
+        julia-version: [1.12.3]         # 2025-12-15
         julia-arch: [x64]
-        coverage: [true]
+        os: [ubuntu-latest]
         include:
           - julia-version: nightly
             os: ubuntu-latest
-            coverage: false
-          - julia-version: 1.12.0-beta2 # April 25, 2025
+          - julia-version: 1.11.8       # 2025-12-15
             os: ubuntu-latest
-            coverage: false
-          - julia-version: 1.6.7        # July 20, 2022
-            os: ubuntu-latest
-            coverage: false
     services:
       postgres:
         image: postgres:13
