@@ -106,9 +106,4 @@ function execute_result(conn, command::SQLKeyword)::NamedTuple
     NamedTuple()
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
-    dbms = DBMS.SQL()
-    AdapterBase._show(io, mime, dbms, element)
-end
-
 end # module Octo.Backends.JDBCLoader

@@ -22,4 +22,4 @@ push!(ignores, "adapters/postgresql/copy_test")
 push!(ignores, "adapters/postgresql/options.jl")
 push!(ignores, "adapters/mysql/options.jl")
 
-runtests(@__DIR__, skip=collect(ignores))
+runtests(@__DIR__, skip=collect(ignores), into=Main)

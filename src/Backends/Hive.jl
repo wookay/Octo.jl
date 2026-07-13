@@ -58,9 +58,4 @@ function execute_result(sess, command::SQLKeyword)::NamedTuple
     NamedTuple()
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
-    dbms = DBMS.Hive()
-    AdapterBase._show(io, mime, dbms, element)
-end
-
 end # module Octo.Backends.HiveLoader

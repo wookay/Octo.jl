@@ -413,8 +413,6 @@ function _placeholders(db::DB where DB<:AbstractDatabase, dims::Int)
     Enclosed(fill(_placeholder(db, 1), dims))
 end
 
-# _show
-
 function _show(io::IO, ::MIME"text/plain", db::DB where DB<:AbstractDatabase, element::E where E<:SQLElement)
     printstyled(io, nameof(typeof(element)), color=:underline)
     print(io, ' ')

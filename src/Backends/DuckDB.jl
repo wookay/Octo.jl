@@ -55,9 +55,4 @@ function execute(con::DuckDB.DB, prepared::String, nts::Vector{<:NamedTuple})::E
     (Count = cnt,)
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
-    dbms = DBMS.DuckDB()
-    AdapterBase._show(io, mime, dbms, element)
-end
-
 end # module Octo.Backends.DuckDBLoader

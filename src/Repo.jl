@@ -2,9 +2,9 @@ module Repo # Octo
 
 using ..DBMS
 using ..Backends
-using ..AdapterBase
+using ..AdapterBase: _show
 using ..Queryable: Structured, SubQuery, FromItem
-using ..Octo: Raw, SQLKeyword
+using ..Octo: Raw, SQLKeyword, SQLElement
 using ..Schema # Schema.validates
 using ..Pretty: show
 
@@ -165,6 +165,30 @@ function disconnect(; db::Union{Nothing, Connection}=nothing)
     else
         Base.invokelatest(db.loader.db_disconnect, db.conn)
     end
+end
+
+# show
+function _show_sql_element(io::IO, mime::MIME"text/plain", element)
+    connection = current_connection()
+    if nothing === connection
+        db = DBMS.SQL()
+    else
+        a = connection.adapter
+        db = a.DatabaseID()
+    end
+    _show(io, mime, db, element)
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", element::Structured{Any})
+    _show_sql_element(io, mime, element)
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", element::Structured{SQLElement})
+    _show_sql_element(io, mime, element)
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", element::Structured{Raw})
+    _show_sql_element(io, mime, element)
 end
 
 

@@ -81,9 +81,4 @@ function execute_result(db, command::SQLKeyword)::NamedTuple
     end
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", element::Union{E,Structured} where E<:SQLElement)
-    dbms = DBMS.SQLite()
-    AdapterBase._show(io, mime, dbms, element)
-end
-
 end # module Octo.Backends.SQLiteLoader
