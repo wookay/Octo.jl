@@ -55,13 +55,13 @@ function execute(db, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
         DBInterface.execute(stmt, values(nt))
         num_affected_rows += get_num_affected_rows(db)
     end
-    (num_affected_rows=num_affected_rows,)
+    (num_affected_rows = num_affected_rows,)
 end
 
 function sql_startswith_insert_update_delete_then_get_num_affected_rows(sql::String, db)
     if sql_startswith_insert_update_delete(sql)
         num_affected_rows = get_num_affected_rows(db)
-        (num_affected_rows=num_affected_rows,)
+        (num_affected_rows = num_affected_rows,)
     else
         nothing
     end
@@ -75,7 +75,7 @@ end
 function execute_result(db, command::SQLKeyword)::NamedTuple
     if INSERT === command
         last_insert_id = SQLite.last_insert_rowid(db)
-        (id=last_insert_id,)
+        (id = last_insert_id,)
     else
         NamedTuple()
     end

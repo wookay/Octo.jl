@@ -8,7 +8,7 @@ Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [compat]
 Jive = "0.3"
-LibPQ = "1.18"
+Postgres = "2.1"
 SQLite = "1.6, 1.8"
 MySQL = "1.4, 1.5"
 MariaDB_Connector_C_jll = "3.3, 3.4"
@@ -19,7 +19,7 @@ julia = "1"
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Jive = "ba5e3d4b-8524-549f-bc71-e76ad9e9deed"
-LibPQ = "194296ae-ab2e-5f79-8cd4-7183a0a5a0d1"
+Postgres = "8f23287e-300e-4f50-bc2b-9f1dfe95da84"
 SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
 MySQL = "39abe10b-433b-5dbd-92d4-e302a9df00cd"
 MariaDB_Connector_C_jll = "aabc7e14-95f1-5e66-9f32-aea603782360"
@@ -28,4 +28,4 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [targets]
-test = ["Test", "Jive", "LibPQ", "SQLite", "MySQL", "MariaDB_Connector_C_jll", "DuckDB", "DataFrames", "UUIDs"]
+test = ["Test", "Jive", "SQLite", "MySQL", "MariaDB_Connector_C_jll", "DuckDB", "DataFrames", "UUIDs"]

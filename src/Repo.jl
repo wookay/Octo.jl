@@ -13,7 +13,7 @@ using ..Pretty: show
 
 `Union{Int, String}`
 """
-const PrimaryKeyType    = Union{Int, String}
+const PrimaryKeyType    = Union{Int, String, Base.UUID}
 const ExecuteResult     = Union{Nothing, NamedTuple}
 
 struct NeedsConnectError <: Exception
@@ -375,7 +375,17 @@ function execute(stmt::Structured, nts::Vector{<:NamedTuple}; db::Connection=cur
     Base.invokelatest(db.loader.execute, db.conn, prepared, nts)
 end
 
-execute(raw::Raw; db::Connection=current_connection())                            = execute([raw]; db=db)
+function execute(raw::Raw; db::Connection=current_connection())
+    ret = nothing
+    for q in split(raw.string, r";\s*\n")
+        if isempty(q)
+            continue
+        end
+        stmt = [Raw(q)]
+        ret = execute(stmt; db)
+    end
+    ret
+end
 execute(raw::Raw, nt::NamedTuple; db::Connection=current_connection())            = execute([raw], [nt]; db=db)
 execute(raw::Raw, nts::Vector{<:NamedTuple}; db::Connection=current_connection()) = execute([raw], nts; db=db)
 execute(raw::Raw, vals::Vector; db::Connection=current_connection())              = execute([raw], vals; db=db)

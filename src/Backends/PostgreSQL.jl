@@ -1,8 +1,8 @@
 module PostgreSQLLoader
 
-# https://github.com/invenia/LibPQ.jl
-using LibPQ: LibPQ # 1.18
-using .LibPQ.Tables
+# https://github.com/JuliaDatabases/Postgres.jl
+using Postgres: Postgres # 2.1
+using .Postgres: Tables, DBInterface
 
 using Octo: Repo, AdapterBase, DBMS, SQLElement, Structured
 using .Repo: SQLKeyword, ExecuteResult
@@ -15,51 +15,55 @@ end
 # db_connect
 function db_connect(; kwargs...)
     if !isempty(kwargs)
-        str = join(map(kv->join(kv, '='), collect(kwargs)), ' ')
-        LibPQ.Connection(str)
+        host     = get(kwargs, :host, "")
+        user     = get(kwargs, :user, "")
+        password = get(kwargs, :password, "")
+        dbname   = get(kwargs, :dbname, "")
+        DBInterface.connect(Postgres.Connection, host, user, password; dbname)
     end
 end
 
 # db_disconnect
 function db_disconnect(conn)
-    close(conn)
+    DBInterface.close!(conn)
 end
 
 # query
 function query(conn, sql::String)
-    stmt = LibPQ.prepare(conn, sql)
-    result = LibPQ.execute(stmt)
+    stmt = DBInterface.prepare(conn, sql)
+    result = DBInterface.execute(stmt)
+    DBInterface.close!(stmt)
     df = Tables.rowtable(result)
-    LibPQ.close(result)
     df
 end
 
 function query(conn, prepared::String, vals::Vector)
-    stmt = LibPQ.prepare(conn, prepared)
-    result = LibPQ.execute(stmt, vals)
+    stmt = DBInterface.prepare(conn, prepared)
+    result = DBInterface.execute(stmt, vals)
+    DBInterface.close!(stmt)
     df = Tables.rowtable(result)
-    LibPQ.close(result)
     df
 end
 
 # execute
 function execute(conn, sql::String)::ExecuteResult
-    result = LibPQ.execute(conn, sql)
+    result = DBInterface.execute(conn, sql)
     rowtable_and_close_result(result, get_num_affected_rows(result))
 end
 
 function execute(conn, prepared::String, vals::Vector)::ExecuteResult
-    stmt = LibPQ.prepare(conn, prepared)
-    result = LibPQ.execute(stmt, vals)
+    stmt = DBInterface.prepare(conn, prepared)
+    result = DBInterface.execute(stmt, vals)
+    DBInterface.close!(stmt)
     rowtable_and_close_result(result, get_num_affected_rows(result))
 end
 
 function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResult
-    stmt = LibPQ.prepare(conn, prepared)
+    stmt = DBInterface.prepare(conn, prepared)
     num_affected_rows::Union{Nothing, Int} = nothing
     result = nothing
     for tup in nts
-        result = LibPQ.execute(stmt, collect(tup))
+        result = DBInterface.execute(stmt, collect(tup))
         num = get_num_affected_rows(result)
         if num === nothing
         else
@@ -70,6 +74,7 @@ function execute(conn, prepared::String, nts::Vector{<:NamedTuple})::ExecuteResu
             end
         end
     end
+    DBInterface.close!(stmt)
     rowtable_and_close_result(result, num_affected_rows)
 end
 
@@ -87,12 +92,7 @@ function rowtable_and_close_result(result, num_affected_rows::Union{Nothing, Int
 end
 
 function get_num_affected_rows(result)::Union{Nothing, Int}
-    str = unsafe_string(LibPQ.libpq_c.PQcmdTuples(result.result))
-    if isempty(str)
-        nothing
-    else
-        parse(Int, str)
-    end
+    Postgres.rows_affected(result)
 end
 
 # execute_result
