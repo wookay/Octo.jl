@@ -23,11 +23,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        julia-version: [1.12.5]         # 2026-02-09
+        julia-version: [1.13.0]         # 2026-09-09
         julia-arch: [x64]
         os: [ubuntu-latest]
         include:
           - julia-version: nightly
+            os: ubuntu-latest
+          - julia-version: 1.12.7       # 2026-08-15
             os: ubuntu-latest
           - julia-version: 1.11.9       # 2026-02-08
             os: ubuntu-latest
