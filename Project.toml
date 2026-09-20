@@ -1,7 +1,7 @@
 name = "Octo"
 uuid = "16905944-f982-529b-abb2-b839f98f160b"
 authors = ["WooKyoung Noh <wookay.noh@gmail.com>"]
-version = "0.2.14"
+version = "0.3.0-DEV"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -9,9 +9,9 @@ Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 [compat]
 Jive = "0.3"
 Postgres = "2.1"
-SQLite = "1.6, 1.8"
-MySQL = "1.4, 1.5"
-MariaDB_Connector_C_jll = "3.3, 3.4"
+SQLite = "1.8"
+MySQL = "1.6"
+MariaDB_Connector_C_jll = "3.1"
 DuckDB = "1.5"
 DataFrames = "1.8"
 julia = "1"
@@ -28,4 +28,4 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [targets]
-test = ["Test", "Jive", "SQLite", "MySQL", "MariaDB_Connector_C_jll", "DuckDB", "DataFrames", "UUIDs"]
+test = ["Test", "Jive", "SQLite", "Postgres", "MySQL", "MariaDB_Connector_C_jll", "DuckDB", "DataFrames", "UUIDs"]

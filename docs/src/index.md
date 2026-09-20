@@ -47,7 +47,7 @@ julia> to_sql([SELECT * FROM u WHERE u.id == 2])
 ## Repo
 
 Current supported database drivers:
-  - PostgreSQL (via [LibPQ.jl](https://github.com/invenia/LibPQ.jl))
+  - PostgreSQL (via [Postgres.jl](https://github.com/JuliaDatabases/Postgres.jl))
   - SQLite (via [SQLite.jl](https://github.com/JuliaDatabases/SQLite.jl))
   - MySQL (via [MySQL.jl](https://github.com/JuliaDatabases/MySQL.jl))
   - DuckDB (via [duckdb/tools/juliapkg](https://github.com/duckdb/duckdb/tree/main/tools/juliapkg))
@@ -63,18 +63,15 @@ julia> Repo.connect(
            dbname = "postgresqltest",
            user = "postgres",
        )
-Octo.Repo.Connection(false, "postgresqltest", Main.PostgreSQLLoader, PostgreSQL connection (CONNECTION_OK) with parameters:
+Octo.Repo.Connection(false, "postgresqltest", Main.PostgreSQLLoader, Octo.Adapters.PostgreSQL, Postgres.Connection:
+  host =
   user = postgres
-  passfile = /Users/wookyoung/.pgpass
   dbname = postgresqltest
   port = 5432
-  client_encoding = UTF8
-  options = -c DateStyle=ISO,YMD -c IntervalStyle=iso_8601 -c TimeZone=UTC
-  application_name = LibPQ.jl
-  sslmode = prefer
-  sslcompression = 0
-  gssencmode = disable
-  target_session_attrs = any)
+  status = open
+  in_transaction = false
+  statement_cache_size = 0/100
+)
 
 julia> struct Employee
        end
@@ -241,21 +238,3 @@ julia> Repo.query([SELECT sub.Name FROM sub])
 ## Colored SQL statements
 
 ![colored_sql_statements.png](https://raw.github.com/wookay/Octo.jl/master/docs/images/colored_sql_statements.png)
-
-
-## Requirements
-
-You need [Julia](https://julialang.org/downloads/).
-
-`julia>` type `]` key
-
-```julia-repl
-(v1.11) pkg> add Octo
-```
-
-```julia-repl
-(v1.11) pkg> add LibPQ   # for PostgreSQL (depends on LibPQ.jl 1.18)
-(v1.11) pkg> add SQLite  # for SQLite     (depends on SQLite.jl 1.6)
-(v1.11) pkg> add MySQL   # for MySQL      (depends on MySQL.jl 1.4)
-(v1.11) pkg> add DuckDB  # for DuckDB     (depends on DuckDB.jl 1.2)
-```
