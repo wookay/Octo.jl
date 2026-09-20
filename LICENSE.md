@@ -25,20 +25,26 @@ SOFTWARE.
 
 Octo.jl database backends are depend on Julia packages for database drivers.
 
-Hive.jl
-  https://github.com/JuliaDatabases/Hive.jl/blob/master/LICENSE.md
-
-JDBC.jl
-  https://github.com/JuliaDatabases/JDBC.jl/blob/master/LICENSE.md
-
-LibPQ.jl
-  https://github.com/invenia/LibPQ.jl/blob/master/LICENSE
+Postgres.jl
+  https://github.com/JuliaDatabases/Postgres.jl/blob/main/LICENSE
 
 MySQL.jl
   https://github.com/JuliaDatabases/MySQL.jl/blob/master/LICENSE
 
+SQLite.jl
+  https://github.com/JuliaDatabases/SQLite.jl/blob/master/LICENSE.md
+
+DuckDB.jl
+  https://github.com/duckdb/DuckDB.jl/blob/main/LICENSE
+
+DBInterface.jl
+  https://github.com/JuliaDatabases/DBInterface.jl/blob/master/LICENSE.md
+
 ODBC.jl
   https://github.com/JuliaDatabases/ODBC.jl/blob/master/LICENSE.md
 
-SQLite.jl
-  https://github.com/JuliaDatabases/SQLite.jl/blob/master/LICENSE.md
+JDBC.jl
+  https://github.com/JuliaDatabases/JDBC.jl/blob/master/LICENSE.md
+
+Hive.jl
+  https://github.com/JuliaDatabases/Hive.jl/blob/master/LICENSE.md
