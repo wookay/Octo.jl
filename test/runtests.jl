@@ -14,10 +14,6 @@ if haskey(ENV, "CI")
     end
 end
 
-# LibPQ v0.11.1
-#     ERROR: LoadError: ArgumentError: cannot convert NULL to string
-push!(ignores, "adapters/postgresql/copy_test")
-
 # skip options
 push!(ignores, "adapters/postgresql/options.jl")
 push!(ignores, "adapters/mysql/options.jl")
