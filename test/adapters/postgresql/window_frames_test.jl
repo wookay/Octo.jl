@@ -90,7 +90,7 @@ ranked_comments = from([SELECT (post_id, comment_id, body, [DENSE_RANK() OVER co
 q = [SELECT (:comment_id, :post_id, :body) FROM ranked_comments WHERE comment_rank < 4]
 @test to_sql(q) == "SELECT comment_id, post_id, body FROM (SELECT posts.id AS post_id, comments.id AS comment_id, comments.body AS body, DENSE_RANK() OVER (PARTITION BY post_id ORDER BY comments.created_at DESC) AS comment_rank FROM posts LEFT OUTER JOIN comments ON posts.id = comments.post_id) AS ranked_comments WHERE comment_rank < 4"
 df = Repo.query(q)
-@test size(df) == (8,)
+@test size(df) == (6,)
 
 ranked_comments = from([SELECT (post_id, comment_id, body, [DENSE_RANK() OVER comment_rank]) FROM posts LEFT OUTER JOIN comments ON posts.id == comments.post_id])
 with = [WITH :ranked_comments AS ranked_comments]
@@ -99,7 +99,7 @@ with = [WITH :ranked_comments AS ranked_comments]
 q = [with... SELECT (:post_id, :comment_id, :body) FROM :ranked_comments WHERE comment_rank < 4]
 @test to_sql(q) == string(to_sql(with), ' ', "SELECT post_id, comment_id, body FROM ranked_comments WHERE comment_rank < 4")
 df = Repo.query(q)
-@test size(df) == (8,)
+@test size(df) == (6,)
 
 
 # https://stackoverflow.com/questions/12410791/difficult-for-me-postgres-sql-query

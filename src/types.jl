@@ -42,7 +42,7 @@ struct PlaceHolder <: SQLElement
     body::String
 end
 
-const PredicateValueTypes = Union{Bool, Number, String, Symbol, Day, <:SQLElement, Type{PlaceHolder}}
+const PredicateValueTypes = Union{Bool, Number, String, Symbol, Day, <:SQLElement, Type{PlaceHolder}, Base.UUID}
 
 struct Predicate <: SQLElement
     func::Function
